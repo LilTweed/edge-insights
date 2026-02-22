@@ -18,6 +18,7 @@ import PropBuilderPage from "./pages/PropBuilderPage";
 import StatNotesPage from "./pages/StatNotesPage";
 import TermsPage from "./pages/TermsPage";
 import DisclaimerModal from "./components/DisclaimerModal";
+import InstallPage from "./pages/InstallPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/terms" element={<TermsPage />} />
           {/* Legacy redirect */}
           <Route path="/ai-props" element={<AIChatPage />} />
+          <Route path="/install" element={<InstallPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
