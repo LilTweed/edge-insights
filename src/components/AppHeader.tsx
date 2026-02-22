@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { HelpCircle } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/NotificationBell";
 
 const navItems = [
   { label: "Games", path: "/" },
@@ -41,6 +42,7 @@ const AppHeader = () => {
           ))}
         </nav>
         <div className="flex items-center gap-1">
+          <NotificationBell />
           <button
             onClick={() => window.dispatchEvent(new Event("lvrg-restart-tour"))}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
