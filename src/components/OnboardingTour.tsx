@@ -59,13 +59,20 @@ const STORAGE_KEY = "lvrg-onboarding-complete";
 const OnboardingTour = () => {
   const [step, setStep] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem(STORAGE_KEY)) {
-      setVisible(true);
+      // Delay showing the tour so it doesn't flash during initial render
+      const timer = setTimeout(() => {
+        setVisible(true);
+        // Allow animation to start after mount
+        requestAnimationFrame(() => setReady(true));
+      }, 600);
+      return () => clearTimeout(timer);
     }
 
-    const handler = () => { setStep(0); setVisible(true); };
+    const handler = () => { setStep(0); setVisible(true); requestAnimationFrame(() => setReady(true)); };
     window.addEventListener("lvrg-restart-tour", handler);
     return () => window.removeEventListener("lvrg-restart-tour", handler);
   }, []);
@@ -92,9 +99,8 @@ const OnboardingTour = () => {
   const current = TOUR_STEPS[step];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative mx-4 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-scale-in">
-        {/* Close */}
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"}`}>
+      <div className={`relative mx-4 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl transition-all duration-300 ${ready ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
         <button
           onClick={dismiss}
           className="absolute right-3 top-3 rounded-full p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
