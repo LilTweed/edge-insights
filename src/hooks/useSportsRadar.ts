@@ -1,99 +1,93 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { EspnSport } from "./useEspnData";
-import type { PropLine, Sportsbook } from "@/data/mockData";
 
-export interface SRProp {
+export interface SRGame {
   id: string;
-  playerName: string;
-  stat: string;
-  line: number;
-  homeTeam: string;
-  awayTeam: string;
-  homeAbbr: string;
-  awayAbbr: string;
-  commenceTime: string;
-  sport: string;
-  sportsbooks: {
-    sportsbook: string;
-    sportsbookKey: string;
-    over: number;
-    under: number;
-    line: number;
-  }[];
+  status: string;
+  scheduled: string;
+  homeTeam: {
+    name: string;
+    abbreviation: string;
+    id: string;
+    score: number | null;
+  };
+  awayTeam: {
+    name: string;
+    abbreviation: string;
+    id: string;
+    score: number | null;
+  };
+  venue: string;
+  broadcast: string[];
 }
 
-export interface SRResult {
-  props: SRProp[];
-  eventsCount: number;
+export interface SRScheduleResult {
+  games: SRGame[];
+  gamesCount: number;
   fetchedAt: string;
   needsApiKey?: boolean;
   source: string;
 }
 
-async function fetchSRProps(sport: EspnSport): Promise<SRResult> {
+async function fetchSRSchedule(sport: EspnSport): Promise<SRScheduleResult> {
   const { data, error } = await supabase.functions.invoke("sportsradar", {
-    body: { sport, type: "props" },
+    body: { sport, type: "schedule" },
   });
   if (error) throw new Error(error.message);
   if (!data?.success) {
     if (data?.needsApiKey) {
-      return { props: [], eventsCount: 0, fetchedAt: "", needsApiKey: true, source: "sportsradar" };
+      return { games: [], gamesCount: 0, fetchedAt: "", needsApiKey: true, source: "sportsradar" };
     }
     throw new Error(data?.error || "Failed to fetch SportsRadar data");
   }
-  return data as SRResult;
+  return data as SRScheduleResult;
 }
 
-const SB_NAME_MAP: Record<string, Sportsbook> = {
-  fanduel: "FanDuel",
-  draftkings: "DraftKings",
-  betmgm: "BetMGM",
-  bovada: "Bovada",
-  fanatics: "Fanatics",
-};
-
-function normalizeSportsbook(name: string): Sportsbook {
-  const lower = name.toLowerCase();
-  for (const [key, val] of Object.entries(SB_NAME_MAP)) {
-    if (lower.includes(key)) return val;
-  }
-  return name as Sportsbook;
+async function fetchSRStandings(sport: EspnSport) {
+  const { data, error } = await supabase.functions.invoke("sportsradar", {
+    body: { sport, type: "standings" },
+  });
+  if (error) throw new Error(error.message);
+  if (!data?.success) throw new Error(data?.error || "Failed to fetch standings");
+  return data;
 }
 
-function toMockFormat(prop: SRProp, sport: string): PropLine {
-  return {
-    id: prop.id,
-    playerId: prop.playerName.toLowerCase().replace(/\s+/g, "-"),
-    playerName: prop.playerName,
-    teamAbbr: prop.homeAbbr || "",
-    stat: prop.stat,
-    line: prop.line,
-    sport: sport as PropLine["sport"],
-    sportsbooks: prop.sportsbooks.map((sb) => ({
-      sportsbook: normalizeSportsbook(sb.sportsbook),
-      over: sb.over,
-      under: sb.under,
-      line: sb.line,
-    })),
-    hitRate: 0,
-    hitRateLast10: 0,
-    gamesPlayed: 0,
-  };
+async function fetchSRPlayer(sport: EspnSport, playerId: string) {
+  const { data, error } = await supabase.functions.invoke("sportsradar", {
+    body: { sport, type: "player", playerId },
+  });
+  if (error) throw new Error(error.message);
+  if (!data?.success) throw new Error(data?.error || "Failed to fetch player");
+  return data;
 }
 
-export function useSportsRadar(sport: EspnSport, enabled: boolean) {
+const SUPPORTED_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "WNBA"];
+
+export function useSportsRadarSchedule(sport: EspnSport, enabled: boolean) {
   return useQuery({
-    queryKey: ["sportsradar-props", sport],
-    queryFn: () => fetchSRProps(sport),
-    enabled,
+    queryKey: ["sportsradar-schedule", sport],
+    queryFn: () => fetchSRSchedule(sport),
+    enabled: enabled && SUPPORTED_SPORTS.includes(sport),
     refetchInterval: 60_000,
     staleTime: 30_000,
-    select: (data) => ({
-      props: data.props.map((p) => toMockFormat(p, sport)),
-      needsApiKey: data.needsApiKey ?? false,
-      fetchedAt: data.fetchedAt,
-      source: data.source,
-    }),
+  });
+}
+
+export function useSportsRadarStandings(sport: EspnSport, enabled: boolean) {
+  return useQuery({
+    queryKey: ["sportsradar-standings", sport],
+    queryFn: () => fetchSRStandings(sport),
+    enabled: enabled && SUPPORTED_SPORTS.includes(sport),
+    staleTime: 300_000, // 5 min
+  });
+}
+
+export function useSportsRadarPlayer(sport: EspnSport, playerId: string | null) {
+  return useQuery({
+    queryKey: ["sportsradar-player", sport, playerId],
+    queryFn: () => fetchSRPlayer(sport, playerId!),
+    enabled: !!playerId && SUPPORTED_SPORTS.includes(sport),
+    staleTime: 300_000,
   });
 }
