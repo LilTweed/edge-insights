@@ -6,7 +6,7 @@ interface SportFilterProps {
   sports?: Sport[];
 }
 
-const defaultSports: Sport[] = ["NBA", "NFL", "NCAAB", "NCAAF", "MLB", "NHL", "UFC", "PGA", "MLS", "WNBA", "NASCAR", "TENNIS"];
+const defaultSports: Sport[] = ["NBA", "NFL", "NCAAB", "NCAAF", "MLB", "NHL", "UFC", "PGA", "WNBA"];
 
 const sportLabels: Record<Sport, string> = {
   NBA: "NBA",
@@ -17,10 +17,7 @@ const sportLabels: Record<Sport, string> = {
   NHL: "NHL",
   UFC: "UFC",
   PGA: "Golf",
-  MLS: "MLS",
   WNBA: "WNBA",
-  NASCAR: "NASCAR",
-  TENNIS: "Tennis",
 };
 
 const SportFilter = ({ active, onChange, sports = defaultSports }: SportFilterProps) => {

@@ -27,22 +27,7 @@ export const pgaGames: Game[] = [];
 export const pgaPlayers: Player[] = [];
 export const pgaProps: PropLine[] = [];
 
-export const mlsTeams: Team[] = [];
-export const mlsGames: Game[] = [];
-export const mlsPlayers: Player[] = [];
-export const mlsProps: PropLine[] = [];
-
 export const wnbaTeams: Team[] = [];
 export const wnbaGames: Game[] = [];
 export const wnbaPlayers: Player[] = [];
 export const wnbaProps: PropLine[] = [];
-
-export const nascarTeams: Team[] = [];
-export const nascarGames: Game[] = [];
-export const nascarPlayers: Player[] = [];
-export const nascarProps: PropLine[] = [];
-
-export const tennisTeams: Team[] = [];
-export const tennisGames: Game[] = [];
-export const tennisPlayers: Player[] = [];
-export const tennisProps: PropLine[] = [];
