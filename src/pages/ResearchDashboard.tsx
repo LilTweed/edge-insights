@@ -12,6 +12,7 @@ import {
 } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import { EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
+import { useFavoriteTeams } from "@/hooks/useFavoriteTeams";
 import {
   Search,
   TrendingUp,
@@ -25,6 +26,8 @@ import {
   ChevronDown,
   ChevronUp,
   AlertTriangle,
+  Heart,
+  Shield,
 } from "lucide-react";
 import {
   BarChart,
@@ -36,7 +39,7 @@ import {
   ReferenceLine,
 } from "recharts";
 
-type Tab = "stats" | "trends" | "matchups";
+type Tab = "stats" | "trends" | "matchups" | "teams";
 
 /** Deterministic pseudo-random seeded by string */
 function seededRandom(seed: string) {
@@ -82,6 +85,7 @@ const ResearchDashboard = () => {
   const [minGames, setMinGames] = useState(0);
   const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const { toggle, isFavorite } = useFavoriteTeams();
 
   const players = useMemo(() => allPlayers.filter((p) => p.sport === sport), [sport]);
   const teams = useMemo(() => allTeams.filter((t) => t.sport === sport), [sport]);
@@ -129,8 +133,64 @@ const ResearchDashboard = () => {
 
   const playerProps = (playerId: string): PropLine[] => props.filter((p) => p.playerId === playerId);
 
+  const teamStatColumns = (s: Sport) => {
+    if (s === "NCAAF" || s === "NFL") {
+      return (t: typeof allTeams[0]) => [
+        { label: "PPG", value: t.stats?.ppg },
+        { label: "YPG", value: t.stats?.ypg },
+        { label: "OPP PPG", value: t.stats?.oppPpg },
+        { label: "TO", value: t.stats?.takeaways },
+      ];
+    }
+    if (s === "MLB") {
+      return (t: typeof allTeams[0]) => [
+        { label: "R/G", value: t.stats?.ppg },
+        { label: "OPP R/G", value: t.stats?.oppPpg },
+      ];
+    }
+    if (s === "NHL") {
+      return (t: typeof allTeams[0]) => [
+        { label: "G/G", value: t.stats?.ppg },
+        { label: "GA/G", value: t.stats?.oppPpg },
+      ];
+    }
+    return (t: typeof allTeams[0]) => [
+      { label: "PPG", value: t.stats?.ppg },
+      { label: "OPP", value: t.stats?.oppPpg },
+      { label: "FG%", value: t.stats?.fgPct },
+      { label: "3P%", value: t.stats?.threePct },
+    ];
+  };
+
+  const filteredTeams = useMemo(() => {
+    let list = teams;
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter((t) => t.name.toLowerCase().includes(q) || t.city.toLowerCase().includes(q) || t.abbreviation.toLowerCase().includes(q));
+    }
+    return [...list].sort((a, b) => {
+      const aFav = isFavorite(a.id) ? 0 : 1;
+      const bFav = isFavorite(b.id) ? 0 : 1;
+      return aFav - bFav;
+    });
+  }, [teams, search, isFavorite]);
+
+  const byConference = useMemo(() => {
+    const grouped = filteredTeams.reduce<Record<string, typeof filteredTeams>>((acc, team) => {
+      if (!acc[team.conference]) acc[team.conference] = [];
+      acc[team.conference].push(team);
+      return acc;
+    }, {});
+    return Object.entries(grouped).sort(([, a], [, b]) => {
+      const aHasFav = a.some((t) => isFavorite(t.id)) ? 0 : 1;
+      const bHasFav = b.some((t) => isFavorite(t.id)) ? 0 : 1;
+      return aHasFav - bHasFav;
+    });
+  }, [filteredTeams, isFavorite]);
+
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: "stats", label: "Player Stats", icon: BarChart3 },
+    { key: "teams", label: "Teams", icon: Shield },
     { key: "trends", label: "Trends", icon: Activity },
     { key: "matchups", label: "Matchups", icon: Swords },
   ];
@@ -496,6 +556,119 @@ const ResearchDashboard = () => {
                   );
                 })}
             </>
+          )}
+        </div>
+      )}
+
+      {/* ─── TEAMS TAB ─── */}
+      {tab === "teams" && (
+        <div>
+          <div className="relative mb-4">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search teams…"
+              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+            />
+          </div>
+
+          {byConference.map(([conf, confTeams]) => (
+            <div key={conf} className="mb-6">
+              <h2 className="mb-3 text-sm font-bold text-muted-foreground uppercase tracking-wider">{conf}</h2>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {confTeams.map((team) => {
+                  const fav = isFavorite(team.id);
+                  const getStats = teamStatColumns(sport);
+                  const stats = team.stats ? getStats(team) : [];
+                  const teamPlayers = players.filter((p) => p.teamAbbr === team.abbreviation);
+                  const teamProps = props.filter((p) => p.teamAbbr === team.abbreviation);
+                  const teamInjuries = sportInjuries.filter((i) => i.teamAbbr === team.abbreviation);
+
+                  return (
+                    <div key={team.id} className="group relative animate-fade-in rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+                      <button
+                        onClick={(e) => { e.preventDefault(); toggle(team.id); }}
+                        className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-secondary"
+                        aria-label={fav ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        <Heart size={16} className={fav ? "fill-red-500 text-red-500" : "text-muted-foreground"} />
+                      </button>
+                      <Link to={`/team/${team.id}`}>
+                        <div className="mb-3 flex items-center gap-2.5 pr-8">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-[10px] font-bold text-primary-foreground">
+                            {team.abbreviation}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {team.ranking ? `#${team.ranking} ` : ""}{team.city} {team.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{team.record} · {team.conference}</p>
+                          </div>
+                        </div>
+                      </Link>
+
+                      {/* Team Stats */}
+                      {stats.length > 0 && (
+                        <div className="mb-3 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)` }}>
+                          {stats.filter((s) => s.value != null).map((s) => (
+                            <div key={s.label} className="rounded-lg bg-secondary/60 p-1.5 text-center">
+                              <p className="font-mono text-sm font-bold text-foreground">{s.value}</p>
+                              <p className="text-[9px] font-medium text-muted-foreground">{s.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Key Players */}
+                      {teamPlayers.length > 0 && (
+                        <div className="mb-2">
+                          <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1">Key Players</p>
+                          <div className="flex flex-wrap gap-1">
+                            {teamPlayers.slice(0, 3).map((p) => (
+                              <Link key={p.id} to={`/player/${p.id}`} className="rounded-md bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-secondary transition-colors">
+                                {p.name.split(" ").pop()} · {p.seasonAverages.points.toFixed(1)}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Active Props */}
+                      {teamProps.length > 0 && (
+                        <div className="mb-2">
+                          <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1">Props ({teamProps.length})</p>
+                          <div className="flex flex-wrap gap-1">
+                            {teamProps.slice(0, 3).map((p) => (
+                              <span key={p.id} className="rounded-md bg-secondary/40 px-1.5 py-0.5 text-[9px] text-muted-foreground">
+                                {p.playerName.split(" ").pop()} {p.stat} {p.line} <span className={`font-bold ${p.hitRate >= 60 ? "text-emerald-500" : "text-foreground"}`}>{p.hitRate}%</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Injuries */}
+                      {teamInjuries.length > 0 && (
+                        <div>
+                          <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1">Injuries</p>
+                          <div className="flex flex-wrap gap-1">
+                            {teamInjuries.map((inj, i) => (
+                              <span key={i} className="rounded-md bg-secondary/40 px-1.5 py-0.5 text-[9px] text-muted-foreground">
+                                {inj.player} · <span className={inj.status === "Out" ? "text-destructive" : "text-yellow-500"}>{inj.status}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {filteredTeams.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-12">No teams match your search</p>
           )}
         </div>
       )}
