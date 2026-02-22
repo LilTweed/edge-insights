@@ -5,7 +5,8 @@ import ExportableDataView from "@/components/ExportableDataView";
 import PropCard from "@/components/PropCard";
 import { useState, useMemo } from "react";
 import { Share2, RefreshCw, Home, Plane } from "lucide-react";
-import { usePlayerStats, usePlayerGameLog, type EspnSport, type GameLogEntry } from "@/hooks/useEspnData";
+import { useUnifiedPlayerStats, useUnifiedGameLog } from "@/hooks/useUnifiedData";
+import type { EspnSport, GameLogEntry } from "@/hooks/useEspnData";
 
 const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"];
 
@@ -21,7 +22,7 @@ const PlayerDetailPage = () => {
   const isEspnSport = sportParam && ESPN_SPORTS.includes(sportParam);
 
   // ESPN live stats
-  const { data: espnStats, isLoading: statsLoading } = usePlayerStats(
+  const { data: espnStats, isLoading: statsLoading } = useUnifiedPlayerStats(
     (sportParam || "NBA") as EspnSport,
     isEspnSport ? id : undefined
   );
@@ -84,7 +85,7 @@ function EspnPlayerDetail({
   const seasons = espnStats?.seasons || [];
 
   // Game log
-  const { data: gameLog, isLoading: logLoading } = usePlayerGameLog(sport, athleteId);
+  const { data: gameLog, isLoading: logLoading } = useUnifiedGameLog(sport, athleteId);
 
   // Compute home/away splits from game log
   const splits = useMemo(() => {
