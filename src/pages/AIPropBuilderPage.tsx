@@ -1,22 +1,75 @@
 import { useState, useRef, useEffect } from "react";
 import {
   propLines, allPlayers, allGames, allTeams, matchupHistories, injuries,
-  type Sport, type Injury,
+  type Sport,
 } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
-import { Bot, Send, Loader2, Sparkles, TrendingUp, Layers, Zap, Shield } from "lucide-react";
+import {
+  Bot, Send, Loader2, Sparkles, TrendingUp, Layers, Zap, Shield,
+  DollarSign, Flame, Target, ThumbsUp, BarChart3, Activity,
+} from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 const FUNC_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-prop-builder`;
 
-const quickPrompts = [
-  { icon: TrendingUp, label: "Best value props today", prompt: "What are the best value props today? Find the ones with the highest hit rates and best odds discrepancies across sportsbooks." },
-  { icon: Layers, label: "Build me a parlay", prompt: "Build me 3 parlay options: a safe 2-leg, a moderate 3-leg, and an aggressive 4+ leg parlay with the best expected value." },
-  { icon: Sparkles, label: "Full analysis & picks", prompt: "Give me your top 5 picks today with full analysis, confidence levels, and reasoning for each one." },
+// ── Simple mode: big friendly buttons, zero jargon ──
+const simpleQuickPrompts = [
+  {
+    icon: Flame,
+    label: "🔥 What should I bet on?",
+    description: "Just tell me the best bets right now",
+    prompt: "Give me the absolute best bets for today. Keep it super simple — just tell me who to pick, over or under, and why in plain English. No jargon. Rate each pick with fire emojis (🔥🔥🔥 = lock, 🔥🔥 = solid, 🔥 = risky but fun).",
+  },
+  {
+    icon: DollarSign,
+    label: "💰 Make me money",
+    description: "Build a parlay that could actually hit",
+    prompt: "Build me a parlay that has a real shot at hitting. I want one safe option and one that pays big. Keep the explanation simple — I just want to know what to pick and roughly how much I could win on a $10 bet.",
+  },
+  {
+    icon: ThumbsUp,
+    label: "👍 Easiest wins today",
+    description: "The safest bets with the best chances",
+    prompt: "What are the safest, most likely bets to win today? I don't need huge payouts, I just want to WIN. Give me the bets that hit most often. Explain it like I'm brand new to sports betting.",
+  },
+  {
+    icon: Target,
+    label: "🎯 Pick a player for me",
+    description: "One player, one bet, keep it simple",
+    prompt: "Pick ONE player bet for me — the single best player prop right now. Tell me the player, what the bet is, over or under, and which app to use. Explain it like I've never placed a bet before.",
+  },
 ];
 
-// Build basic props context
+// ── Advanced mode: technical analysis prompts ──
+const advancedQuickPrompts = [
+  {
+    icon: BarChart3,
+    label: "Statistical edge analysis",
+    description: "Hit rate vs implied probability, line discrepancies",
+    prompt: "Run a full statistical edge analysis. Compare hit rates to implied probabilities across all sportsbooks. Flag any props where the hit rate significantly exceeds the implied probability. Include L10 trend deviation from season averages and identify regression candidates vs sustainable trends.",
+  },
+  {
+    icon: Activity,
+    label: "Injury-adjusted projections",
+    description: "Recalculate props accounting for active injuries",
+    prompt: "Analyze how current injuries affect today's prop lines. For each injured player, identify which teammates see usage increases. Cross-reference with their L5 performance in games where the injured player was also absent. Flag any props that haven't been adjusted for the injury news.",
+  },
+  {
+    icon: Layers,
+    label: "Correlated parlay builder",
+    description: "Same-game & cross-game correlation analysis",
+    prompt: "Build correlated parlays using game environment analysis. Identify game scripts (e.g., high-total games favor passing volume), pace matchups, and defensive weaknesses. Build 3 correlated parlays: a 2-leg SGP, a 3-leg cross-game, and an aggressive 5-leg with correlation reasoning for each leg.",
+  },
+  {
+    icon: TrendingUp,
+    label: "H2H matchup deep dive",
+    description: "Historical trends, pace, scoring patterns",
+    prompt: "Deep dive into head-to-head matchup data for today's games. Compare historical average scores to current O/U lines. Analyze scoring trends, home/away splits, and streaks. Identify if the total or spread is mispriced based on the H2H data. Include specific game results from recent meetings.",
+  },
+];
+
+// ── Context builders (unchanged logic) ──
 function buildBasicContext(sport: Sport): string {
   const sportProps = propLines.filter((p) => p.sport === sport);
   if (!sportProps.length) return "";
@@ -28,141 +81,78 @@ function buildBasicContext(sport: Sport): string {
     .join("\n");
 }
 
-// Build deep advanced context with injuries, H2H, full player/team stats
 function buildAdvancedContext(sport: Sport): string {
   const sections: string[] = [];
-
-  // 1. Props data
   const propsStr = buildBasicContext(sport);
   if (propsStr) sections.push(`=== PROP LINES ===\n${propsStr}`);
 
-  // 2. Today's games with full team stats
   const sportGames = allGames.filter((g) => g.sport === sport);
   if (sportGames.length) {
     const gamesStr = sportGames.map((g) => {
       const home = g.homeTeam;
       const away = g.awayTeam;
       let line = `${away.city} ${away.name} (${away.record}) @ ${home.city} ${home.name} (${home.record}) — ${g.time}`;
-
-      // Team stats comparison
       if (home.stats && away.stats) {
-        const hs = home.stats;
-        const as = away.stats;
+        const hs = home.stats; const as = away.stats;
         if (sport === "NFL" || sport === "NCAAF") {
-          line += `\n  Home: PPG ${hs.ppg} | OPP PPG ${hs.oppPpg} | YPG ${hs.ypg || "N/A"} | Rush YPG ${hs.rushYpg || "N/A"} | Pass YPG ${hs.passYpg || "N/A"} | 3rd% ${hs.thirdDownPct || "N/A"} | RZ% ${hs.redZonePct || "N/A"} | Sacks ${hs.sacks || 0} | Takeaways ${hs.takeaways || 0}`;
-          line += `\n  Away: PPG ${as.ppg} | OPP PPG ${as.oppPpg} | YPG ${as.ypg || "N/A"} | Rush YPG ${as.rushYpg || "N/A"} | Pass YPG ${as.passYpg || "N/A"} | 3rd% ${as.thirdDownPct || "N/A"} | RZ% ${as.redZonePct || "N/A"} | Sacks ${as.sacks || 0} | Takeaways ${as.takeaways || 0}`;
+          line += `\n  Home: PPG ${hs.ppg} | OPP ${hs.oppPpg} | YPG ${hs.ypg || "—"} | Rush ${hs.rushYpg || "—"} | Pass ${hs.passYpg || "—"} | 3rd% ${hs.thirdDownPct || "—"} | RZ% ${hs.redZonePct || "—"} | Sacks ${hs.sacks || 0} | TO ${hs.takeaways || 0}`;
+          line += `\n  Away: PPG ${as.ppg} | OPP ${as.oppPpg} | YPG ${as.ypg || "—"} | Rush ${as.rushYpg || "—"} | Pass ${as.passYpg || "—"} | 3rd% ${as.thirdDownPct || "—"} | RZ% ${as.redZonePct || "—"} | Sacks ${as.sacks || 0} | TO ${as.takeaways || 0}`;
         } else {
-          line += `\n  Home: PPG ${hs.ppg} | OPP PPG ${hs.oppPpg} | FG% ${hs.fgPct} | 3P% ${hs.threePct}`;
-          line += `\n  Away: PPG ${as.ppg} | OPP PPG ${as.oppPpg} | FG% ${as.fgPct} | 3P% ${as.threePct}`;
+          line += `\n  Home: PPG ${hs.ppg} | OPP ${hs.oppPpg} | FG% ${hs.fgPct} | 3P% ${hs.threePct}`;
+          line += `\n  Away: PPG ${as.ppg} | OPP ${as.oppPpg} | FG% ${as.fgPct} | 3P% ${as.threePct}`;
         }
       }
-
-      // Spread / ML / O-U best lines
-      if (g.moneyline?.length) {
-        const best = g.moneyline.reduce((a, b) => (b.home > a.home ? b : a));
-        line += `\n  Best ML: ${best.sportsbook} Home ${best.home} / Away ${best.away}`;
-      }
-      if (g.spread?.length) {
-        line += `\n  Spread: ${g.spread[0].home} (${g.spread[0].sportsbook})`;
-      }
-      if (g.overUnder?.length) {
-        line += `\n  O/U: ${g.overUnder[0].total} (${g.overUnder[0].sportsbook})`;
-      }
-
+      if (g.moneyline?.length) { const b = g.moneyline.reduce((a, c) => (c.home > a.home ? c : a)); line += `\n  Best ML: ${b.sportsbook} H${b.home}/A${b.away}`; }
+      if (g.spread?.length) line += `\n  Spread: ${g.spread[0].home} (${g.spread[0].sportsbook})`;
+      if (g.overUnder?.length) line += `\n  O/U: ${g.overUnder[0].total} (${g.overUnder[0].sportsbook})`;
       return line;
     }).join("\n\n");
     sections.push(`=== TODAY'S GAMES ===\n${gamesStr}`);
   }
 
-  // 3. Head-to-head matchup histories for today's games
   if (sportGames.length) {
     const h2hStr = sportGames.map((g) => {
-      const h2h = matchupHistories.find(
-        (m) =>
-          (m.team1Id === g.homeTeam.id && m.team2Id === g.awayTeam.id) ||
-          (m.team1Id === g.awayTeam.id && m.team2Id === g.homeTeam.id)
-      );
+      const h2h = matchupHistories.find((m) => (m.team1Id === g.homeTeam.id && m.team2Id === g.awayTeam.id) || (m.team1Id === g.awayTeam.id && m.team2Id === g.homeTeam.id));
       if (!h2h) return null;
-      const t1 = allTeams.find((t) => t.id === h2h.team1Id);
-      const t2 = allTeams.find((t) => t.id === h2h.team2Id);
-      let str = `${t1?.name || h2h.team1Id} vs ${t2?.name || h2h.team2Id}`;
-      str += `\n  All-time: ${h2h.allTime.wins}-${h2h.allTime.losses}`;
-      str += ` | Last 10: ${h2h.last10.team1Wins}-${h2h.last10.team2Wins}`;
-      str += ` | Last 5: ${h2h.last5.team1Wins}-${h2h.last5.team2Wins}`;
-      str += ` | Streak: ${h2h.streak}`;
-      str += ` | Avg Score: ${h2h.avgScore.team1}-${h2h.avgScore.team2}`;
-      str += `\n  Last meeting: ${h2h.lastMeeting}`;
-      if (h2h.last5.results?.length) {
-        str += `\n  Recent results:`;
-        h2h.last5.results.forEach((r) => {
-          str += `\n    ${r.date}: ${r.team1Score}-${r.team2Score} (${r.location})`;
-        });
-      }
+      const t1 = allTeams.find((t) => t.id === h2h.team1Id); const t2 = allTeams.find((t) => t.id === h2h.team2Id);
+      let str = `${t1?.name || h2h.team1Id} vs ${t2?.name || h2h.team2Id}\n  All-time: ${h2h.allTime.wins}-${h2h.allTime.losses} | L10: ${h2h.last10.team1Wins}-${h2h.last10.team2Wins} | L5: ${h2h.last5.team1Wins}-${h2h.last5.team2Wins} | Streak: ${h2h.streak} | AvgScore: ${h2h.avgScore.team1}-${h2h.avgScore.team2}\n  Last: ${h2h.lastMeeting}`;
+      if (h2h.last5.results?.length) { str += `\n  Results:`; h2h.last5.results.forEach((r) => { str += `\n    ${r.date}: ${r.team1Score}-${r.team2Score} (${r.location})`; }); }
       return str;
     }).filter(Boolean).join("\n\n");
-    if (h2hStr) sections.push(`=== HEAD-TO-HEAD HISTORY ===\n${h2hStr}`);
+    if (h2hStr) sections.push(`=== HEAD-TO-HEAD ===\n${h2hStr}`);
   }
 
-  // 4. Full player stats (season, L10, L5) for players in today's games
-  const gameTeamAbbrs = new Set(
-    sportGames.flatMap((g) => [g.homeTeam.abbreviation, g.awayTeam.abbreviation])
-  );
-  const relevantPlayers = allPlayers.filter(
-    (p) => p.sport === sport && gameTeamAbbrs.has(p.teamAbbr)
-  );
+  const gameTeamAbbrs = new Set(sportGames.flatMap((g) => [g.homeTeam.abbreviation, g.awayTeam.abbreviation]));
+  const relevantPlayers = allPlayers.filter((p) => p.sport === sport && gameTeamAbbrs.has(p.teamAbbr));
   if (relevantPlayers.length) {
     const playersStr = relevantPlayers.map((p) => {
-      const a = p.seasonAverages;
-      const l = p.last10;
-      const l5 = p.last5;
-      let str = `${p.name} (${p.teamAbbr}, ${p.position}, #${p.number}) — ${p.stats.gamesPlayed} GP`;
+      const a = p.seasonAverages; const l = p.last10; const l5 = p.last5;
+      let str = `${p.name} (${p.teamAbbr}, ${p.position}) — ${p.stats.gamesPlayed}GP`;
       if (sport === "NBA" || sport === "NCAAB") {
-        str += `\n  Season: ${a.points}pts ${a.rebounds}reb ${a.assists}ast ${a.steals}stl ${a.blocks}blk ${a.turnovers}to ${a.minutes}min | ${a.fgPct}FG% ${a.threePct}3P% ${a.ftPct}FT%`;
-        str += `\n  Last10: ${l.points}pts ${l.rebounds}reb ${l.assists}ast ${l.steals}stl ${l.blocks}blk ${l.turnovers}to | ${l.fgPct}FG% ${l.threePct}3P% ${l.ftPct}FT%`;
-        str += `\n  Last5:  ${l5.points}pts ${l5.rebounds}reb ${l5.assists}ast ${l5.steals}stl ${l5.blocks}blk ${l5.turnovers}to | ${l5.fgPct}FG% ${l5.threePct}3P% ${l5.ftPct}FT%`;
-      } else if (sport === "NFL") {
-        if (p.position === "QB") {
-          str += `\n  Season: ${a.points}passYd/G ${a.assists}TDs/G ${a.fgPct}CMP% ${a.rebounds}rushYd/G ${a.turnovers}INT/G QBR:${a.ftPct}`;
-          str += `\n  Last10: ${l.points}passYd/G ${l.assists}TDs/G ${l.fgPct}CMP% ${l.rebounds}rushYd/G ${l.turnovers}INT/G`;
-          str += `\n  Last5:  ${l5.points}passYd/G ${l5.assists}TDs/G ${l5.fgPct}CMP% ${l5.rebounds}rushYd/G ${l5.turnovers}INT/G`;
-        } else {
-          str += `\n  Season: ${a.points}yd/G ${a.assists}TDs/G ${a.rebounds}rec/G`;
-          str += `\n  Last10: ${l.points}yd/G ${l.assists}TDs/G ${l.rebounds}rec/G`;
-        }
+        str += `\n  SZN: ${a.points}p/${a.rebounds}r/${a.assists}a/${a.steals}s/${a.blocks}b/${a.turnovers}to ${a.minutes}min | ${a.fgPct}/${a.threePct}/${a.ftPct}`;
+        str += `\n  L10: ${l.points}p/${l.rebounds}r/${l.assists}a | ${l.fgPct}/${l.threePct}/${l.ftPct}`;
+        str += `\n  L5:  ${l5.points}p/${l5.rebounds}r/${l5.assists}a | ${l5.fgPct}/${l5.threePct}/${l5.ftPct}`;
+      } else if (sport === "NFL" && p.position === "QB") {
+        str += `\n  SZN: ${a.points}yd ${a.assists}td ${a.fgPct}cmp% ${a.rebounds}rush ${a.turnovers}int QBR:${a.ftPct}`;
+        str += `\n  L10: ${l.points}yd ${l.assists}td ${l.fgPct}cmp%  L5: ${l5.points}yd ${l5.assists}td`;
       } else {
-        str += `\n  Season: PTS:${a.points} REB:${a.rebounds} AST:${a.assists} STL:${a.steals} BLK:${a.blocks} TO:${a.turnovers}`;
-        str += `\n  Last10: PTS:${l.points} REB:${l.rebounds} AST:${l.assists}`;
+        str += `\n  SZN: ${a.points}/${a.rebounds}/${a.assists}/${a.steals}/${a.blocks}/${a.turnovers}`;
       }
       return str;
-    }).join("\n\n");
-    sections.push(`=== PLAYER STATS (GAME-RELEVANT) ===\n${playersStr}`);
+    }).join("\n");
+    sections.push(`=== PLAYERS ===\n${playersStr}`);
   }
 
-  // 5. Injury report
   const sportTeamAbbrs = new Set(allTeams.filter((t) => t.sport === sport).map((t) => t.abbreviation));
   const sportInjuries = injuries.filter((inj) => sportTeamAbbrs.has(inj.teamAbbr));
   if (sportInjuries.length) {
-    const injStr = sportInjuries
-      .map((inj) => `${inj.player} (${inj.teamAbbr}) — ${inj.status}: ${inj.injury}${inj.returnDate ? ` | ETA: ${inj.returnDate}` : ""}`)
-      .join("\n");
-    sections.push(`=== INJURY REPORT ===\n${injStr}`);
+    sections.push(`=== INJURIES ===\n${sportInjuries.map((inj) => `${inj.player} (${inj.teamAbbr}) ${inj.status}: ${inj.injury}${inj.returnDate ? ` ETA:${inj.returnDate}` : ""}`).join("\n")}`);
   }
 
-  // 6. Conference/division standings snapshot
   const sportTeams = allTeams.filter((t) => t.sport === sport);
   if (sportTeams.length) {
-    const byConf = sportTeams.reduce<Record<string, typeof sportTeams>>((acc, t) => {
-      if (!acc[t.conference]) acc[t.conference] = [];
-      acc[t.conference].push(t);
-      return acc;
-    }, {});
-    const standingsStr = Object.entries(byConf)
-      .map(([conf, teams]) => {
-        const sorted = [...teams].sort((a, b) => (a.ranking || 99) - (b.ranking || 99));
-        return `${conf}:\n` + sorted.map((t) => `  ${t.ranking ? `#${t.ranking}` : "  "} ${t.city} ${t.name} (${t.record})`).join("\n");
-      })
-      .join("\n\n");
-    sections.push(`=== STANDINGS ===\n${standingsStr}`);
+    const byConf = sportTeams.reduce<Record<string, typeof sportTeams>>((acc, t) => { if (!acc[t.conference]) acc[t.conference] = []; acc[t.conference].push(t); return acc; }, {});
+    sections.push(`=== STANDINGS ===\n${Object.entries(byConf).map(([c, ts]) => `${c}: ${[...ts].sort((a, b) => (a.ranking || 99) - (b.ranking || 99)).map((t) => `${t.ranking ? `#${t.ranking}` : ""} ${t.name} (${t.record})`).join(", ")}`).join("\n")}`);
   }
 
   return sections.join("\n\n");
@@ -176,186 +166,186 @@ export default function AIPropBuilderPage() {
   const [advanced, setAdvanced] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const send = async (text: string) => {
     if (!text.trim() || isLoading) return;
-
     const userMsg: Msg = { role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
-
     let assistantSoFar = "";
     const allMessages = [...messages, userMsg];
 
     try {
       const resp = await fetch(FUNC_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          messages: allMessages,
-          propsData: advanced ? buildAdvancedContext(sport) : buildBasicContext(sport),
-          advanced,
-        }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({ messages: allMessages, propsData: advanced ? buildAdvancedContext(sport) : buildBasicContext(sport), advanced }),
       });
-
-      if (!resp.ok || !resp.body) {
-        const err = await resp.json().catch(() => ({ error: "Failed" }));
-        throw new Error(err.error || "Failed to get response");
-      }
+      if (!resp.ok || !resp.body) { const err = await resp.json().catch(() => ({ error: "Failed" })); throw new Error(err.error || "Failed"); }
 
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
+        let ni: number;
+        while ((ni = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, ni); textBuffer = textBuffer.slice(ni + 1);
           if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
+          if (line.startsWith(":") || !line.trim() || !line.startsWith("data: ")) continue;
+          const js = line.slice(6).trim();
+          if (js === "[DONE]") break;
           try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantSoFar += content;
-              setMessages((prev) => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant") {
-                  return prev.map((m, i) =>
-                    i === prev.length - 1 ? { ...m, content: assistantSoFar } : m
-                  );
-                }
-                return [...prev, { role: "assistant", content: assistantSoFar }];
-              });
-            }
-          } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
-          }
+            const c = JSON.parse(js).choices?.[0]?.delta?.content as string | undefined;
+            if (c) { assistantSoFar += c; setMessages((prev) => { const last = prev[prev.length - 1]; if (last?.role === "assistant") return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m); return [...prev, { role: "assistant", content: assistantSoFar }]; }); }
+          } catch { textBuffer = line + "\n" + textBuffer; break; }
         }
       }
     } catch (e: any) {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: `⚠️ ${e.message || "Something went wrong. Try again."}` },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
+      setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${e.message || "Something went wrong."}` }]);
+    } finally { setIsLoading(false); }
   };
 
-  const sportInjuryCount = injuries.filter((inj) => {
-    const teamAbbrs = new Set(allTeams.filter((t) => t.sport === sport).map((t) => t.abbreviation));
-    return teamAbbrs.has(inj.teamAbbr);
-  }).length;
+  const sportInjuryCount = injuries.filter((inj) => { const ta = new Set(allTeams.filter((t) => t.sport === sport).map((t) => t.abbreviation)); return ta.has(inj.teamAbbr); }).length;
+  const sportPropCount = propLines.filter((p) => p.sport === sport).length;
+  const sportGameCount = allGames.filter((g) => g.sport === sport).length;
+  const prompts = advanced ? advancedQuickPrompts : simpleQuickPrompts;
 
   return (
     <div className="container flex h-[calc(100vh-3.5rem)] flex-col py-4">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-            <Bot size={20} className="text-primary-foreground" />
+          <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${advanced ? "bg-primary" : "bg-green-600"}`}>
+            {advanced ? <BarChart3 size={20} className="text-primary-foreground" /> : <Sparkles size={20} className="text-white" />}
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">AI Prop Builder</h1>
+            <h1 className="text-xl font-bold text-foreground">
+              {advanced ? "Pro Analyst" : "Quick Picks"}
+            </h1>
             <p className="text-xs text-muted-foreground">
-              Analysis, picks & parlays powered by AI
+              {advanced ? "Deep statistical analysis & edge detection" : "Tap a button, get winning bets 🎉"}
             </p>
           </div>
         </div>
 
-        {/* Advanced toggle */}
-        <button
-          onClick={() => setAdvanced((v) => !v)}
-          className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all ${
-            advanced
-              ? "border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20"
-              : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
-          }`}
-        >
-          <Zap size={14} className={advanced ? "text-primary" : ""} />
-          Advanced
-          {advanced && (
-            <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary">ON</span>
-          )}
-        </button>
+        {/* Mode toggle */}
+        <div className="flex items-center rounded-xl border border-border bg-card p-0.5">
+          <button
+            onClick={() => setAdvanced(false)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+              !advanced ? "bg-green-600 text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            😎 Easy
+          </button>
+          <button
+            onClick={() => setAdvanced(true)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+              advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span className="flex items-center gap-1">
+              <Zap size={12} /> Pro
+            </span>
+          </button>
+        </div>
       </div>
 
-      <div className="mb-3 flex items-center gap-3">
+      <div className="mb-3">
         <SportFilter active={sport} onChange={setSport} />
       </div>
 
-      {/* Advanced mode indicator */}
+      {/* Advanced info bar */}
       {advanced && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-2.5">
-          <Shield size={14} className="text-primary" />
-          <span className="text-xs font-medium text-primary">Deep analysis mode</span>
-          <span className="text-[10px] text-muted-foreground">
-            Sending injuries ({sportInjuryCount}), H2H matchup history, full player stats (season/L10/L5), team standings & game lines
-          </span>
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2">
+          <Shield size={13} className="text-primary" />
+          <span className="text-[11px] font-medium text-primary">Feeding AI:</span>
+          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{sportPropCount} props</span>
+          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{sportGameCount} games</span>
+          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{sportInjuryCount} injuries</span>
+          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">H2H + standings</span>
         </div>
       )}
 
       {/* Chat area */}
       <div className="flex-1 overflow-y-auto rounded-xl border border-border bg-card/50 p-4">
         {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-              <Sparkles size={32} className="text-primary" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-foreground">
-                What do you want to bet on?
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {advanced
-                  ? `Deep mode: injuries, H2H, full stats for ${propLines.filter((p) => p.sport === sport).length} props`
-                  : `Analyzing ${propLines.filter((p) => p.sport === sport).length} props across 4 sportsbooks`}
-              </p>
-            </div>
-            <div className="grid w-full max-w-lg gap-2">
-              {quickPrompts.map((qp) => (
-                <button
-                  key={qp.label}
-                  onClick={() => send(qp.prompt)}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/30 hover:bg-secondary"
-                >
-                  <qp.icon size={18} className="shrink-0 text-primary" />
-                  <span className="text-sm font-medium text-foreground">{qp.label}</span>
-                </button>
-              ))}
-            </div>
+          <div className="flex h-full flex-col items-center justify-center gap-5">
+            {!advanced ? (
+              <>
+                {/* Simple mode: big friendly hero */}
+                <div className="text-center">
+                  <p className="text-4xl">🎰</p>
+                  <h2 className="mt-3 text-xl font-bold text-foreground">
+                    What do you wanna bet on?
+                  </h2>
+                  <p className="mt-1.5 text-sm text-muted-foreground">
+                    Just tap a button — I'll do the rest 👇
+                  </p>
+                </div>
+                <div className="grid w-full max-w-md gap-2.5">
+                  {prompts.map((qp) => (
+                    <button
+                      key={qp.label}
+                      onClick={() => send(qp.prompt)}
+                      className="flex items-center gap-3.5 rounded-2xl border border-border bg-card p-4 text-left transition-all hover:scale-[1.01] hover:border-green-500/30 hover:shadow-md active:scale-[0.99]"
+                    >
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-600/10">
+                        <qp.icon size={20} className="text-green-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground">{qp.label}</p>
+                        <p className="text-xs text-muted-foreground">{qp.description}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  Or just type what you want below ↓
+                </p>
+              </>
+            ) : (
+              <>
+                {/* Advanced mode: technical hero */}
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                  <BarChart3 size={28} className="text-primary" />
+                </div>
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Statistical Analysis Engine
+                  </h2>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {sportPropCount} props · {sportGameCount} games · {sportInjuryCount} injuries · H2H · L10/L5 splits
+                  </p>
+                </div>
+                <div className="grid w-full max-w-lg gap-2">
+                  {prompts.map((qp) => (
+                    <button
+                      key={qp.label}
+                      onClick={() => send(qp.prompt)}
+                      className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/30 hover:bg-secondary"
+                    >
+                      <qp.icon size={16} className="shrink-0 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{qp.label}</p>
+                        <p className="text-[11px] text-muted-foreground">{qp.description}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
             {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-foreground"
-                  }`}
-                >
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
                   <div className="whitespace-pre-wrap">{msg.content}</div>
                 </div>
               </div>
@@ -378,14 +368,14 @@ export default function AIPropBuilderPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send(input)}
-          placeholder={advanced ? "Ask for deep analysis with injuries & H2H..." : "Ask about props, parlays, or specific players..."}
+          placeholder={advanced ? "Query: e.g. 'edge analysis on Mahomes pass yards L5 trend vs spread'" : "Type anything… like 'who scores the most tonight?'"}
           className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
           disabled={isLoading}
         />
         <button
           onClick={() => send(input)}
           disabled={!input.trim() || isLoading}
-          className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+          className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors disabled:opacity-50 ${advanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-green-600 text-white hover:bg-green-700"}`}
         >
           <Send size={18} />
         </button>
