@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
 
     if (type === 'schedule') {
       // Fetch daily schedule for the competition
-      const url = `${SR_BASE}/oddscomparison-player-props/trial/v2/en/sports/${encodeURIComponent(sportId)}/schedules/${date}/sport_events.json?api_key=${apiKey}`;
+      const url = `${SR_BASE}/oddscomparison-player-props/trial/v2/en/sports/${sportId}/schedules/${date}/sport_events.json?api_key=${apiKey}`;
       console.log('Fetching SR schedule:', url.replace(apiKey, '***'));
 
       const res = await fetch(url);
@@ -199,7 +199,7 @@ Deno.serve(async (req) => {
 
     // Default: fetch player props
     // Try daily sport player props endpoint
-    const url = `${SR_BASE}/oddscomparison-player-props/trial/v2/en/sports/${encodeURIComponent(sportId)}/schedules/${date}/sport_events_player_props.json?api_key=${apiKey}`;
+    const url = `${SR_BASE}/oddscomparison-player-props/trial/v2/en/sports/${sportId}/schedules/${date}/sport_events_player_props.json?api_key=${apiKey}`;
     console.log('Fetching SR player props:', url.replace(apiKey, '***'));
 
     const res = await fetch(url);
