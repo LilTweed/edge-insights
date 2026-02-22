@@ -2,31 +2,48 @@ import { propLines, type Sport } from "@/data/mockData";
 import PropCard from "@/components/PropCard";
 import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
+import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
 import { useState, useMemo } from "react";
 import { Share2, Search, ArrowUpDown } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 
+const defaultAdvanced: AdvancedFilters = {
+  teams: [],
+  players: [],
+  stats: [],
+  minHitRate: 0,
+  minLine: null,
+  maxLine: null,
+};
+
 const PropsPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");
-  const [activeFilter, setActiveFilter] = useState("All");
   const [exportOpen, setExportOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("hitRate");
   const [sortAsc, setSortAsc] = useState(false);
-  const [minHitRate, setMinHitRate] = useState(0);
+  const [advanced, setAdvanced] = useState<AdvancedFilters>(defaultAdvanced);
 
   const sportProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
-  const statFilters = useMemo(() => {
-    const stats = Array.from(new Set(sportProps.map((p) => p.stat)));
-    return ["All", ...stats];
-  }, [sportProps]);
+
+  // Derive available filter options from the current sport's props
+  const availableTeams = useMemo(() => Array.from(new Set(sportProps.map((p) => p.teamAbbr))).sort(), [sportProps]);
+  const availablePlayers = useMemo(() => Array.from(new Set(sportProps.map((p) => p.playerName))).sort(), [sportProps]);
+  const availableStats = useMemo(() => Array.from(new Set(sportProps.map((p) => p.stat))).sort(), [sportProps]);
 
   const filtered = useMemo(() => {
-    let list = sportProps
-      .filter((p) => activeFilter === "All" || p.stat === activeFilter)
-      .filter((p) => p.hitRate >= minHitRate);
+    let list = sportProps;
 
+    // Advanced per-field filters
+    if (advanced.teams.length > 0) list = list.filter((p) => advanced.teams.includes(p.teamAbbr));
+    if (advanced.players.length > 0) list = list.filter((p) => advanced.players.includes(p.playerName));
+    if (advanced.stats.length > 0) list = list.filter((p) => advanced.stats.includes(p.stat));
+    if (advanced.minHitRate > 0) list = list.filter((p) => p.hitRate >= advanced.minHitRate);
+    if (advanced.minLine !== null) list = list.filter((p) => p.line >= advanced.minLine!);
+    if (advanced.maxLine !== null) list = list.filter((p) => p.line <= advanced.maxLine!);
+
+    // Text search
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -51,7 +68,7 @@ const PropsPage = () => {
     });
 
     return list;
-  }, [sportProps, activeFilter, search, sortBy, sortAsc, minHitRate]);
+  }, [sportProps, advanced, search, sortBy, sortAsc]);
 
   const toggleSort = (key: SortKey) => {
     if (sortBy === key) setSortAsc(!sortAsc);
@@ -80,52 +97,34 @@ const PropsPage = () => {
         <SportFilter active={sport} onChange={setSport} />
       </div>
 
-      {/* Search + filters bar */}
+      {/* Advanced search panel */}
+      <div className="mb-4">
+        <AdvancedSearch
+          availableTeams={availableTeams}
+          availablePlayers={availablePlayers}
+          availableStats={availableStats}
+          filters={advanced}
+          onChange={setAdvanced}
+        />
+      </div>
+
+      {/* Search + sort bar */}
       <div className="mb-4 space-y-3">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search player, team, or stat…"
+            placeholder="Quick search player, team, or stat…"
             className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Stat filters */}
-          <div className="flex flex-wrap gap-1.5">
-            {statFilters.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={
-                  activeFilter === filter
-                    ? "rounded-lg bg-primary px-3.5 py-1.5 text-xs font-medium text-primary-foreground transition-colors"
-                    : "rounded-lg bg-secondary px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                }
-              >
-                {filter}
-              </button>
-            ))}
+        <div className="flex items-center justify-between">
+          <div className="text-[11px] text-muted-foreground">
+            {filtered.length} prop{filtered.length !== 1 ? "s" : ""}
           </div>
-
-          <div className="ml-auto flex items-center gap-2">
-            {/* Min hit rate filter */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5">
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap">Min HR:</span>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={minHitRate}
-                onChange={(e) => setMinHitRate(Number(e.target.value) || 0)}
-                className="w-12 bg-transparent text-xs text-foreground outline-none"
-              />
-              <span className="text-[10px] text-muted-foreground">%</span>
-            </div>
-
-            {/* Sort buttons */}
+          <div className="flex items-center gap-2">
             {([["hitRate", "Hit Rate"], ["line", "Line"], ["player", "Name"], ["edge", "Edge"]] as [SortKey, string][]).map(([key, label]) => (
               <button
                 key={key}
@@ -142,10 +141,6 @@ const PropsPage = () => {
             ))}
           </div>
         </div>
-
-        <div className="text-[11px] text-muted-foreground">
-          {filtered.length} prop{filtered.length !== 1 ? "s" : ""}
-        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -160,7 +155,7 @@ const PropsPage = () => {
       <ExportableDataView
         open={exportOpen}
         onClose={() => setExportOpen(false)}
-        title={`${sport} Props${activeFilter !== "All" ? ` — ${activeFilter}` : ""}`}
+        title={`${sport} Props${advanced.stats.length > 0 ? ` — ${advanced.stats.join(", ")}` : ""}`}
         props={filtered}
       />
     </div>
