@@ -95,6 +95,9 @@ const PropsPage = () => {
           <p className="mt-1 text-sm text-muted-foreground">
             Compare lines across FanDuel, DraftKings, Fanatics & BetMGM
           </p>
+          <p className="mt-0.5 flex items-center gap-1 text-[10px] text-amber-500 font-medium">
+            ⚠️ Sample data — connect a real odds API for live lines
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {/* View mode toggle */}

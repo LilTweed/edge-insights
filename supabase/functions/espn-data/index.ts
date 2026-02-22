@@ -184,29 +184,40 @@ function parseAthleteStats(data: any) {
     career: null,
   };
 
-  // Parse athlete info - may be in data.athlete or filters
-  const athleteData = data?.athlete || data?.filters?.find((f: any) => f.displayName === 'Athlete')?.athletes?.[0];
-  if (athleteData) {
+  // Parse athlete info - check multiple possible locations in ESPN response
+  const athleteData = data?.athlete 
+    || data?.filters?.find((f: any) => f.displayName === 'Athlete')?.athletes?.[0]
+    || data?.results?.[0]?.athlete;
+  
+  // Also try to extract from teams array if athlete is nested there
+  const teamAthleteData = !athleteData && data?.teams?.[0]?.athlete ? data.teams[0].athlete : null;
+  const finalAthlete = athleteData || teamAthleteData;
+  
+  if (finalAthlete) {
     result.athlete = {
-      id: athleteData.id,
-      name: athleteData.displayName || athleteData.fullName,
-      team: athleteData.team?.displayName || '',
-      teamAbbr: athleteData.team?.abbreviation || '',
-      position: athleteData.position?.abbreviation || '',
-      number: athleteData.jersey || '',
-      headshot: athleteData.headshot?.href || '',
+      id: finalAthlete.id,
+      name: finalAthlete.displayName || finalAthlete.fullName,
+      team: finalAthlete.team?.displayName || '',
+      teamAbbr: finalAthlete.team?.abbreviation || '',
+      position: finalAthlete.position?.abbreviation || '',
+      number: finalAthlete.jersey || '',
+      headshot: finalAthlete.headshot?.href || '',
     };
   }
 
-  // The stats come in "categories" - each category has labels and "statistics" (season-by-season rows)
+  // The stats come in "categories" - each category has labels and statistics/splitCategories
   const categories = data?.categories || [];
   
-  for (const cat of categories) {
+  // Also check teams[].categories which ESPN sometimes uses
+  const teamCategories = data?.teams?.[0]?.categories || [];
+  const allCategories = [...categories, ...teamCategories];
+  
+  for (const cat of allCategories) {
     const categoryName = cat.displayName || cat.name || 'Stats';
     const labels: string[] = cat.labels || [];
     
-    // ESPN uses "statistics" key for the season rows, not "stats"
-    const statSplits = cat.statistics || cat.stats || cat.splitCategories || [];
+    // ESPN uses "statistics" key for the season rows
+    const statSplits = cat.statistics || cat.stats || [];
     
     if (Array.isArray(statSplits) && statSplits.length > 0) {
       for (const split of statSplits) {
@@ -229,10 +240,36 @@ function parseAthleteStats(data: any) {
         }
       }
     }
+    
+    // Handle splitCategories (deeper nesting ESPN sometimes uses)
+    const splitCats = cat.splitCategories || [];
+    for (const sc of splitCats) {
+      const scName = sc.displayName || sc.name || '';
+      const splits = sc.splits || sc.stats || [];
+      for (const split of splits) {
+        const splitName = split.displayName || split.name || '';
+        const values: string[] = split.displayValues || split.stats?.map((s: any) => String(s)) || [];
+        
+        const statObj: Record<string, string> = {};
+        labels.forEach((abbr: string, i: number) => {
+          if (values[i] !== undefined) {
+            statObj[abbr] = values[i];
+          }
+        });
+        
+        if (Object.keys(statObj).length > 0) {
+          result.seasons.push({
+            season: `${splitName}${scName ? ` (${scName})` : ''}`,
+            category: categoryName,
+            stats: statObj,
+          });
+        }
+      }
+    }
   }
   
   // Also add totals if available
-  for (const cat of categories) {
+  for (const cat of allCategories) {
     const categoryName = cat.displayName || cat.name || 'Stats';
     const labels: string[] = cat.labels || [];
     const totals = cat.totals;

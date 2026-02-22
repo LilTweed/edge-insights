@@ -152,8 +152,8 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
           )}
 
           <div className="mt-2.5 text-center">
-            <span className="text-[10px] text-muted-foreground">
-              Based on {prop.gamesPlayed} games played · Hit rates reflect actual results, not projections
+            <span className="text-[10px] text-amber-500/80">
+              ⚠️ Sample data — not live odds. Connect a real odds API for accurate lines.
             </span>
           </div>
         </>
