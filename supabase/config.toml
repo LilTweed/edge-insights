@@ -1,10 +1,4 @@
 project_id = "hwbhfjoikkwuzobhordy"
 
-[functions.hltv-scraper]
-verify_jwt = false
-
 [functions.ai-prop-builder]
-verify_jwt = false
-
-[functions.espn-data]
 verify_jwt = false
