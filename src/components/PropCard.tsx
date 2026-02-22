@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 interface PropCardProps {
   prop: PropLine;
   showPlayer?: boolean;
+  onAddToSlip?: (prop: PropLine, side: "over" | "under") => void;
 }
 
 /** Convert American odds to implied probability % */
@@ -13,7 +14,7 @@ const impliedProb = (odds: number): number => {
   return (100 / (odds + 100)) * 100;
 };
 
-const PropCard = ({ prop, showPlayer = true }: PropCardProps) => {
+const PropCard = ({ prop, showPlayer = true, onAddToSlip }: PropCardProps) => {
   // Compute consensus implied probability from all sportsbooks (average of over odds)
   const avgImpliedOver = prop.sportsbooks.reduce((sum, sb) => sum + impliedProb(sb.over), 0) / prop.sportsbooks.length;
   const avgImpliedUnder = prop.sportsbooks.reduce((sum, sb) => sum + impliedProb(sb.under), 0) / prop.sportsbooks.length;
@@ -150,6 +151,24 @@ const PropCard = ({ prop, showPlayer = true }: PropCardProps) => {
           ))}
         </div>
       </div>
+
+      {/* Quick add to slip */}
+      {onAddToSlip && (
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            onClick={() => onAddToSlip(prop, "over")}
+            className="flex-1 rounded-lg border border-border bg-secondary/50 py-1.5 text-[10px] font-bold text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary transition-colors"
+          >
+            + Over {prop.line}
+          </button>
+          <button
+            onClick={() => onAddToSlip(prop, "under")}
+            className="flex-1 rounded-lg border border-border bg-secondary/50 py-1.5 text-[10px] font-bold text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary transition-colors"
+          >
+            + Under {prop.line}
+          </button>
+        </div>
+      )}
 
       <div className="mt-2.5 text-center">
         <span className="text-[10px] text-muted-foreground">
