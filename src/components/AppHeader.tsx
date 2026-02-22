@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Games", path: "/" },
   { label: "Props", path: "/props" },
+  { label: "AI Builder", path: "/ai-props" },
   { label: "Players", path: "/players" },
   { label: "Teams", path: "/teams" },
 ];
