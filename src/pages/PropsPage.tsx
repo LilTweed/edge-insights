@@ -1,4 +1,5 @@
 import { propLines, allGames, type Sport, type PropLine, type Game, formatOdds } from "@/data/mockData";
+import HitRateTransparencyPanel from "@/components/HitRateTransparencyPanel";
 import PropCard from "@/components/PropCard";
 import SportsbookComparisonWidget from "@/components/SportsbookComparisonWidget";
 import SportFilter from "@/components/SportFilter";
@@ -9,7 +10,7 @@ import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
 import { useLiveOdds } from "@/hooks/useLiveOdds";
 import { useSportsRadarSchedule } from "@/hooks/useSportsRadar";
 import { useState, useMemo } from "react";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw, Eye, EyeOff, DollarSign, TrendingUp, Users } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw, DollarSign, TrendingUp, Users } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 type ViewMode = "basic" | "advanced" | "compare";
@@ -36,7 +37,7 @@ const PropsPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("advanced");
   const [scoresOpen, setScoresOpen] = useState(true);
   const [liveMode, setLiveMode] = useState(false);
-  const [showHitRates, setShowHitRates] = useState(false);
+  
   const [activeTab, setActiveTab] = useState<PropsTab>("props");
 
   const isEspnSport = ESPN_SPORTS.includes(sport as EspnSport);
@@ -364,48 +365,9 @@ const PropsPage = () => {
             </div>
           </div>
 
-          {/* Hit Rate per Stat toggle */}
+          {/* Hit Rate Transparency Panel */}
           <div className="mb-4">
-            <button
-              onClick={() => setShowHitRates(!showHitRates)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-[10px] font-bold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
-            >
-              {showHitRates ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              {showHitRates ? "Hide" : "Show"} Hit Rates by Stat
-            </button>
-            {showHitRates && hitRateByStat.length > 0 && (
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {hitRateByStat.map(({ stat, avgHitRate, avgHitRateL10, count }) => (
-                  <div key={stat} className="rounded-xl border border-border bg-card p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">{stat}</span>
-                      <span className="text-[10px] text-muted-foreground">{count} prop{count !== 1 ? "s" : ""}</span>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                        <span>Season Avg</span>
-                        <span className="font-mono font-semibold text-foreground">{avgHitRate}%</span>
-                      </div>
-                      <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-l-full bg-foreground/30 transition-all" style={{ width: `${avgHitRate}%` }} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                        <span>Last 10 Avg</span>
-                        <span className="font-mono font-semibold text-foreground">{avgHitRateL10}%</span>
-                      </div>
-                      <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-l-full bg-foreground/20 transition-all" style={{ width: `${avgHitRateL10}%` }} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {showHitRates && hitRateByStat.length === 0 && (
-              <p className="mt-3 text-xs text-muted-foreground">No props available to calculate hit rates</p>
-            )}
+            <HitRateTransparencyPanel props={filtered} hitRateByStat={hitRateByStat} />
           </div>
 
           {viewMode === "compare" ? (
