@@ -6,8 +6,9 @@ import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
 import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
+import { useLiveOdds } from "@/hooks/useLiveOdds";
 import { useState, useMemo } from "react";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2 } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 type ViewMode = "basic" | "advanced" | "compare";
@@ -32,12 +33,23 @@ const PropsPage = () => {
   const [advanced, setAdvanced] = useState<AdvancedFilters>(defaultAdvanced);
   const [viewMode, setViewMode] = useState<ViewMode>("advanced");
   const [scoresOpen, setScoresOpen] = useState(true);
+  const [liveMode, setLiveMode] = useState(false);
 
   const isEspnSport = ESPN_SPORTS.includes(sport as EspnSport);
   const scoreboard = useLiveScoreboard(isEspnSport ? (sport as EspnSport) : "NBA");
   const games = isEspnSport ? (scoreboard.data?.games || []) : [];
 
-  const sportProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
+  // Live odds from The Odds API
+  const { data: liveOddsData, isLoading: liveLoading, isFetching: liveFetching } = useLiveOdds(
+    sport as EspnSport,
+    liveMode && isEspnSport
+  );
+
+  const mockProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
+  
+  // Use live data when enabled and available, otherwise fall back to mock
+  const isLiveActive = liveMode && liveOddsData && !liveOddsData.needsApiKey && liveOddsData.props.length > 0;
+  const sportProps = isLiveActive ? liveOddsData.props : mockProps;
 
   // Derive available filter options from the current sport's props
   const availableTeams = useMemo(() => Array.from(new Set(sportProps.map((p) => p.teamAbbr))).sort(), [sportProps]);
@@ -95,11 +107,41 @@ const PropsPage = () => {
           <p className="mt-1 text-sm text-muted-foreground">
             Compare lines across FanDuel, DraftKings, Fanatics & BetMGM
           </p>
-          <p className="mt-0.5 flex items-center gap-1 text-[10px] text-amber-500 font-medium">
-            ⚠️ Sample data — connect a real odds API for live lines
-          </p>
+          {!liveMode && (
+            <p className="mt-0.5 flex items-center gap-1 text-[10px] text-destructive/70 font-medium">
+              <AlertTriangle className="h-3 w-3" />
+              Sample data — toggle Live to connect real odds
+            </p>
+          )}
+          {liveMode && liveOddsData?.needsApiKey && (
+            <p className="mt-0.5 flex items-center gap-1 text-[10px] text-destructive/70 font-medium">
+              <AlertTriangle className="h-3 w-3" />
+              API key needed — add ODDS_API_KEY in backend secrets
+            </p>
+          )}
+          {isLiveActive && (
+            <p className="mt-0.5 flex items-center gap-1 text-[10px] text-primary font-medium">
+              <Zap className="h-3 w-3" />
+              Live odds · {liveOddsData.props.length} props · Updated {new Date(liveOddsData.fetchedAt).toLocaleTimeString()}
+              {liveFetching && <RefreshCw className="h-2.5 w-2.5 animate-spin" />}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          {/* Live / Sample data toggle */}
+          <button
+            onClick={() => setLiveMode(!liveMode)}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[10px] font-bold transition-all ${
+              liveMode
+                ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+            }`}
+          >
+            {liveMode ? <Zap className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+            {liveMode ? "Live" : "Sample"}
+            {liveLoading && <RefreshCw className="h-3 w-3 animate-spin" />}
+          </button>
+
           {/* View mode toggle */}
           <div className="inline-flex rounded-lg border border-border bg-card overflow-hidden">
             <button
