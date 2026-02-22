@@ -23,7 +23,7 @@ const PropsPage = () => {
       </div>
 
       <div className="mb-4">
-        <SportFilter active={sport} onChange={setSport} sports={["NBA", "NCAAB"]} />
+        <SportFilter active={sport} onChange={setSport} />
       </div>
 
       <div className="mb-5 flex gap-1.5">

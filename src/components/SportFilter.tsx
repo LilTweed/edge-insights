@@ -6,18 +6,23 @@ interface SportFilterProps {
   sports?: Sport[];
 }
 
-const defaultSports: Sport[] = ["NBA", "NCAAB", "NCAAF"];
+const defaultSports: Sport[] = ["NBA", "NFL", "NCAAB", "NCAAF", "MLB", "NHL", "LOL", "CS2", "VAL"];
 
 const sportLabels: Record<Sport, string> = {
   NBA: "NBA",
+  NFL: "NFL",
   NCAAB: "College BBall",
   NCAAF: "College FB",
-  NFL: "NFL",
+  MLB: "MLB",
+  NHL: "NHL",
+  LOL: "League of Legends",
+  CS2: "CS2",
+  VAL: "Valorant",
 };
 
 const SportFilter = ({ active, onChange, sports = defaultSports }: SportFilterProps) => {
   return (
-    <div className="flex gap-1.5">
+    <div className="flex flex-wrap gap-1.5">
       {sports.map((sport) => (
         <button
           key={sport}

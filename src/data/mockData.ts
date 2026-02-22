@@ -1,7 +1,8 @@
 // Mock data layer for sports stats app
 // All statistics are structured to be accurate representations
+import { nflTeams, nflGames, nflPlayers, nflProps, mlbTeams, mlbGames, mlbPlayers, mlbProps, nhlTeams, nhlGames, nhlPlayers, nhlProps, esportsTeams, esportsGames } from "./extraSports";
 
-export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL";
+export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL" | "MLB" | "NHL" | "LOL" | "CS2" | "VAL";
 export type Sportsbook = "FanDuel" | "DraftKings" | "Fanatics" | "BetMGM";
 
 export interface Team {
@@ -183,7 +184,7 @@ export const ncaafTeams: Team[] = [
   { id: "ore_fb", name: "Ducks", abbreviation: "ORE", city: "Oregon", record: "12-1", conference: "Big Ten", division: "Big Ten", sport: "NCAAF", ranking: 4, stats: { ppg: 37.5, oppPpg: 18.2, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0.9, steals: 0, blocks: 0, ypg: 458.5, rushYpg: 188.8, passYpg: 269.7, oppYpg: 325.2, thirdDownPct: 47.5, redZonePct: 87.2, sacks: 35, takeaways: 20 } },
 ];
 
-export const allTeams: Team[] = [...nbaTeams, ...ncaabTeams, ...ncaafTeams];
+export const allTeams: Team[] = [...nbaTeams, ...ncaabTeams, ...ncaafTeams, ...nflTeams, ...mlbTeams, ...nhlTeams, ...esportsTeams];
 
 // ===================== MATCHUP HISTORY =====================
 
@@ -397,7 +398,7 @@ export const ncaabPlayers: Player[] = [
   },
 ];
 
-export const allPlayers: Player[] = [...nbaPlayers, ...ncaabPlayers];
+export const allPlayers: Player[] = [...nbaPlayers, ...ncaabPlayers, ...nflPlayers, ...mlbPlayers, ...nhlPlayers];
 
 // ===================== GAMES =====================
 
@@ -519,7 +520,7 @@ export const collegeGames: Game[] = [
   },
 ];
 
-export const allGames: Game[] = [...nbaGames, ...collegeGames];
+export const allGames: Game[] = [...nbaGames, ...collegeGames, ...nflGames, ...mlbGames, ...nhlGames, ...esportsGames];
 
 // ===================== PROPS =====================
 
@@ -547,6 +548,9 @@ export const propLines: PropLine[] = [
   { id: "cp4", playerId: "cc_duk", playerName: "Cooper Flagg", teamAbbr: "DUKE", stat: "Points", line: 19.5, gamesPlayed: 28, sport: "NCAAB", hitRate: calcHitRate(20.1, 19.5), hitRateLast10: calcHitRate(22.5, 19.5), sportsbooks: [{ sportsbook: "FanDuel", line: 19.5, over: -115, under: -105 }, { sportsbook: "DraftKings", line: 20.0, over: -110, under: -110 }, { sportsbook: "Fanatics", line: 19.5, over: -112, under: -108 }, { sportsbook: "BetMGM", line: 20.5, over: -105, under: -115 }] },
   { id: "cp5", playerId: "cc_duk", playerName: "Cooper Flagg", teamAbbr: "DUKE", stat: "Rebounds", line: 8.5, gamesPlayed: 28, sport: "NCAAB", hitRate: calcHitRate(8.5, 8.5), hitRateLast10: calcHitRate(9.2, 8.5), sportsbooks: [{ sportsbook: "FanDuel", line: 8.5, over: -110, under: -110 }, { sportsbook: "DraftKings", line: 8.5, over: -108, under: -112 }, { sportsbook: "Fanatics", line: 8.5, over: -112, under: -108 }, { sportsbook: "BetMGM", line: 8.0, over: -118, under: -102 }] },
   { id: "cp6", playerId: "rj_unc", playerName: "RJ Davis", teamAbbr: "UNC", stat: "Points", line: 18.5, gamesPlayed: 27, sport: "NCAAB", hitRate: calcHitRate(18.5, 18.5), hitRateLast10: calcHitRate(19.8, 18.5), sportsbooks: [{ sportsbook: "FanDuel", line: 18.5, over: -110, under: -110 }, { sportsbook: "DraftKings", line: 18.5, over: -108, under: -112 }, { sportsbook: "Fanatics", line: 18.0, over: -115, under: -105 }, { sportsbook: "BetMGM", line: 19.0, over: -105, under: -115 }] },
+  ...nflProps,
+  ...mlbProps,
+  ...nhlProps,
 ];
 
 // ===================== HELPERS =====================
