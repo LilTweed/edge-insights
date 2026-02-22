@@ -9,6 +9,7 @@ import { useSubscription, type SubscriptionTier } from "@/hooks/useSubscription"
 const navItems = [
   { label: "Games", path: "/" },
   { label: "Props", path: "/props" },
+  { label: "Explore", path: "/explore" },
   { label: "Research", path: "/research" },
   { label: "AI Chat", path: "/ai-chat" },
 ];
