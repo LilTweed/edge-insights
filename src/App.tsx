@@ -24,6 +24,7 @@ import ResearchDashboard from "./pages/ResearchDashboard";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SportsRadarTestPage from "./pages/SportsRadarTestPage";
+import PricingPage from "./pages/PricingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/builder" element={<PropBuilderPage />} />
           <Route path="/notes" element={<StatNotesPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/research" element={<ResearchDashboard />} />
           {/* Legacy redirect */}
           <Route path="/ai-props" element={<AIChatPage />} />

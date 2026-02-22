@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeGate from "@/components/UpgradeGate";
 import {
   allPlayers,
   allTeams,
@@ -94,6 +96,7 @@ const ResearchDashboard = () => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { toggle, isFavorite } = useFavoriteTeams();
   const [selectedRosterTeamId, setSelectedRosterTeamId] = useState<string>("");
+  const { tier, isBasicOrAbove } = useSubscription();
 
   const isEspnSport = (ESPN_SPORTS as readonly string[]).includes(sport);
   const { data: espnTeams, isLoading: espnTeamsLoading } = useEspnTeams(sport as EspnSport);
@@ -222,6 +225,16 @@ const ResearchDashboard = () => {
     { key: "trends", label: "Trends", icon: Activity },
     { key: "matchups", label: "Matchups", icon: Swords },
   ];
+
+  if (!isBasicOrAbove) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Research Dashboard">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-6">
