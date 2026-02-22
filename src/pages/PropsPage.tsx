@@ -10,6 +10,8 @@ import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
 import { useLiveOdds } from "@/hooks/useLiveOdds";
 import { useSportsRadarSchedule } from "@/hooks/useSportsRadar";
 import { useState, useMemo } from "react";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeGate from "@/components/UpgradeGate";
 import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw, DollarSign, TrendingUp, Users } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
@@ -28,6 +30,7 @@ const defaultAdvanced: AdvancedFilters = {
 const ESPN_SPORTS: EspnSport[] = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"];
 
 const PropsPage = () => {
+  const { tier, isBasicOrAbove } = useSubscription();
   const [sport, setSport] = useState<Sport>("NBA");
   const [exportOpen, setExportOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -137,6 +140,16 @@ const PropsPage = () => {
     { key: "moneylines", label: "Money Lines", icon: DollarSign, count: filteredGames.filter((g) => g.moneyline.length > 0).length },
     { key: "overunders", label: "Over/Unders", icon: TrendingUp, count: filteredGames.filter((g) => g.overUnder.length > 0).length },
   ];
+
+  if (!isBasicOrAbove) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Props Overview">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-6">

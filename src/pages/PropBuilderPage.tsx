@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeGate from "@/components/UpgradeGate";
 import {
   propLines, type Sport, type PropLine, formatOdds,
 } from "@/data/mockData";
@@ -17,6 +19,7 @@ interface SlipLeg {
 const impliedProb = (odds: number) => odds < 0 ? (-odds / (-odds + 100)) * 100 : (100 / (odds + 100)) * 100;
 
 export default function PropBuilderPage() {
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
   const navigate = useNavigate();
   const [sport, setSport] = useState<Sport>("NBA");
   const [slip, setSlip] = useState<SlipLeg[]>([]);
@@ -60,6 +63,16 @@ export default function PropBuilderPage() {
   };
 
   const removeFromSlip = (id: string) => setSlip((prev) => prev.filter((l) => l.id !== id));
+
+  if (!hasAdvanced) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Prop Builder">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className="container flex h-[calc(100vh-3.5rem)] flex-col py-4">

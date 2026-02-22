@@ -1,24 +1,33 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Crown, HelpCircle, LogIn, LogOut, User } from "lucide-react";
+import { Crown, HelpCircle, Lock, LogIn, LogOut, User } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription, type SubscriptionTier } from "@/hooks/useSubscription";
 
-const navItems = [
-  { label: "Games", path: "/" },
-  { label: "Props", path: "/props" },
-  { label: "Explore", path: "/explore" },
-  { label: "Research", path: "/research" },
-  { label: "AI Chat", path: "/ai-chat" },
+type NavItem = { label: string; path: string; minTier: "free" | "basic" | "advanced" };
+
+const navItems: NavItem[] = [
+  { label: "Games", path: "/", minTier: "free" },
+  { label: "Props", path: "/props", minTier: "basic" },
+  { label: "Explore", path: "/explore", minTier: "basic" },
+  { label: "Research", path: "/research", minTier: "basic" },
+  { label: "AI Chat", path: "/ai-chat", minTier: "basic" },
 ];
 
 const AppHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { previewTier, setPreviewTier } = useSubscription();
+  const { previewTier, setPreviewTier, tier, isBasicOrAbove, isAdvanced } = useSubscription();
+
+  const hasAccess = (minTier: "free" | "basic" | "advanced") => {
+    const effectiveTier = previewTier ?? tier;
+    if (minTier === "free") return true;
+    if (minTier === "basic") return effectiveTier === "basic" || effectiveTier === "advanced";
+    return effectiveTier === "advanced";
+  };
 
   const tierOptions: { label: string; value: SubscriptionTier | null }[] = [
     { label: "Off", value: null },
@@ -38,20 +47,27 @@ const AppHeader = () => {
         </Link>
 
         <nav className="flex items-center gap-0.5">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "relative rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200",
-                location.pathname === item.path
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const locked = !hasAccess(item.minTier);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "relative rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200",
+                  location.pathname === item.path
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/80",
+                  locked && "opacity-60"
+                )}
+              >
+                <span className="flex items-center gap-1">
+                  {item.label}
+                  {locked && <Lock className="h-3 w-3" />}
+                </span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-0.5">

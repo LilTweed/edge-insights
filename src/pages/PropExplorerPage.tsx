@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeGate from "@/components/UpgradeGate";
 import { propLines, type Sport, type PropLine, formatOdds } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import { Link } from "react-router-dom";
@@ -124,6 +126,7 @@ const STAT_CATEGORIES: Record<string, string[]> = {
 // ─── Page ──────────────────────────────────────────────────────────
 
 const PropExplorerPage = () => {
+  const { tier, isBasicOrAbove } = useSubscription();
   const [sport, setSport] = useState<Sport>("NBA");
   const [search, setSearch] = useState("");
   const [selectedStat, setSelectedStat] = useState<string | null>(null);
@@ -149,6 +152,16 @@ const PropExplorerPage = () => {
   }, [allProps, selectedStat, minHitRate, search]);
 
   const hasFilters = selectedStat || minHitRate > 0 || search;
+
+  if (!isBasicOrAbove) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Prop Explorer">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-6 max-w-4xl">
