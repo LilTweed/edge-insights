@@ -7,12 +7,13 @@ interface Props {
   props: PropLine[];
 }
 
-const BOOKS: Sportsbook[] = ["FanDuel", "DraftKings", "Fanatics", "BetMGM"];
+const BOOKS: Sportsbook[] = ["FanDuel", "DraftKings", "Fanatics", "BetMGM", "Bovada"];
 const BOOK_SHORT: Record<Sportsbook, string> = {
   FanDuel: "FD",
   DraftKings: "DK",
   Fanatics: "FAN",
   BetMGM: "MGM",
+  Bovada: "BOV",
 };
 
 type SortCol = "player" | "stat" | "line" | Sportsbook;
@@ -98,7 +99,7 @@ const SportsbookComparisonWidget = ({ props }: Props) => {
         <div>
           <h3 className="text-sm font-bold text-foreground">Line Comparison</h3>
           <p className="text-[10px] text-muted-foreground">
-            Compare odds across FanDuel, DraftKings, Fanatics & BetMGM
+            Compare odds across FanDuel, DraftKings, Fanatics, BetMGM & Bovada
           </p>
         </div>
         <input

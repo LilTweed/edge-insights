@@ -3,7 +3,7 @@
 import { nflTeams, nflGames, nflPlayers, nflProps, mlbTeams, mlbGames, mlbPlayers, mlbProps, nhlTeams, nhlGames, nhlPlayers, nhlProps, ufcTeams, ufcGames, ufcPlayers, ufcProps, pgaTeams, pgaGames, pgaPlayers, pgaProps, mlsTeams, mlsGames, mlsPlayers, mlsProps, wnbaTeams, wnbaGames, wnbaPlayers, wnbaProps, nascarTeams, nascarGames, nascarPlayers, nascarProps, tennisTeams, tennisGames, tennisPlayers, tennisProps } from "./extraSports";
 
 export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL" | "MLB" | "NHL" | "UFC" | "PGA" | "MLS" | "WNBA" | "NASCAR" | "TENNIS";
-export type Sportsbook = "FanDuel" | "DraftKings" | "Fanatics" | "BetMGM";
+export type Sportsbook = "FanDuel" | "DraftKings" | "Fanatics" | "BetMGM" | "Bovada";
 
 export interface Team {
   id: string;
@@ -543,7 +543,40 @@ export const collegeGames: Game[] = [
   },
 ];
 
-export const allGames: Game[] = [...nbaGames, ...collegeGames, ...nflGames, ...mlbGames, ...nhlGames, ...ufcGames, ...pgaGames, ...mlsGames, ...wnbaGames, ...nascarGames, ...tennisGames];
+// Auto-inject Bovada lines into sportsbook arrays
+function addBovadaToSportsbooks<T extends { sportsbook: string }>(arr: T[]): T[] {
+  if (arr.some(s => s.sportsbook === "Bovada")) return arr;
+  // Base Bovada off first entry with slight variation
+  const base = arr[0];
+  if (!base) return arr;
+  const bovada = { ...base, sportsbook: "Bovada" as any };
+  // Vary numeric fields slightly
+  for (const key of Object.keys(bovada)) {
+    const val = (bovada as any)[key];
+    if (typeof val === "number" && key !== "sportsbook") {
+      const jitter = key === "total" || key === "line" ? (Math.random() > 0.5 ? 0.5 : 0) :
+        key === "home" || key === "away" ? Math.round((Math.random() - 0.5) * 10) :
+        Math.round((Math.random() - 0.5) * 6);
+      (bovada as any)[key] = val + jitter;
+    }
+  }
+  return [...arr, bovada];
+}
+
+function injectBovadaIntoGame(game: Game): Game {
+  return {
+    ...game,
+    moneyline: game.moneyline ? addBovadaToSportsbooks(game.moneyline) : game.moneyline,
+    spread: game.spread ? addBovadaToSportsbooks(game.spread) : game.spread,
+    overUnder: game.overUnder ? addBovadaToSportsbooks(game.overUnder) : game.overUnder,
+  };
+}
+
+function injectBovadaIntoProp(prop: PropLine): PropLine {
+  return { ...prop, sportsbooks: addBovadaToSportsbooks(prop.sportsbooks) };
+}
+
+export const allGames: Game[] = [...nbaGames, ...collegeGames, ...nflGames, ...mlbGames, ...nhlGames, ...ufcGames, ...pgaGames, ...mlsGames, ...wnbaGames, ...nascarGames, ...tennisGames].map(injectBovadaIntoGame);
 
 // ===================== PROPS =====================
 
@@ -580,7 +613,7 @@ export const propLines: PropLine[] = [
   ...wnbaProps,
   ...nascarProps,
   ...tennisProps,
-];
+].map(injectBovadaIntoProp);
 
 // ===================== HELPERS =====================
 
