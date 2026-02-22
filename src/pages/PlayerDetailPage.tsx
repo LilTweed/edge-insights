@@ -1,8 +1,10 @@
 import { useParams, Link } from "react-router-dom";
 import { getPlayer, getPropsForPlayer, injuries, matchupHistories, allGames, allTeams, allPlayers, formatOdds, getInjuryHistory } from "@/data/mockData";
 import { InjuryHistoryPanel, EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
+import ExportableDataView from "@/components/ExportableDataView";
 import PropCard from "@/components/PropCard";
 import { useState } from "react";
+import { Share2 } from "lucide-react";
 
 const getStatRows = (player: ReturnType<typeof getPlayer>) => {
   if (!player) return [];
@@ -106,6 +108,7 @@ const injuryStatusColor = (status: string) => {
 const PlayerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const player = getPlayer(id || "");
   const props = getPropsForPlayer(id || "");
 
@@ -144,16 +147,27 @@ const PlayerDetailPage = () => {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className={`rounded-lg border px-4 py-2 text-xs font-bold transition-all ${
-            showAdvanced
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-card text-muted-foreground hover:border-primary/40"
-          }`}
-        >
-          {showAdvanced ? "⚡ Advanced" : "📊 Advanced"}
-        </button>
+        <div className="flex items-center gap-2">
+          {props.length > 0 && (
+            <button
+              onClick={() => setExportOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              Export
+            </button>
+          )}
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className={`rounded-lg border px-4 py-2 text-xs font-bold transition-all ${
+              showAdvanced
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40"
+            }`}
+          >
+            {showAdvanced ? "⚡ Advanced" : "📊 Advanced"}
+          </button>
+        </div>
       </div>
 
       {/* Injury Alert */}
@@ -420,6 +434,13 @@ const PlayerDetailPage = () => {
           </div>
         </>
       )}
+
+      <ExportableDataView
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        title={`${player.name} — ${player.teamAbbr} Props`}
+        props={props}
+      />
     </div>
   );
 };
