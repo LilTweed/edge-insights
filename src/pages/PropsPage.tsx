@@ -4,10 +4,11 @@ import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
 import MiniSlipBuilder from "@/components/MiniSlipBuilder";
-import { useState, useMemo, useRef } from "react";
-import { Share2, Search, ArrowUpDown } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
+type ViewMode = "basic" | "advanced";
 
 const defaultAdvanced: AdvancedFilters = {
   teams: [],
@@ -25,6 +26,7 @@ const PropsPage = () => {
   const [sortBy, setSortBy] = useState<SortKey>("hitRate");
   const [sortAsc, setSortAsc] = useState(false);
   const [advanced, setAdvanced] = useState<AdvancedFilters>(defaultAdvanced);
+  const [viewMode, setViewMode] = useState<ViewMode>("advanced");
 
   const sportProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
 
@@ -85,13 +87,40 @@ const PropsPage = () => {
             Compare lines across FanDuel, DraftKings, Fanatics & BetMGM
           </p>
         </div>
-        <button
-          onClick={() => setExportOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
-        >
-          <Share2 className="h-3.5 w-3.5" />
-          Export
-        </button>
+        <div className="flex items-center gap-2">
+          {/* View mode toggle */}
+          <div className="inline-flex rounded-lg border border-border bg-card overflow-hidden">
+            <button
+              onClick={() => setViewMode("basic")}
+              className={`inline-flex items-center gap-1 px-3 py-2 text-[10px] font-semibold transition-colors ${
+                viewMode === "basic"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutList className="h-3.5 w-3.5" />
+              Basic
+            </button>
+            <button
+              onClick={() => setViewMode("advanced")}
+              className={`inline-flex items-center gap-1 px-3 py-2 text-[10px] font-semibold transition-colors ${
+                viewMode === "advanced"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Advanced
+            </button>
+          </div>
+          <button
+            onClick={() => setExportOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Export
+          </button>
+        </div>
       </div>
 
       <div className="mb-4">
@@ -149,8 +178,8 @@ const PropsPage = () => {
           <PropCard
             key={prop.id}
             prop={prop}
+            viewMode={viewMode}
             onAddToSlip={(p, side) => {
-              // Dispatch event for MiniSlipBuilder to pick up
               window.dispatchEvent(new CustomEvent("lvrg-add-to-slip", { detail: { prop: p, side } }));
             }}
           />
