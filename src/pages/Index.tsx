@@ -4,7 +4,7 @@ import GameCard from "@/components/GameCard";
 import SportFilter from "@/components/SportFilter";
 
 import LiveGameCard from "@/components/LiveGameCard";
-import { useLiveScoreboard } from "@/hooks/useEspnData";
+import { useUnifiedScoreboard } from "@/hooks/useUnifiedData";
 import { RefreshCw } from "lucide-react";
 
 const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"] as const;
@@ -20,7 +20,7 @@ const GamesPage = () => {
     isLoading,
     isFetching,
     dataUpdatedAt,
-  } = useLiveScoreboard(sport as EspnSport);
+  } = useUnifiedScoreboard(sport as EspnSport);
 
   // Fallback to mock data for esports
   const mockGames = allGames.filter((g) => g.sport === sport);

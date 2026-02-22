@@ -4,7 +4,8 @@ import { allPlayers } from "@/data/mockData";
 import PlayerCard from "@/components/PlayerCard";
 import EspnPlayerCard from "@/components/EspnPlayerCard";
 import SportFilter from "@/components/SportFilter";
-import { useEspnTeams, useTeamRoster, type EspnSport, type EspnRosterPlayer } from "@/hooks/useEspnData";
+import { useUnifiedTeams, useUnifiedRoster } from "@/hooks/useUnifiedData";
+import type { EspnSport, EspnRosterPlayer } from "@/hooks/useEspnData";
 import { RefreshCw, Search } from "lucide-react";
 
 const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"] as const;
@@ -18,8 +19,8 @@ const PlayersPage = () => {
   const isEspnSport = (ESPN_SPORTS as readonly string[]).includes(sport);
 
   // ESPN data
-  const { data: espnTeams, isLoading: teamsLoading } = useEspnTeams(sport as EspnSport);
-  const { data: roster, isLoading: rosterLoading } = useTeamRoster(
+  const { data: espnTeams, isLoading: teamsLoading } = useUnifiedTeams(sport as EspnSport);
+  const { data: roster, isLoading: rosterLoading } = useUnifiedRoster(
     sport as EspnSport,
     selectedTeamId || undefined
   );
@@ -29,7 +30,7 @@ const PlayersPage = () => {
   const effectiveTeamId = selectedTeamId || (teams.length > 0 ? teams[0].id : "");
 
   // Fetch roster for effective team
-  const { data: effectiveRoster, isLoading: effectiveRosterLoading } = useTeamRoster(
+  const { data: effectiveRoster, isLoading: effectiveRosterLoading } = useUnifiedRoster(
     sport as EspnSport,
     !selectedTeamId && effectiveTeamId ? effectiveTeamId : undefined
   );
