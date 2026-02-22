@@ -4,8 +4,9 @@ import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
 import MiniSlipBuilder from "@/components/MiniSlipBuilder";
+import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
 import { useState, useMemo } from "react";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 type ViewMode = "basic" | "advanced";
@@ -19,6 +20,8 @@ const defaultAdvanced: AdvancedFilters = {
   maxLine: null,
 };
 
+const ESPN_SPORTS: EspnSport[] = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF"];
+
 const PropsPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");
   const [exportOpen, setExportOpen] = useState(false);
@@ -27,6 +30,11 @@ const PropsPage = () => {
   const [sortAsc, setSortAsc] = useState(false);
   const [advanced, setAdvanced] = useState<AdvancedFilters>(defaultAdvanced);
   const [viewMode, setViewMode] = useState<ViewMode>("advanced");
+  const [scoresOpen, setScoresOpen] = useState(true);
+
+  const isEspnSport = ESPN_SPORTS.includes(sport as EspnSport);
+  const scoreboard = useLiveScoreboard(isEspnSport ? (sport as EspnSport) : "NBA");
+  const games = isEspnSport ? (scoreboard.data?.games || []) : [];
 
   const sportProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
 
@@ -127,7 +135,111 @@ const PropsPage = () => {
         <SportFilter active={sport} onChange={setSport} />
       </div>
 
-      {/* Advanced search panel */}
+      {/* Live Scores Panel */}
+      {isEspnSport && (
+        <div className="mb-4 rounded-xl border border-border bg-card overflow-hidden">
+          <button
+            onClick={() => setScoresOpen(!scoresOpen)}
+            className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-secondary/50"
+          >
+            <div className="flex items-center gap-2">
+              <Radio className="h-3.5 w-3.5 text-destructive animate-pulse" />
+              <span className="text-xs font-bold text-foreground">Live Scores</span>
+              <span className="text-[10px] text-muted-foreground">
+                {games.length} game{games.length !== 1 ? "s" : ""} · 30s refresh
+              </span>
+              {scoreboard.isFetching && (
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              )}
+            </div>
+            {scoresOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+          </button>
+
+          {scoresOpen && (
+            <div className="border-t border-border px-4 py-3">
+              {scoreboard.isLoading ? (
+                <p className="text-xs text-muted-foreground text-center py-4">Loading scores…</p>
+              ) : games.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">No games scheduled today</p>
+              ) : (
+                <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin">
+                  {games.map((game) => {
+                    const isLive = game.status === "in";
+                    const isFinal = game.status === "post";
+                    return (
+                      <div
+                        key={game.id}
+                        className={`flex-shrink-0 w-52 rounded-lg border p-3 space-y-2 ${
+                          isLive ? "border-destructive/30 bg-destructive/5" : "border-border bg-secondary/30"
+                        }`}
+                      >
+                        {/* Status */}
+                        <div className="flex items-center justify-between">
+                          {isLive ? (
+                            <span className="flex items-center gap-1 text-[9px] font-bold text-destructive">
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />
+                              LIVE
+                            </span>
+                          ) : isFinal ? (
+                            <span className="text-[9px] font-medium text-muted-foreground">Final</span>
+                          ) : (
+                            <span className="text-[9px] text-muted-foreground">
+                              {new Date(game.date).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                            </span>
+                          )}
+                          {game.broadcasts[0] && (
+                            <span className="text-[8px] text-muted-foreground">{game.broadcasts[0]}</span>
+                          )}
+                        </div>
+
+                        {/* Away */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            {game.awayTeam.logo && (
+                              <img src={game.awayTeam.logo} alt="" className="h-4 w-4 object-contain" />
+                            )}
+                            <span className="text-[11px] font-semibold text-foreground">{game.awayTeam.abbreviation}</span>
+                          </div>
+                          {(isLive || isFinal) && (
+                            <span className={`font-mono text-sm font-bold ${
+                              game.awayScore != null && game.homeScore != null && game.awayScore > game.homeScore
+                                ? "text-foreground" : "text-muted-foreground"
+                            }`}>{game.awayScore}</span>
+                          )}
+                        </div>
+
+                        {/* Home */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            {game.homeTeam.logo && (
+                              <img src={game.homeTeam.logo} alt="" className="h-4 w-4 object-contain" />
+                            )}
+                            <span className="text-[11px] font-semibold text-foreground">{game.homeTeam.abbreviation}</span>
+                          </div>
+                          {(isLive || isFinal) && (
+                            <span className={`font-mono text-sm font-bold ${
+                              game.homeScore != null && game.awayScore != null && game.homeScore > game.awayScore
+                                ? "text-foreground" : "text-muted-foreground"
+                            }`}>{game.homeScore}</span>
+                          )}
+                        </div>
+
+                        {/* O/U line */}
+                        {game.odds[0]?.overUnder != null && (
+                          <div className="text-[9px] font-mono text-muted-foreground text-center border-t border-border/50 pt-1.5">
+                            O/U {game.odds[0].overUnder} · SPR {game.odds[0].spread > 0 ? "+" : ""}{game.odds[0].spread}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="mb-4">
         <AdvancedSearch
           availableTeams={availableTeams}
