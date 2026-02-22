@@ -15,6 +15,8 @@ import TeamDetailPage from "./pages/TeamDetailPage";
 import AIChatPage from "./pages/AIChatPage";
 import PropBuilderPage from "./pages/PropBuilderPage";
 import StatNotesPage from "./pages/StatNotesPage";
+import TermsPage from "./pages/TermsPage";
+import DisclaimerModal from "./components/DisclaimerModal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <DisclaimerModal />
         <OnboardingTour />
         <AppHeader />
         <Routes>
@@ -38,6 +41,7 @@ const App = () => (
           <Route path="/ai-chat" element={<AIChatPage />} />
           <Route path="/builder" element={<PropBuilderPage />} />
           <Route path="/notes" element={<StatNotesPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           {/* Legacy redirect */}
           <Route path="/ai-props" element={<AIChatPage />} />
           <Route path="*" element={<NotFound />} />
