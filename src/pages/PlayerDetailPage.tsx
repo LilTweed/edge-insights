@@ -2,6 +2,85 @@ import { useParams, Link } from "react-router-dom";
 import { getPlayer, getPropsForPlayer } from "@/data/mockData";
 import PropCard from "@/components/PropCard";
 
+const getStatRows = (player: ReturnType<typeof getPlayer>) => {
+  if (!player) return [];
+  const avg = player.seasonAverages;
+  const l10 = player.last10;
+  const l5 = player.last5;
+  const sport = player.sport;
+
+  if (sport === "NFL") {
+    const pos = player.position;
+    if (pos === "QB") {
+      return [
+        { label: "Pass Yards/G", season: avg.points, last10: l10.points, last5: l5.points },
+        { label: "Pass TDs/G", season: avg.assists, last10: l10.assists, last5: l5.assists },
+        { label: "Comp %", season: avg.fgPct, last10: l10.fgPct, last5: l5.fgPct },
+        { label: "Rush Yards/G", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
+        { label: "INTs/G", season: avg.turnovers, last10: l10.turnovers, last5: l5.turnovers },
+        { label: "QBR", season: avg.ftPct, last10: l10.ftPct, last5: l5.ftPct },
+      ];
+    }
+    return [
+      { label: "Yards/G", season: avg.points, last10: l10.points, last5: l5.points },
+      { label: "TDs/G", season: avg.assists, last10: l10.assists, last5: l5.assists },
+      { label: "Receptions/G", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
+      { label: "Targets/G", season: avg.steals, last10: l10.steals, last5: l5.steals },
+      { label: "Fumbles/G", season: avg.turnovers, last10: l10.turnovers, last5: l5.turnovers },
+    ];
+  }
+
+  if (sport === "MLB") {
+    return [
+      { label: "Batting AVG", season: avg.fgPct, last10: l10.fgPct, last5: l5.fgPct },
+      { label: "Home Runs", season: avg.points, last10: l10.points, last5: l5.points },
+      { label: "RBI", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
+      { label: "Hits", season: avg.assists, last10: l10.assists, last5: l5.assists },
+      { label: "OPS", season: avg.threePct, last10: l10.threePct, last5: l5.threePct },
+      { label: "Stolen Bases", season: avg.steals, last10: l10.steals, last5: l5.steals },
+      { label: "Walks", season: avg.blocks, last10: l10.blocks, last5: l5.blocks },
+    ];
+  }
+
+  if (sport === "NHL") {
+    return [
+      { label: "Goals", season: avg.points, last10: l10.points, last5: l5.points },
+      { label: "Assists", season: avg.assists, last10: l10.assists, last5: l5.assists },
+      { label: "Points", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
+      { label: "+/-", season: avg.steals, last10: l10.steals, last5: l5.steals },
+      { label: "SOG", season: avg.blocks, last10: l10.blocks, last5: l5.blocks },
+      { label: "PIM", season: avg.turnovers, last10: l10.turnovers, last5: l5.turnovers },
+      { label: "TOI", season: avg.minutes, last10: l10.minutes, last5: l5.minutes },
+    ];
+  }
+
+  if (sport === "LOL" || sport === "CS2" || sport === "VAL") {
+    return [
+      { label: "Kills", season: avg.points, last10: l10.points, last5: l5.points },
+      { label: "Deaths", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
+      { label: "Assists", season: avg.assists, last10: l10.assists, last5: l5.assists },
+      { label: sport === "LOL" ? "CS/min" : "ADR", season: avg.steals, last10: l10.steals, last5: l5.steals },
+      { label: sport === "LOL" ? "KDA" : "K/D", season: avg.fgPct, last10: l10.fgPct, last5: l5.fgPct },
+      { label: sport === "LOL" ? "VS%" : "HS%", season: avg.threePct, last10: l10.threePct, last5: l5.threePct },
+      { label: sport === "LOL" ? "DPM" : "Rating", season: sport === "LOL" ? avg.blocks : avg.ftPct, last10: sport === "LOL" ? l10.blocks : l10.ftPct, last5: sport === "LOL" ? l5.blocks : l5.ftPct },
+    ];
+  }
+
+  // Basketball
+  return [
+    { label: "Points", season: avg.points, last10: l10.points, last5: l5.points },
+    { label: "Rebounds", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
+    { label: "Assists", season: avg.assists, last10: l10.assists, last5: l5.assists },
+    { label: "Steals", season: avg.steals, last10: l10.steals, last5: l5.steals },
+    { label: "Blocks", season: avg.blocks, last10: l10.blocks, last5: l5.blocks },
+    { label: "Turnovers", season: avg.turnovers, last10: l10.turnovers, last5: l5.turnovers },
+    { label: "Minutes", season: avg.minutes, last10: l10.minutes, last5: l5.minutes },
+    { label: "FG%", season: avg.fgPct, last10: l10.fgPct, last5: l5.fgPct },
+    { label: "3P%", season: avg.threePct, last10: l10.threePct, last5: l5.threePct },
+    { label: "FT%", season: avg.ftPct, last10: l10.ftPct, last5: l5.ftPct },
+  ];
+};
+
 const PlayerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const player = getPlayer(id || "");
@@ -16,22 +95,7 @@ const PlayerDetailPage = () => {
     );
   }
 
-  const avg = player.seasonAverages;
-  const l10 = player.last10;
-  const l5 = player.last5;
-
-  const statRows = [
-    { label: "Points", season: avg.points, last10: l10.points, last5: l5.points },
-    { label: "Rebounds", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
-    { label: "Assists", season: avg.assists, last10: l10.assists, last5: l5.assists },
-    { label: "Steals", season: avg.steals, last10: l10.steals, last5: l5.steals },
-    { label: "Blocks", season: avg.blocks, last10: l10.blocks, last5: l5.blocks },
-    { label: "Turnovers", season: avg.turnovers, last10: l10.turnovers, last5: l5.turnovers },
-    { label: "Minutes", season: avg.minutes, last10: l10.minutes, last5: l5.minutes },
-    { label: "FG%", season: avg.fgPct, last10: l10.fgPct, last5: l5.fgPct },
-    { label: "3P%", season: avg.threePct, last10: l10.threePct, last5: l5.threePct },
-    { label: "FT%", season: avg.ftPct, last10: l10.ftPct, last5: l5.ftPct },
-  ];
+  const statRows = getStatRows(player);
 
   return (
     <div className="container py-6">
