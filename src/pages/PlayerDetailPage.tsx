@@ -467,17 +467,6 @@ const getStatRows = (player: ReturnType<typeof getPlayer>) => {
   const l5 = player.last5;
   const sport = player.sport;
 
-  if (sport === "LOL" || sport === "CS2" || sport === "VAL") {
-    return [
-      { label: "Kills", season: avg.points, last10: l10.points, last5: l5.points },
-      { label: "Deaths", season: avg.rebounds, last10: l10.rebounds, last5: l5.rebounds },
-      { label: "Assists", season: avg.assists, last10: l10.assists, last5: l5.assists },
-      { label: sport === "LOL" ? "CS/min" : "ADR", season: avg.steals, last10: l10.steals, last5: l5.steals },
-      { label: sport === "LOL" ? "KDA" : "K/D", season: avg.fgPct, last10: l10.fgPct, last5: l5.fgPct },
-      { label: sport === "LOL" ? "VS%" : "HS%", season: avg.threePct, last10: l10.threePct, last5: l5.threePct },
-      { label: sport === "LOL" ? "DPM" : "Rating", season: sport === "LOL" ? avg.blocks : avg.ftPct, last10: sport === "LOL" ? l10.blocks : l10.ftPct, last5: sport === "LOL" ? l5.blocks : l5.ftPct },
-    ];
-  }
 
   return [
     { label: "Points", season: avg.points, last10: l10.points, last5: l5.points },

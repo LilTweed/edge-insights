@@ -1,4 +1,4 @@
-// Additional sports data: NFL, MLB, NHL, Esports
+// Additional sports data: NFL, MLB, NHL
 import type { Team, Game, Player, PropLine, MatchupHistory, Sport, SeasonAverages } from "./mockData";
 
 function calcHitRate(avg: number, line: number): number {
@@ -231,71 +231,3 @@ export const nhlProps: PropLine[] = [
   { id: "nhlp2", playerId: "ao8", playerName: "Alex Ovechkin", teamAbbr: "WSH", stat: "Points", line: 0.5, gamesPlayed: 58, sport: "NHL", hitRate: 68, hitRateLast10: 72, sportsbooks: [{ sportsbook: "FanDuel", line: 0.5, over: -142, under: 118 }, { sportsbook: "DraftKings", line: 0.5, over: -138, under: 115 }, { sportsbook: "Fanatics", line: 0.5, over: -145, under: 120 }, { sportsbook: "BetMGM", line: 0.5, over: -140, under: 118 }] },
 ];
 
-// ===================== ESPORTS =====================
-export const esportsTeams: Team[] = [
-  // League of Legends
-  { id: "t1", name: "T1", abbreviation: "T1", city: "Seoul", record: "14-2", conference: "LCK", division: "LCK", sport: "LOL", ranking: 1, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "geng", name: "Gen.G", abbreviation: "GEN", city: "Seoul", record: "13-3", conference: "LCK", division: "LCK", sport: "LOL", ranking: 2, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "blg", name: "Bilibili Gaming", abbreviation: "BLG", city: "Shanghai", record: "12-4", conference: "LPL", division: "LPL", sport: "LOL", ranking: 3, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "fnc", name: "Fnatic", abbreviation: "FNC", city: "London", record: "11-5", conference: "LEC", division: "LEC", sport: "LOL", ranking: 5, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  // CS2
-  { id: "navi", name: "Natus Vincere", abbreviation: "NAVI", city: "Kyiv", record: "22-5", conference: "Tier 1", division: "Europe", sport: "CS2", ranking: 1, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "faze", name: "FaZe Clan", abbreviation: "FAZE", city: "Los Angeles", record: "20-7", conference: "Tier 1", division: "International", sport: "CS2", ranking: 2, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "vitality", name: "Team Vitality", abbreviation: "VIT", city: "Paris", record: "19-8", conference: "Tier 1", division: "Europe", sport: "CS2", ranking: 3, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "spirit", name: "Team Spirit", abbreviation: "SPR", city: "Moscow", record: "18-9", conference: "Tier 1", division: "CIS", sport: "CS2", ranking: 4, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  // Valorant
-  { id: "sen", name: "Sentinels", abbreviation: "SEN", city: "Los Angeles", record: "10-3", conference: "VCT Americas", division: "Americas", sport: "VAL", ranking: 1, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "loud", name: "LOUD", abbreviation: "LOUD", city: "São Paulo", record: "9-4", conference: "VCT Americas", division: "Americas", sport: "VAL", ranking: 2, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "prx", name: "Paper Rex", abbreviation: "PRX", city: "Singapore", record: "11-2", conference: "VCT Pacific", division: "Pacific", sport: "VAL", ranking: 3, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-  { id: "fnc_val", name: "Fnatic", abbreviation: "FNC", city: "London", record: "10-3", conference: "VCT EMEA", division: "EMEA", sport: "VAL", ranking: 4, stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
-];
-
-export const esportsGames: Game[] = [
-  // LoL
-  {
-    id: "lol1", homeTeam: esportsTeams[0], awayTeam: esportsTeams[1], time: "5:00 AM ET", date: "Today", status: "scheduled", sport: "LOL",
-    moneyline: [
-      { sportsbook: "FanDuel", home: -145, away: 122 }, { sportsbook: "DraftKings", home: -140, away: 118 },
-      { sportsbook: "Fanatics", home: -150, away: 125 }, { sportsbook: "BetMGM", home: -142, away: 120 },
-    ],
-    overUnder: [
-      { sportsbook: "FanDuel", total: 3.5, over: -115, under: -105 }, { sportsbook: "DraftKings", total: 3.5, over: -110, under: -110 },
-      { sportsbook: "Fanatics", total: 3.5, over: -112, under: -108 }, { sportsbook: "BetMGM", total: 3.5, over: -108, under: -112 },
-    ],
-  },
-  {
-    id: "lol2", homeTeam: esportsTeams[2], awayTeam: esportsTeams[3], time: "8:00 AM ET", date: "Today", status: "scheduled", sport: "LOL",
-    moneyline: [
-      { sportsbook: "FanDuel", home: -200, away: 168 }, { sportsbook: "DraftKings", home: -195, away: 162 },
-      { sportsbook: "Fanatics", home: -205, away: 172 }, { sportsbook: "BetMGM", home: -198, away: 165 },
-    ],
-    overUnder: [
-      { sportsbook: "FanDuel", total: 3.5, over: -105, under: -115 }, { sportsbook: "DraftKings", total: 3.5, over: -102, under: -118 },
-      { sportsbook: "Fanatics", total: 3.5, over: -108, under: -112 }, { sportsbook: "BetMGM", total: 3.5, over: -105, under: -115 },
-    ],
-  },
-  // CS2
-  {
-    id: "cs1", homeTeam: esportsTeams[4], awayTeam: esportsTeams[5], time: "11:00 AM ET", date: "Today", status: "scheduled", sport: "CS2",
-    moneyline: [
-      { sportsbook: "FanDuel", home: -135, away: 115 }, { sportsbook: "DraftKings", home: -130, away: 110 },
-      { sportsbook: "Fanatics", home: -140, away: 118 }, { sportsbook: "BetMGM", home: -132, away: 112 },
-    ],
-    overUnder: [
-      { sportsbook: "FanDuel", total: 2.5, over: -110, under: -110 }, { sportsbook: "DraftKings", total: 2.5, over: -108, under: -112 },
-      { sportsbook: "Fanatics", total: 2.5, over: -105, under: -115 }, { sportsbook: "BetMGM", total: 2.5, over: -112, under: -108 },
-    ],
-  },
-  // Valorant
-  {
-    id: "val1", homeTeam: esportsTeams[8], awayTeam: esportsTeams[9], time: "3:00 PM ET", date: "Today", status: "scheduled", sport: "VAL",
-    moneyline: [
-      { sportsbook: "FanDuel", home: -125, away: 105 }, { sportsbook: "DraftKings", home: -120, away: 100 },
-      { sportsbook: "Fanatics", home: -130, away: 110 }, { sportsbook: "BetMGM", home: -122, away: 102 },
-    ],
-    overUnder: [
-      { sportsbook: "FanDuel", total: 2.5, over: -115, under: -105 }, { sportsbook: "DraftKings", total: 2.5, over: -110, under: -110 },
-      { sportsbook: "Fanatics", total: 2.5, over: -112, under: -108 }, { sportsbook: "BetMGM", total: 2.5, over: -108, under: -112 },
-    ],
-  },
-];

@@ -121,36 +121,6 @@ const getStatsForSport = (player: Player) => {
     };
   }
 
-  if (sport === "LOL" || sport === "CS2" || sport === "VAL") {
-    if (sport === "CS2" || sport === "VAL") {
-      return {
-        primary: [
-          { label: "K", value: avg.points },
-          { label: "D", value: avg.rebounds },
-          { label: "A", value: avg.assists },
-          { label: "ADR", value: avg.steals },
-        ],
-        secondary: [
-          { label: "K/D", value: avg.fgPct },
-          { label: "HS%", value: `${avg.threePct}%` },
-          { label: "Rating", value: avg.ftPct },
-        ],
-      };
-    }
-    return {
-      primary: [
-        { label: "K", value: avg.points },
-        { label: "D", value: avg.rebounds },
-        { label: "A", value: avg.assists },
-        { label: "CS/M", value: avg.steals },
-      ],
-      secondary: [
-        { label: "KDA", value: avg.fgPct },
-        { label: "DPM", value: avg.blocks },
-        { label: "VS%", value: `${avg.threePct}%` },
-      ],
-    };
-  }
 
   // NBA / NCAAB / NCAAF default
   return {
