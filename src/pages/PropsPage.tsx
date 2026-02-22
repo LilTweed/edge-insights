@@ -9,7 +9,7 @@ import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
 import { useLiveOdds } from "@/hooks/useLiveOdds";
 import { useSportsRadarSchedule } from "@/hooks/useSportsRadar";
 import { useState, useMemo } from "react";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw, Eye, EyeOff } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 type ViewMode = "basic" | "advanced" | "compare";
@@ -35,6 +35,7 @@ const PropsPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("advanced");
   const [scoresOpen, setScoresOpen] = useState(true);
   const [liveMode, setLiveMode] = useState(false);
+  const [showHitRates, setShowHitRates] = useState(false);
 
   const isEspnSport = ESPN_SPORTS.includes(sport as EspnSport);
   const scoreboard = useLiveScoreboard(isEspnSport ? (sport as EspnSport) : "NBA");
@@ -97,6 +98,26 @@ const PropsPage = () => {
 
     return list;
   }, [sportProps, advanced, search, sortBy, sortAsc]);
+
+  const hitRateByStat = useMemo(() => {
+    const stats = new Map<string, { total: number; sumHR: number; sumHRL10: number; count: number }>();
+    filtered.forEach((p) => {
+      const entry = stats.get(p.stat) || { total: 0, sumHR: 0, sumHRL10: 0, count: 0 };
+      entry.total += p.gamesPlayed;
+      entry.sumHR += p.hitRate;
+      entry.sumHRL10 += p.hitRateLast10;
+      entry.count += 1;
+      stats.set(p.stat, entry);
+    });
+    return Array.from(stats.entries())
+      .map(([stat, d]) => ({
+        stat,
+        avgHitRate: d.count ? Math.round((d.sumHR / d.count) * 10) / 10 : 0,
+        avgHitRateL10: d.count ? Math.round((d.sumHRL10 / d.count) * 10) / 10 : 0,
+        count: d.count,
+      }))
+      .sort((a, b) => b.avgHitRate - a.avgHitRate);
+  }, [filtered]);
 
   const toggleSort = (key: SortKey) => {
     if (sortBy === key) setSortAsc(!sortAsc);
@@ -344,6 +365,62 @@ const PropsPage = () => {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Hit Rate per Stat toggle */}
+      <div className="mb-4">
+        <button
+          onClick={() => setShowHitRates(!showHitRates)}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-[10px] font-bold text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+        >
+          {showHitRates ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          {showHitRates ? "Hide" : "Show"} Hit Rates by Stat
+        </button>
+
+        {showHitRates && hitRateByStat.length > 0 && (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {hitRateByStat.map(({ stat, avgHitRate, avgHitRateL10, count }) => (
+              <div key={stat} className="rounded-xl border border-border bg-card p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-foreground">{stat}</span>
+                  <span className="text-[10px] text-muted-foreground">{count} prop{count !== 1 ? "s" : ""}</span>
+                </div>
+
+                {/* Season avg */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span>Season Avg</span>
+                    <span className="font-mono font-semibold text-foreground">{avgHitRate}%</span>
+                  </div>
+                  <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-l-full bg-foreground/30 transition-all"
+                      style={{ width: `${avgHitRate}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* L10 avg */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span>Last 10 Avg</span>
+                    <span className="font-mono font-semibold text-foreground">{avgHitRateL10}%</span>
+                  </div>
+                  <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-l-full bg-foreground/20 transition-all"
+                      style={{ width: `${avgHitRateL10}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showHitRates && hitRateByStat.length === 0 && (
+          <p className="mt-3 text-xs text-muted-foreground">No props available to calculate hit rates</p>
+        )}
       </div>
 
       {viewMode === "compare" ? (
