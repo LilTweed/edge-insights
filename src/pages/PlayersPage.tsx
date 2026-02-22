@@ -25,7 +25,7 @@ const PlayersPage = () => {
       </div>
 
       <div className="mb-4">
-        <SportFilter active={sport} onChange={setSport} sports={["NBA", "NCAAB"]} />
+        <SportFilter active={sport} onChange={setSport} />
       </div>
 
       <div className="mb-5">
