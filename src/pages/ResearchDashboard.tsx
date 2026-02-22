@@ -93,7 +93,7 @@ const ResearchDashboard = () => {
   const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { toggle, isFavorite } = useFavoriteTeams();
-  const { tier, isBasicOrAbove } = useSubscription();
+  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
 
 
   const players = useMemo(() => allPlayers.filter((p) => p.sport === sport), [sport]);
@@ -197,12 +197,13 @@ const ResearchDashboard = () => {
     });
   }, [filteredTeams, isFavorite]);
 
-  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
+  const allTabs: { key: Tab; label: string; icon: React.ElementType; advancedOnly?: boolean }[] = [
     { key: "stats", label: "Player Stats", icon: BarChart3 },
     { key: "teams", label: "Teams", icon: Shield },
-    { key: "trends", label: "Trends", icon: Activity },
-    { key: "matchups", label: "Matchups", icon: Swords },
+    { key: "trends", label: "Trends", icon: Activity, advancedOnly: true },
+    { key: "matchups", label: "Matchups", icon: Swords, advancedOnly: true },
   ];
+  const tabs = allTabs.filter((t) => !t.advancedOnly || hasAdvanced);
 
   if (!isBasicOrAbove) {
     return (
@@ -219,15 +220,17 @@ const ResearchDashboard = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Research Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Deep-dive into player stats, trends, and matchup data</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {hasAdvanced ? "Deep-dive into player stats, trends, and matchup data" : "Browse player and team stats at a glance"}
+        </p>
       </div>
 
       <div className="mb-4">
         <SportFilter active={sport} onChange={(s) => { setSport(s); setSearch(""); setPosFilter("All"); setTeamFilter("All"); }} />
       </div>
 
-      {/* Injury Ticker */}
-      {sportInjuries.length > 0 && (
+      {/* Injury Ticker — Advanced only */}
+      {hasAdvanced && sportInjuries.length > 0 && (
         <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-lg border border-border bg-card px-3 py-2 scrollbar-thin">
           <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-yellow-500" />
           <span className="text-[10px] font-bold text-muted-foreground flex-shrink-0">INJURIES</span>
@@ -235,7 +238,7 @@ const ResearchDashboard = () => {
             <span key={i} className="flex-shrink-0 rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-muted-foreground">
               <span className="font-semibold text-foreground">{inj.player}</span>
               <span className="mx-1">·</span>
-              <span className={inj.status === "Out" ? "text-red-400" : inj.status === "Questionable" ? "text-yellow-400" : "text-muted-foreground"}>
+              <span className={inj.status === "Out" ? "text-destructive" : inj.status === "Questionable" ? "text-yellow-500" : "text-muted-foreground"}>
                 {inj.status}
               </span>
             </span>
@@ -262,41 +265,45 @@ const ResearchDashboard = () => {
       {/* ─── STATS TAB ─── */}
       {tab === "stats" && (
         <div>
-          {/* Filters */}
-          <button
-            onClick={() => setFiltersOpen(!filtersOpen)}
-            className="mb-3 flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Filter className="h-3.5 w-3.5" />
-            Filters
-            {filtersOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-          </button>
+          {/* Filters — Advanced only */}
+          {hasAdvanced && (
+            <>
+              <button
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                className="mb-3 flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Filter className="h-3.5 w-3.5" />
+                Filters
+                {filtersOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
 
-          {filtersOpen && (
-            <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div>
-                <label className="text-[9px] font-bold uppercase text-muted-foreground">Position</label>
-                <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
-                  {positions.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[9px] font-bold uppercase text-muted-foreground">Team</label>
-                <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
-                  {teamOptions.map((t) => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[9px] font-bold uppercase text-muted-foreground">Min Games</label>
-                <input type="number" value={minGames} onChange={(e) => setMinGames(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground" min={0} />
-              </div>
-              <div>
-                <label className="text-[9px] font-bold uppercase text-muted-foreground">Sort By</label>
-                <select value={statSort} onChange={(e) => setStatSort(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
-                  {statOptions.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                </select>
-              </div>
-            </div>
+              {filtersOpen && (
+                <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div>
+                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Position</label>
+                    <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                      {positions.map((p) => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Team</label>
+                    <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                      {teamOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Min Games</label>
+                    <input type="number" value={minGames} onChange={(e) => setMinGames(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground" min={0} />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Sort By</label>
+                    <select value={statSort} onChange={(e) => setStatSort(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                      {statOptions.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Search */}
@@ -379,26 +386,28 @@ const ResearchDashboard = () => {
                         })}
                       </div>
 
-                      {/* Sparkline Chart */}
-                      <div>
-                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Last 15 Games — {statSort.charAt(0).toUpperCase() + statSort.slice(1)}</p>
-                        <div className="h-24 w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={generateSparkline(player, statSort as any)} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                              <XAxis dataKey="g" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                              <YAxis tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                              <ReferenceLine y={avg[statSort as keyof typeof avg] as number} stroke="hsl(var(--primary))" strokeDasharray="4 3" strokeWidth={1.5} />
-                              <Tooltip
-                                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px", color: "hsl(var(--foreground))" }}
-                              />
-                              <Bar dataKey="v" radius={[2, 2, 0, 0]} fill="hsl(var(--primary) / 0.5)" />
-                            </BarChart>
-                          </ResponsiveContainer>
+                      {/* Sparkline Chart — Advanced only */}
+                      {hasAdvanced && (
+                        <div>
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Last 15 Games — {statSort.charAt(0).toUpperCase() + statSort.slice(1)}</p>
+                          <div className="h-24 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={generateSparkline(player, statSort as any)} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                                <XAxis dataKey="g" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                                <ReferenceLine y={avg[statSort as keyof typeof avg] as number} stroke="hsl(var(--primary))" strokeDasharray="4 3" strokeWidth={1.5} />
+                                <Tooltip
+                                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px", color: "hsl(var(--foreground))" }}
+                                />
+                                <Bar dataKey="v" radius={[2, 2, 0, 0]} fill="hsl(var(--primary) / 0.5)" />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
-                      {/* Active Props */}
-                      {pProps.length > 0 && (
+                      {/* Active Props — Advanced only */}
+                      {hasAdvanced && pProps.length > 0 && (
                         <div>
                           <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1.5">Active Props</p>
                           <div className="grid grid-cols-2 gap-1.5">
@@ -408,7 +417,7 @@ const ResearchDashboard = () => {
                                   <span className="text-[10px] text-muted-foreground">{prop.stat}</span>
                                   <span className="ml-1.5 font-mono text-xs font-bold text-foreground">{prop.line}</span>
                                 </div>
-                                <span className={`font-mono text-[10px] font-bold ${prop.hitRate >= 60 ? "text-emerald-500" : prop.hitRate <= 40 ? "text-red-400" : "text-muted-foreground"}`}>
+                                <span className={`font-mono text-[10px] font-bold ${prop.hitRate >= 60 ? "text-success" : prop.hitRate <= 40 ? "text-destructive" : "text-muted-foreground"}`}>
                                   {prop.hitRate}%
                                 </span>
                               </div>

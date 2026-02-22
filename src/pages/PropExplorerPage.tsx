@@ -29,9 +29,9 @@ const TERMS: Record<string, string> = {
   "Hit Rate":
     "How often the player has gone over the line this season, shown as a percentage. Higher = more consistent.",
   "Over":
-    "A bet that the player will exceed the line. The number shown (e.g. -110) is the odds — negative means you risk that amount to win $100.",
+    "A bet that the player will exceed the line.",
   "Under":
-    "A bet that the player will stay below the line. Same odds format as Over.",
+    "A bet that the player will stay below the line.",
   "Edge":
     "The difference between the actual hit rate and what the odds imply. Positive edge = potential value.",
   "Last 10":
@@ -75,58 +75,30 @@ function TrendIndicator({ hitRate, hitRateLast10 }: { hitRate: number; hitRateLa
   const diff = hitRateLast10 - hitRate;
   if (Math.abs(diff) < 3)
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-            <Minus className="h-3 w-3" />
-            <span className="text-[10px] font-mono">Stable</span>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent className="text-xs">Recent form is similar to the season average</TooltipContent>
-      </Tooltip>
+      <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+        <Minus className="h-3 w-3" />
+        <span className="text-[10px] font-mono">Stable</span>
+      </span>
     );
   if (diff > 0)
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-0.5 text-success">
-            <TrendingUp className="h-3 w-3" />
-            <span className="text-[10px] font-mono">+{diff.toFixed(0)}%</span>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent className="text-xs">Trending up — recent games are better than season average</TooltipContent>
-      </Tooltip>
+      <span className="inline-flex items-center gap-0.5 text-success">
+        <TrendingUp className="h-3 w-3" />
+        <span className="text-[10px] font-mono">+{diff.toFixed(0)}%</span>
+      </span>
     );
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="inline-flex items-center gap-0.5 text-destructive">
-          <TrendingDown className="h-3 w-3" />
-          <span className="text-[10px] font-mono">{diff.toFixed(0)}%</span>
-        </span>
-      </TooltipTrigger>
-      <TooltipContent className="text-xs">Trending down — recent games are below season average</TooltipContent>
-    </Tooltip>
+    <span className="inline-flex items-center gap-0.5 text-destructive">
+      <TrendingDown className="h-3 w-3" />
+      <span className="text-[10px] font-mono">{diff.toFixed(0)}%</span>
+    </span>
   );
 }
-
-// ─── Simple filter chips ───────────────────────────────────────────
-
-const STAT_CATEGORIES: Record<string, string[]> = {
-  NBA: ["Points", "Rebounds", "Assists", "3-Pointers", "Steals", "Blocks"],
-  NFL: ["Pass Yards", "Rush Yards", "Receptions", "TDs"],
-  MLB: ["Hits", "RBIs", "Strikeouts", "Total Bases"],
-  NHL: ["Goals", "Assists", "Shots", "Saves"],
-  NCAAB: ["Points", "Rebounds", "Assists"],
-  NCAAF: ["Pass Yards", "Rush Yards", "TDs"],
-  UFC: [],
-  PGA: [],
-};
 
 // ─── Page ──────────────────────────────────────────────────────────
 
 const PropExplorerPage = () => {
-  const { tier, isBasicOrAbove } = useSubscription();
+  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
   const [sport, setSport] = useState<Sport>("NBA");
   const [search, setSearch] = useState("");
   const [selectedStat, setSelectedStat] = useState<string | null>(null);
@@ -169,10 +141,9 @@ const PropExplorerPage = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Prop Explorer</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Browse player props with plain-English explanations.{" "}
-          <TermTooltip term="Prop">
-            <span className="text-primary">What's a prop?</span>
-          </TermTooltip>
+          {hasAdvanced
+            ? <>Browse player props with detailed odds & analysis. <TermTooltip term="Prop"><span className="text-primary">What's a prop?</span></TermTooltip></>
+            : "Discover player props with simple hit rates"}
         </p>
       </div>
 
@@ -223,26 +194,28 @@ const PropExplorerPage = () => {
           ))}
         </div>
 
-        {/* Hit rate slider */}
-        <div className="flex items-center gap-3">
-          <TermTooltip term="Hit Rate">
-            <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
-              Min Hit Rate
+        {/* Hit rate slider — Advanced only */}
+        {hasAdvanced && (
+          <div className="flex items-center gap-3">
+            <TermTooltip term="Hit Rate">
+              <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+                Min Hit Rate
+              </span>
+            </TermTooltip>
+            <input
+              type="range"
+              min={0}
+              max={90}
+              step={5}
+              value={minHitRate}
+              onChange={(e) => setMinHitRate(Number(e.target.value))}
+              className="flex-1 accent-primary h-1.5"
+            />
+            <span className="font-mono text-xs font-semibold text-foreground w-10 text-right">
+              {minHitRate}%
             </span>
-          </TermTooltip>
-          <input
-            type="range"
-            min={0}
-            max={90}
-            step={5}
-            value={minHitRate}
-            onChange={(e) => setMinHitRate(Number(e.target.value))}
-            className="flex-1 accent-primary h-1.5"
-          />
-          <span className="font-mono text-xs font-semibold text-foreground w-10 text-right">
-            {minHitRate}%
-          </span>
-        </div>
+          </div>
+        )}
 
         {hasFilters && (
           <button
@@ -260,10 +233,14 @@ const PropExplorerPage = () => {
       </p>
 
       {/* Props list */}
-      <div className="space-y-3">
-        {filtered.map((prop) => (
-          <ExplorerCard key={prop.id} prop={prop} />
-        ))}
+      <div className="space-y-2">
+        {filtered.map((prop) =>
+          hasAdvanced ? (
+            <AdvancedExplorerCard key={prop.id} prop={prop} />
+          ) : (
+            <SimpleExplorerCard key={prop.id} prop={prop} />
+          )
+        )}
         {filtered.length === 0 && (
           <div className="py-16 text-center">
             <p className="text-sm text-muted-foreground">No props match your filters</p>
@@ -277,25 +254,59 @@ const PropExplorerPage = () => {
         )}
       </div>
 
-      {/* Glossary */}
-      <div className="mt-10 rounded-xl border border-border/60 bg-card/50 p-5">
-        <h2 className="mb-3 text-sm font-bold text-foreground">📖 Quick Glossary</h2>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {Object.entries(TERMS).map(([term, desc]) => (
-            <div key={term} className="flex gap-2">
-              <span className="text-xs font-semibold text-foreground whitespace-nowrap">{term}:</span>
-              <span className="text-xs text-muted-foreground">{desc}</span>
-            </div>
-          ))}
+      {/* Glossary — Advanced only */}
+      {hasAdvanced && (
+        <div className="mt-10 rounded-xl border border-border/60 bg-card/50 p-5">
+          <h2 className="mb-3 text-sm font-bold text-foreground">📖 Quick Glossary</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {Object.entries(TERMS).map(([term, desc]) => (
+              <div key={term} className="flex gap-2">
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">{term}:</span>
+                <span className="text-xs text-muted-foreground">{desc}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
-// ─── Explorer Card ─────────────────────────────────────────────────
+// ─── Simple card for Basic tier ────────────────────────────────────
 
-function ExplorerCard({ prop }: { prop: PropLine }) {
+function SimpleExplorerCard({ prop }: { prop: PropLine }) {
+  const gamesOver = Math.round((prop.hitRate / 100) * prop.gamesPlayed);
+
+  return (
+    <Link
+      to={`/player/${prop.playerId}`}
+      className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3.5 transition-all hover:border-primary/20 hover:shadow-sm"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-[10px] font-bold text-secondary-foreground">
+          {prop.teamAbbr}
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">{prop.playerName}</p>
+          <p className="text-xs text-muted-foreground">{prop.stat} · Line {prop.line}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <p className={`font-mono text-lg font-bold ${prop.hitRate >= 60 ? "text-success" : prop.hitRate <= 40 ? "text-destructive" : "text-foreground"}`}>
+            {prop.hitRate}%
+          </p>
+          <p className="text-[10px] text-muted-foreground">{gamesOver}/{prop.gamesPlayed}</p>
+        </div>
+        <TrendIndicator hitRate={prop.hitRate} hitRateLast10={prop.hitRateLast10} />
+      </div>
+    </Link>
+  );
+}
+
+// ─── Advanced card with full detail ────────────────────────────────
+
+function AdvancedExplorerCard({ prop }: { prop: PropLine }) {
   const gamesOver = Math.round((prop.hitRate / 100) * prop.gamesPlayed);
   const bestOver = prop.sportsbooks.length > 0
     ? prop.sportsbooks.reduce((best, sb) => (sb.over > best.over ? sb : best))
@@ -306,7 +317,7 @@ function ExplorerCard({ prop }: { prop: PropLine }) {
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm">
-      {/* Top row: player + team + confidence */}
+      {/* Top row */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link
@@ -349,17 +360,10 @@ function ExplorerCard({ prop }: { prop: PropLine }) {
       {/* Hit rate bar */}
       <div className="mb-3">
         <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className="h-full rounded-l-full bg-foreground/30 transition-all cursor-help"
-                style={{ width: `${prop.hitRate}%` }}
-              />
-            </TooltipTrigger>
-            <TooltipContent className="text-xs">
-              Over the line in {gamesOver} of {prop.gamesPlayed} games ({prop.hitRate}%)
-            </TooltipContent>
-          </Tooltip>
+          <div
+            className="h-full rounded-l-full bg-foreground/30 transition-all"
+            style={{ width: `${prop.hitRate}%` }}
+          />
         </div>
         <div className="mt-1 flex justify-between text-[9px] text-muted-foreground">
           <span>0%</span>
@@ -381,9 +385,7 @@ function ExplorerCard({ prop }: { prop: PropLine }) {
                   O {formatOdds(bestOver.over)}
                 </span>
               </TooltipTrigger>
-              <TooltipContent className="text-xs">
-                Best Over odds at {bestOver.sportsbook} — {TERMS.Over}
-              </TooltipContent>
+              <TooltipContent className="text-xs">Best Over odds at {bestOver.sportsbook}</TooltipContent>
             </Tooltip>
           )}
           {bestUnder && (
@@ -393,9 +395,7 @@ function ExplorerCard({ prop }: { prop: PropLine }) {
                   U {formatOdds(bestUnder.under)}
                 </span>
               </TooltipTrigger>
-              <TooltipContent className="text-xs">
-                Best Under odds at {bestUnder.sportsbook} — {TERMS.Under}
-              </TooltipContent>
+              <TooltipContent className="text-xs">Best Under odds at {bestUnder.sportsbook}</TooltipContent>
             </Tooltip>
           )}
           <span className="ml-auto text-[9px] text-muted-foreground">
