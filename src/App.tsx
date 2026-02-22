@@ -9,6 +9,8 @@ import PropsPage from "./pages/PropsPage";
 import PlayersPage from "./pages/PlayersPage";
 import PlayerDetailPage from "./pages/PlayerDetailPage";
 import GameDetailPage from "./pages/GameDetailPage";
+import TeamsPage from "./pages/TeamsPage";
+import TeamDetailPage from "./pages/TeamDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/player/:id" element={<PlayerDetailPage />} />
           <Route path="/game/:id" element={<GameDetailPage />} />
+          <Route path="/teams" element={<TeamsPage />} />
+          <Route path="/team/:id" element={<TeamDetailPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

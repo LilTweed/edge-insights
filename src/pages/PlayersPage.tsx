@@ -1,16 +1,19 @@
-import { players } from "@/data/mockData";
+import { allPlayers, type Sport } from "@/data/mockData";
 import PlayerCard from "@/components/PlayerCard";
+import SportFilter from "@/components/SportFilter";
 import { useState } from "react";
 
 const PlayersPage = () => {
+  const [sport, setSport] = useState<Sport>("NBA");
   const [search, setSearch] = useState("");
 
-  const filteredPlayers = search
-    ? players.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.teamAbbr.toLowerCase().includes(search.toLowerCase())
-      )
-    : players;
+  const filtered = allPlayers
+    .filter(p => p.sport === sport)
+    .filter(p =>
+      !search ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.teamAbbr.toLowerCase().includes(search.toLowerCase())
+    );
 
   return (
     <div className="container py-6">
@@ -19,6 +22,10 @@ const PlayersPage = () => {
         <p className="mt-1 text-sm text-muted-foreground">
           Season averages, shooting splits, and detailed stats
         </p>
+      </div>
+
+      <div className="mb-4">
+        <SportFilter active={sport} onChange={setSport} sports={["NBA", "NCAAB"]} />
       </div>
 
       <div className="mb-5">
@@ -32,7 +39,7 @@ const PlayersPage = () => {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredPlayers.map((player) => (
+        {filtered.map((player) => (
           <PlayerCard key={player.id} player={player} />
         ))}
       </div>

@@ -5,6 +5,7 @@ const navItems = [
   { label: "Games", path: "/" },
   { label: "Props", path: "/props" },
   { label: "Players", path: "/players" },
+  { label: "Teams", path: "/teams" },
 ];
 
 const AppHeader = () => {
