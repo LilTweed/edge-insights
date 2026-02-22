@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          preferences: Json
           subscription_expires_at: string | null
           subscription_tier: string
           updated_at: string
@@ -30,6 +31,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          preferences?: Json
           subscription_expires_at?: string | null
           subscription_tier?: string
           updated_at?: string
@@ -40,6 +42,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          preferences?: Json
           subscription_expires_at?: string | null
           subscription_tier?: string
           updated_at?: string
