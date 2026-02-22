@@ -62,7 +62,7 @@ async function fetchSRPlayer(sport: EspnSport, playerId: string) {
   return data;
 }
 
-const SUPPORTED_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "WNBA"];
+const SUPPORTED_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB"];
 
 export function useSportsRadarSchedule(sport: EspnSport, enabled: boolean) {
   return useQuery({

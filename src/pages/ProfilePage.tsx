@@ -16,7 +16,7 @@ interface Preferences {
   notifications?: boolean;
 }
 
-const SPORTS: Sport[] = ["NBA", "NFL", "NCAAB", "NCAAF", "MLB", "NHL", "UFC", "PGA", "WNBA"];
+const SPORTS: Sport[] = ["NBA", "NFL", "NCAAB", "NCAAF", "MLB", "NHL", "UFC", "PGA"];
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();

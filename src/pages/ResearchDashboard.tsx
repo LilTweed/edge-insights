@@ -48,7 +48,7 @@ import {
 
 type Tab = "stats" | "trends" | "matchups" | "teams" | "roster";
 
-const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "WNBA"] as const;
+const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"] as const;
 
 /** Deterministic pseudo-random seeded by string */
 function seededRandom(seed: string) {
