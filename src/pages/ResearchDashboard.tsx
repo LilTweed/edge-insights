@@ -1,0 +1,506 @@
+import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import {
+  allPlayers,
+  allTeams,
+  propLines,
+  matchupHistories,
+  injuries,
+  type Sport,
+  type Player,
+  type PropLine,
+} from "@/data/mockData";
+import SportFilter from "@/components/SportFilter";
+import { EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
+import {
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Filter,
+  BarChart3,
+  Users,
+  Swords,
+  Activity,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+  ReferenceLine,
+} from "recharts";
+
+type Tab = "stats" | "trends" | "matchups";
+
+/** Deterministic pseudo-random seeded by string */
+function seededRandom(seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
+  }
+  return () => {
+    h = (h ^ (h >>> 16)) * 0x45d9f3b;
+    h = (h ^ (h >>> 16)) * 0x45d9f3b;
+    h = h ^ (h >>> 16);
+    return (h >>> 0) / 4294967296;
+  };
+}
+
+function getTrend(player: Player): { dir: "up" | "down" | "flat"; pct: number } {
+  const l5 = player.last5;
+  const l10 = player.last10;
+  const diff = ((l5.points - l10.points) / (l10.points || 1)) * 100;
+  if (Math.abs(diff) < 3) return { dir: "flat", pct: Math.round(diff * 10) / 10 };
+  return { dir: diff > 0 ? "up" : "down", pct: Math.round(diff * 10) / 10 };
+}
+
+function generateSparkline(player: Player, stat: "points" | "rebounds" | "assists") {
+  const rng = seededRandom(player.id + stat);
+  const avg = player.seasonAverages[stat];
+  const data = [];
+  for (let i = 0; i < 15; i++) {
+    const val = Math.max(0, avg + (rng() - 0.5) * avg * 0.6);
+    data.push({ g: i + 1, v: Math.round(val * 10) / 10 });
+  }
+  return data;
+}
+
+const ResearchDashboard = () => {
+  const [sport, setSport] = useState<Sport>("NBA");
+  const [tab, setTab] = useState<Tab>("stats");
+  const [search, setSearch] = useState("");
+  const [posFilter, setPosFilter] = useState<string>("All");
+  const [teamFilter, setTeamFilter] = useState<string>("All");
+  const [statSort, setStatSort] = useState<string>("points");
+  const [sortAsc, setSortAsc] = useState(false);
+  const [minGames, setMinGames] = useState(0);
+  const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const players = useMemo(() => allPlayers.filter((p) => p.sport === sport), [sport]);
+  const teams = useMemo(() => allTeams.filter((t) => t.sport === sport), [sport]);
+  const props = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
+  const sportInjuries = useMemo(() => injuries.filter((i) => teams.some((t) => t.abbreviation === i.teamAbbr)), [teams]);
+
+  const positions = useMemo(() => ["All", ...Array.from(new Set(players.map((p) => p.position))).sort()], [players]);
+  const teamOptions = useMemo(() => ["All", ...Array.from(new Set(players.map((p) => p.teamAbbr))).sort()], [players]);
+
+  const isBasketball = sport === "NBA" || sport === "NCAAB";
+  const statOptions = isBasketball
+    ? ["points", "rebounds", "assists", "steals", "blocks", "minutes"]
+    : ["points", "rebounds", "assists", "steals", "blocks"];
+
+  const filtered = useMemo(() => {
+    let list = players;
+    if (posFilter !== "All") list = list.filter((p) => p.position === posFilter);
+    if (teamFilter !== "All") list = list.filter((p) => p.teamAbbr === teamFilter);
+    if (minGames > 0) list = list.filter((p) => p.stats.gamesPlayed >= minGames);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q) || p.teamAbbr.toLowerCase().includes(q));
+    }
+    list.sort((a, b) => {
+      const aVal = a.seasonAverages[statSort as keyof typeof a.seasonAverages] as number;
+      const bVal = b.seasonAverages[statSort as keyof typeof b.seasonAverages] as number;
+      return sortAsc ? aVal - bVal : bVal - aVal;
+    });
+    return list;
+  }, [players, posFilter, teamFilter, minGames, search, statSort, sortAsc]);
+
+  const trendPlayers = useMemo(() => {
+    return filtered.map((p) => ({ player: p, trend: getTrend(p) })).sort((a, b) => Math.abs(b.trend.pct) - Math.abs(a.trend.pct));
+  }, [filtered]);
+
+  const sportMatchups = useMemo(() => {
+    const teamIds = teams.map((t) => t.id);
+    return matchupHistories.filter((m) => teamIds.includes(m.team1Id) || teamIds.includes(m.team2Id));
+  }, [teams]);
+
+  const toggleSort = (key: string) => {
+    if (statSort === key) setSortAsc(!sortAsc);
+    else { setStatSort(key); setSortAsc(false); }
+  };
+
+  const playerProps = (playerId: string): PropLine[] => props.filter((p) => p.playerId === playerId);
+
+  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
+    { key: "stats", label: "Player Stats", icon: BarChart3 },
+    { key: "trends", label: "Trends", icon: Activity },
+    { key: "matchups", label: "Matchups", icon: Swords },
+  ];
+
+  return (
+    <div className="container py-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Research Dashboard</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Deep-dive into player stats, trends, and matchup data</p>
+      </div>
+
+      <div className="mb-4">
+        <SportFilter active={sport} onChange={(s) => { setSport(s); setSearch(""); setPosFilter("All"); setTeamFilter("All"); }} />
+      </div>
+
+      {/* Injury Ticker */}
+      {sportInjuries.length > 0 && (
+        <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-lg border border-border bg-card px-3 py-2 scrollbar-thin">
+          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-yellow-500" />
+          <span className="text-[10px] font-bold text-muted-foreground flex-shrink-0">INJURIES</span>
+          {sportInjuries.slice(0, 8).map((inj, i) => (
+            <span key={i} className="flex-shrink-0 rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-muted-foreground">
+              <span className="font-semibold text-foreground">{inj.player}</span>
+              <span className="mx-1">·</span>
+              <span className={inj.status === "Out" ? "text-red-400" : inj.status === "Questionable" ? "text-yellow-400" : "text-muted-foreground"}>
+                {inj.status}
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="mb-4 flex items-center gap-1 rounded-lg border border-border bg-card p-1">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition-colors ${
+              tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <t.icon className="h-3.5 w-3.5" />
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ─── STATS TAB ─── */}
+      {tab === "stats" && (
+        <div>
+          {/* Filters */}
+          <button
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="mb-3 flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Filter className="h-3.5 w-3.5" />
+            Filters
+            {filtersOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          </button>
+
+          {filtersOpen && (
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Position</label>
+                <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                  {positions.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Team</label>
+                <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                  {teamOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Min Games</label>
+                <input type="number" value={minGames} onChange={(e) => setMinGames(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground" min={0} />
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Sort By</label>
+                <select value={statSort} onChange={(e) => setStatSort(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                  {statOptions.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search player or team…"
+              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+            />
+          </div>
+
+          {/* Stat Column Headers */}
+          <div className="mb-2 hidden sm:grid grid-cols-[2fr_repeat(6,1fr)] gap-1 px-3">
+            <span className="text-[9px] font-bold uppercase text-muted-foreground">Player</span>
+            {statOptions.map((s) => (
+              <button key={s} onClick={() => toggleSort(s)} className={`text-[9px] font-bold uppercase text-center transition-colors ${statSort === s ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+                {s.slice(0, 3).toUpperCase()}
+                {statSort === s && (sortAsc ? " ↑" : " ↓")}
+              </button>
+            ))}
+          </div>
+
+          {/* Player Rows */}
+          <div className="space-y-1">
+            {filtered.map((player) => {
+              const avg = player.seasonAverages;
+              const trend = getTrend(player);
+              const pProps = playerProps(player.id);
+              const isExpanded = expandedPlayer === player.id;
+              const TIcon = trend.dir === "up" ? TrendingUp : trend.dir === "down" ? TrendingDown : Minus;
+
+              return (
+                <div key={player.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                  <button
+                    onClick={() => setExpandedPlayer(isExpanded ? null : player.id)}
+                    className="w-full grid grid-cols-[2fr_repeat(6,1fr)] gap-1 items-center px-3 py-2.5 text-left hover:bg-secondary/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary text-[9px] font-bold text-secondary-foreground flex-shrink-0">
+                        {player.teamAbbr}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">{player.name}</p>
+                        <p className="text-[9px] text-muted-foreground">{player.position} · #{player.number}</p>
+                      </div>
+                      <TIcon className={`h-3 w-3 flex-shrink-0 ${trend.dir === "up" ? "text-emerald-500" : trend.dir === "down" ? "text-red-400" : "text-muted-foreground"}`} />
+                    </div>
+                    {statOptions.map((s) => (
+                      <span key={s} className="text-center font-mono text-xs font-semibold text-foreground">
+                        {(avg[s as keyof typeof avg] as number).toFixed(1)}
+                      </span>
+                    ))}
+                  </button>
+
+                  {/* Expanded Detail */}
+                  {isExpanded && (
+                    <div className="border-t border-border px-4 py-4 space-y-4 animate-fade-in">
+                      {/* Split: Season / L10 / L5 */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {(["seasonAverages", "last10", "last5"] as const).map((period) => {
+                          const label = period === "seasonAverages" ? "Season" : period === "last10" ? "Last 10" : "Last 5";
+                          const data = player[period];
+                          return (
+                            <div key={period} className="rounded-lg bg-secondary/40 p-2.5">
+                              <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1.5">{label}</p>
+                              <div className="space-y-1">
+                                {statOptions.slice(0, 4).map((s) => (
+                                  <div key={s} className="flex items-center justify-between">
+                                    <span className="text-[9px] text-muted-foreground">{s.slice(0, 3).toUpperCase()}</span>
+                                    <span className="font-mono text-[11px] font-semibold text-foreground">
+                                      {(data[s as keyof typeof data] as number).toFixed(1)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Sparkline Chart */}
+                      <div>
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Last 15 Games — {statSort.charAt(0).toUpperCase() + statSort.slice(1)}</p>
+                        <div className="h-24 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={generateSparkline(player, statSort as any)} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                              <XAxis dataKey="g" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                              <YAxis tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                              <ReferenceLine y={avg[statSort as keyof typeof avg] as number} stroke="hsl(var(--primary))" strokeDasharray="4 3" strokeWidth={1.5} />
+                              <Tooltip
+                                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px", color: "hsl(var(--foreground))" }}
+                              />
+                              <Bar dataKey="v" radius={[2, 2, 0, 0]} fill="hsl(var(--primary) / 0.5)" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      {/* Active Props */}
+                      {pProps.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1.5">Active Props</p>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {pProps.map((prop) => (
+                              <div key={prop.id} className="rounded-lg border border-border/50 bg-secondary/30 px-2.5 py-2 flex items-center justify-between">
+                                <div>
+                                  <span className="text-[10px] text-muted-foreground">{prop.stat}</span>
+                                  <span className="ml-1.5 font-mono text-xs font-bold text-foreground">{prop.line}</span>
+                                </div>
+                                <span className={`font-mono text-[10px] font-bold ${prop.hitRate >= 60 ? "text-emerald-500" : prop.hitRate <= 40 ? "text-red-400" : "text-muted-foreground"}`}>
+                                  {prop.hitRate}%
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <Link
+                        to={`/player/${player.id}`}
+                        className="block text-center text-[10px] font-semibold text-primary hover:underline"
+                      >
+                        View Full Profile →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-12">No players match your filters</p>
+            )}
+          </div>
+
+          <p className="mt-3 text-center text-[10px] text-muted-foreground">{filtered.length} player{filtered.length !== 1 ? "s" : ""}</p>
+        </div>
+      )}
+
+      {/* ─── TRENDS TAB ─── */}
+      {tab === "trends" && (
+        <div>
+          <div className="relative mb-4">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search player…"
+              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Hot */}
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="border-b border-border bg-secondary/30 px-3 py-2 flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+                <span className="text-xs font-bold text-foreground">Trending Up</span>
+              </div>
+              <div className="divide-y divide-border/30">
+                {trendPlayers.filter((t) => t.trend.dir === "up").slice(0, 8).map(({ player, trend }) => (
+                  <Link key={player.id} to={`/player/${player.id}`} className="flex items-center justify-between px-3 py-2 hover:bg-secondary/30 transition-colors">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">{player.name}</p>
+                      <p className="text-[9px] text-muted-foreground">{player.teamAbbr} · {player.position}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="font-mono text-xs font-bold text-emerald-500">+{trend.pct}%</span>
+                      <p className="text-[9px] text-muted-foreground">{player.last5.points.toFixed(1)} L5 PPG</p>
+                    </div>
+                  </Link>
+                ))}
+                {trendPlayers.filter((t) => t.trend.dir === "up").length === 0 && (
+                  <p className="text-center text-xs text-muted-foreground py-6">No upward trends found</p>
+                )}
+              </div>
+            </div>
+
+            {/* Cold */}
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="border-b border-border bg-secondary/30 px-3 py-2 flex items-center gap-1.5">
+                <TrendingDown className="h-3.5 w-3.5 text-red-400" />
+                <span className="text-xs font-bold text-foreground">Trending Down</span>
+              </div>
+              <div className="divide-y divide-border/30">
+                {trendPlayers.filter((t) => t.trend.dir === "down").slice(0, 8).map(({ player, trend }) => (
+                  <Link key={player.id} to={`/player/${player.id}`} className="flex items-center justify-between px-3 py-2 hover:bg-secondary/30 transition-colors">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">{player.name}</p>
+                      <p className="text-[9px] text-muted-foreground">{player.teamAbbr} · {player.position}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="font-mono text-xs font-bold text-red-400">{trend.pct}%</span>
+                      <p className="text-[9px] text-muted-foreground">{player.last5.points.toFixed(1)} L5 PPG</p>
+                    </div>
+                  </Link>
+                ))}
+                {trendPlayers.filter((t) => t.trend.dir === "down").length === 0 && (
+                  <p className="text-center text-xs text-muted-foreground py-6">No downward trends found</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Props Value Finder */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="border-b border-border bg-secondary/30 px-3 py-2">
+              <span className="text-xs font-bold text-foreground">🎯 High Hit Rate Props (≥65%)</span>
+            </div>
+            <div className="divide-y divide-border/30">
+              {props.filter((p) => p.hitRate >= 65).sort((a, b) => b.hitRate - a.hitRate).slice(0, 12).map((prop) => (
+                <div key={prop.id} className="flex items-center justify-between px-3 py-2">
+                  <div>
+                    <Link to={`/player/${prop.playerId}`} className="text-xs font-semibold text-foreground hover:text-primary transition-colors">{prop.playerName}</Link>
+                    <p className="text-[9px] text-muted-foreground">{prop.teamAbbr} · {prop.stat} {prop.line}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${prop.hitRate}%` }} />
+                    </div>
+                    <span className="font-mono text-[11px] font-bold text-emerald-500">{prop.hitRate}%</span>
+                  </div>
+                </div>
+              ))}
+              {props.filter((p) => p.hitRate >= 65).length === 0 && (
+                <p className="text-center text-xs text-muted-foreground py-6">No high hit-rate props found</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MATCHUPS TAB ─── */}
+      {tab === "matchups" && (
+        <div>
+          {/* Team selector */}
+          <div className="mb-4 flex flex-wrap gap-1.5">
+            {teams.map((t) => {
+              const hasMatchup = sportMatchups.some((m) => m.team1Id === t.id || m.team2Id === t.id);
+              if (!hasMatchup) return null;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTeamFilter(teamFilter === t.abbreviation ? "All" : t.abbreviation)}
+                  className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                    teamFilter === t.abbreviation ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t.abbreviation}
+                </button>
+              );
+            })}
+          </div>
+
+          {sportMatchups.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-12">No matchup history available for {sport}</p>
+          ) : (
+            <>
+              {teams
+                .filter((t) => teamFilter === "All" || t.abbreviation === teamFilter)
+                .map((team) => {
+                  const teamMatchups = sportMatchups.filter((m) => m.team1Id === team.id || m.team2Id === team.id);
+                  if (teamMatchups.length === 0) return null;
+                  return (
+                    <div key={team.id} className="mb-4">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <Link to={`/team/${team.id}`} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
+                          {team.city} {team.name}
+                        </Link>
+                        <span className="text-[10px] text-muted-foreground">({team.record})</span>
+                      </div>
+                      <EnhancedH2HPanel matchups={teamMatchups} teamId={team.id} compact />
+                    </div>
+                  );
+                })}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ResearchDashboard;
