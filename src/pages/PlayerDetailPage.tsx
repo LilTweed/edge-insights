@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 import { Share2, RefreshCw, Home, Plane } from "lucide-react";
 import { usePlayerStats, usePlayerGameLog, type EspnSport, type GameLogEntry } from "@/hooks/useEspnData";
 
-const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "MLS", "WNBA", "NASCAR", "TENNIS"];
+const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "WNBA"];
 
 const PlayerDetailPage = () => {
   const { id } = useParams<{ id: string }>();

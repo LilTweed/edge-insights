@@ -102,7 +102,7 @@ export interface EspnPlayerStats {
 }
 
 type EspnEndpoint = "scoreboard" | "teams" | "standings" | "roster" | "player-stats" | "game-log" | "splits" | "search";
-export type EspnSport = "NBA" | "NFL" | "MLB" | "NHL" | "NCAAB" | "NCAAF" | "UFC" | "PGA" | "MLS" | "WNBA" | "NASCAR" | "TENNIS";
+export type EspnSport = "NBA" | "NFL" | "MLB" | "NHL" | "NCAAB" | "NCAAF" | "UFC" | "PGA" | "WNBA";
 
 export interface GameLogEntry {
   eventId: string;
