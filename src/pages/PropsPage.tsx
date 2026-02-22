@@ -1,15 +1,16 @@
 import { propLines, type Sport, type PropLine } from "@/data/mockData";
 import PropCard from "@/components/PropCard";
+import SportsbookComparisonWidget from "@/components/SportsbookComparisonWidget";
 import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
 import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
 import { useState, useMemo } from "react";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2 } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
-type ViewMode = "basic" | "advanced";
+type ViewMode = "basic" | "advanced" | "compare";
 
 const defaultAdvanced: AdvancedFilters = {
   teams: [],
@@ -119,6 +120,17 @@ const PropsPage = () => {
             >
               <LayoutGrid className="h-3.5 w-3.5" />
               Advanced
+            </button>
+            <button
+              onClick={() => setViewMode("compare")}
+              className={`inline-flex items-center gap-1 px-3 py-2 text-[10px] font-semibold transition-colors ${
+                viewMode === "compare"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Table2 className="h-3.5 w-3.5" />
+              Compare
             </button>
           </div>
           <button
@@ -285,21 +297,25 @@ const PropsPage = () => {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((prop) => (
-          <PropCard
-            key={prop.id}
-            prop={prop}
-            viewMode={viewMode}
-            onAddToSlip={(p, side) => {
-              window.dispatchEvent(new CustomEvent("lvrg-add-to-slip", { detail: { prop: p, side } }));
-            }}
-          />
-        ))}
-        {filtered.length === 0 && (
-          <p className="col-span-3 text-center text-sm text-muted-foreground py-12">No props match your filters</p>
-        )}
-      </div>
+      {viewMode === "compare" ? (
+        <SportsbookComparisonWidget props={filtered} />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((prop) => (
+            <PropCard
+              key={prop.id}
+              prop={prop}
+              viewMode={viewMode}
+              onAddToSlip={(p, side) => {
+                window.dispatchEvent(new CustomEvent("lvrg-add-to-slip", { detail: { prop: p, side } }));
+              }}
+            />
+          ))}
+          {filtered.length === 0 && (
+            <p className="col-span-3 text-center text-sm text-muted-foreground py-12">No props match your filters</p>
+          )}
+        </div>
+      )}
 
       <MiniSlipBuilder props={filtered} />
 
