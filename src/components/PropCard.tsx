@@ -1,6 +1,9 @@
+import { useState } from "react";
 import type { PropLine } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { Link } from "react-router-dom";
+import { ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
+import PropStatsPanel from "./PropStatsPanel";
 
 interface PropCardProps {
   prop: PropLine;
@@ -16,6 +19,7 @@ const impliedProb = (odds: number): number => {
 };
 
 const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" }: PropCardProps) => {
+  const [statsOpen, setStatsOpen] = useState(false);
   // Compute consensus implied probability from all sportsbooks (average of over odds)
   const avgImpliedOver = prop.sportsbooks.reduce((sum, sb) => sum + impliedProb(sb.over), 0) / prop.sportsbooks.length;
   const avgImpliedUnder = prop.sportsbooks.reduce((sum, sb) => sum + impliedProb(sb.under), 0) / prop.sportsbooks.length;
@@ -154,6 +158,18 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
           </div>
         </>
       )}
+
+      {/* Expand stats */}
+      <button
+        onClick={() => setStatsOpen(!statsOpen)}
+        className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-border/50 bg-secondary/30 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+      >
+        <BarChart3 className="h-3 w-3" />
+        {statsOpen ? "Hide Stats" : "Game Log & Charts"}
+        {statsOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+      </button>
+
+      {statsOpen && <PropStatsPanel prop={prop} />}
     </div>
   );
 };
