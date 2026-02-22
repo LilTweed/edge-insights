@@ -7,7 +7,7 @@ import SportFilter from "@/components/SportFilter";
 import {
   Bot, Send, Loader2, Sparkles, TrendingUp, Layers, Zap, Shield,
   DollarSign, Flame, Target, ThumbsUp, BarChart3, Activity,
-  Plus, Trash2, StickyNote, Wrench, MessageSquare, X, Check,
+  Plus, Trash2, StickyNote, Wrench, MessageSquare, X, Check, Search,
 } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -155,6 +155,9 @@ export default function AIPropBuilderPage() {
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newNoteBody, setNewNoteBody] = useState("");
   const [newNoteTags, setNewNoteTags] = useState("");
+  const [noteSearch, setNoteSearch] = useState("");
+  const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
+  const [noteSportFilter, setNoteSportFilter] = useState<Sport | "ALL">("ALL");
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
   useEffect(() => { localStorage.setItem("lvrg-stat-notes", JSON.stringify(notes)); }, [notes]);
@@ -228,6 +231,18 @@ export default function AIPropBuilderPage() {
   };
 
   const deleteNote = (id: string) => setNotes((prev) => prev.filter((n) => n.id !== id));
+
+  // Notes filtering
+  const allTags = Array.from(new Set(notes.flatMap((n) => n.tags)));
+  const filteredNotes = notes.filter((n) => {
+    if (noteSportFilter !== "ALL" && n.sport !== noteSportFilter) return false;
+    if (activeTagFilter && !n.tags.includes(activeTagFilter)) return false;
+    if (noteSearch) {
+      const q = noteSearch.toLowerCase();
+      return n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q) || n.tags.some((t) => t.toLowerCase().includes(q));
+    }
+    return true;
+  });
 
   const sportInjuryCount = injuries.filter((inj) => { const ta = new Set(allTeams.filter((t) => t.sport === sport).map((t) => t.abbreviation)); return ta.has(inj.teamAbbr); }).length;
   const sportPropCount = propLines.filter((p) => p.sport === sport).length;
@@ -546,15 +561,70 @@ export default function AIPropBuilderPage() {
             </div>
           </div>
 
-          {/* Notes list */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {notes.length === 0 && (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-                <StickyNote size={28} className="text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground">No notes yet — add observations, trends, and stat notes above</p>
+          {/* Search & filter bar */}
+          <div className="border-b border-border px-4 py-2.5 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={noteSearch}
+                  onChange={(e) => setNoteSearch(e.target.value)}
+                  placeholder="Search notes…"
+                  className="w-full rounded-lg border border-border bg-card pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+                />
+              </div>
+              <select
+                value={noteSportFilter}
+                onChange={(e) => setNoteSportFilter(e.target.value as Sport | "ALL")}
+                className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+              >
+                <option value="ALL">All Sports</option>
+                {(["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "Soccer", "Tennis", "Golf", "MMA"] as Sport[]).map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            {allTags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {activeTagFilter && (
+                  <button
+                    onClick={() => setActiveTagFilter(null)}
+                    className="rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[9px] font-medium text-destructive hover:bg-destructive/20 transition-colors"
+                  >
+                    ✕ Clear
+                  </button>
+                )}
+                {allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => setActiveTagFilter(activeTagFilter === tag ? null : tag)}
+                    className={`rounded-full border px-2 py-0.5 text-[9px] font-medium transition-colors ${
+                      activeTagFilter === tag
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
               </div>
             )}
-            {notes.map((note) => (
+            <div className="text-[10px] text-muted-foreground">
+              {filteredNotes.length} of {notes.length} note{notes.length !== 1 ? "s" : ""}
+            </div>
+          </div>
+
+          {/* Notes list */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {filteredNotes.length === 0 && (
+              <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                <StickyNote size={28} className="text-muted-foreground/40" />
+                <p className="text-xs text-muted-foreground">
+                  {notes.length === 0 ? "No notes yet — add observations, trends, and stat notes above" : "No notes match your filters"}
+                </p>
+              </div>
+            )}
+            {filteredNotes.map((note) => (
               <div key={note.id} className="rounded-xl border border-border bg-card p-3.5 animate-fade-in">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
@@ -569,9 +639,17 @@ export default function AIPropBuilderPage() {
                     {note.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {note.tags.map((tag) => (
-                          <span key={tag} className="rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-[9px] font-medium text-primary">
+                          <button
+                            key={tag}
+                            onClick={() => setActiveTagFilter(tag)}
+                            className={`rounded-full border px-2 py-0.5 text-[9px] font-medium transition-colors cursor-pointer ${
+                              activeTagFilter === tag
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+                            }`}
+                          >
                             {tag}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     )}
