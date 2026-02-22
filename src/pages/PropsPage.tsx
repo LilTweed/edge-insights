@@ -6,7 +6,8 @@ import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
 import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
-import { useSportsRadar } from "@/hooks/useSportsRadar";
+import { useLiveOdds } from "@/hooks/useLiveOdds";
+import { useSportsRadarSchedule } from "@/hooks/useSportsRadar";
 import { useState, useMemo } from "react";
 import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -39,11 +40,14 @@ const PropsPage = () => {
   const scoreboard = useLiveScoreboard(isEspnSport ? (sport as EspnSport) : "NBA");
   const games = isEspnSport ? (scoreboard.data?.games || []) : [];
 
-  // Live odds from SportsRadar
-  const { data: liveOddsData, isLoading: liveLoading, isFetching: liveFetching } = useSportsRadar(
+  // Live odds from The Odds API
+  const { data: liveOddsData, isLoading: liveLoading, isFetching: liveFetching } = useLiveOdds(
     sport as EspnSport,
     liveMode && isEspnSport
   );
+
+  // SportsRadar schedule (supplements ESPN data)
+  const _srSchedule = useSportsRadarSchedule(sport as EspnSport, liveMode && isEspnSport);
 
   const mockProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
   
@@ -116,7 +120,7 @@ const PropsPage = () => {
           {liveMode && liveOddsData?.needsApiKey && (
             <p className="mt-0.5 flex items-center gap-1 text-[10px] text-destructive/70 font-medium">
               <AlertTriangle className="h-3 w-3" />
-              API key needed — add SPORTSRADAR_API_KEY in backend secrets
+              API key needed — add ODDS_API_KEY in backend secrets
             </p>
           )}
           {isLiveActive && (
