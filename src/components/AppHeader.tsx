@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navItems = [
   { label: "Games", path: "/" },
@@ -39,6 +40,7 @@ const AppHeader = () => {
             </Link>
           ))}
         </nav>
+        <ThemeToggle />
       </div>
     </header>
   );
