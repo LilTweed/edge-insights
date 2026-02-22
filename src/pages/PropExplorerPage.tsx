@@ -1,0 +1,397 @@
+import { useState, useMemo } from "react";
+import { propLines, type Sport, type PropLine, formatOdds } from "@/data/mockData";
+import SportFilter from "@/components/SportFilter";
+import { Link } from "react-router-dom";
+import {
+  Search,
+  HelpCircle,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Filter,
+  X,
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// ─── Beginner-friendly tooltip definitions ─────────────────────────
+
+const TERMS: Record<string, string> = {
+  "Prop":
+    "A prop (proposition) bet is a wager on a specific player stat — like how many points they'll score — rather than the game outcome.",
+  "Line":
+    "The number set by sportsbooks. You bet whether the player will go OVER or UNDER this number.",
+  "Hit Rate":
+    "How often the player has gone over the line this season, shown as a percentage. Higher = more consistent.",
+  "Over":
+    "A bet that the player will exceed the line. The number shown (e.g. -110) is the odds — negative means you risk that amount to win $100.",
+  "Under":
+    "A bet that the player will stay below the line. Same odds format as Over.",
+  "Edge":
+    "The difference between the actual hit rate and what the odds imply. Positive edge = potential value.",
+  "Last 10":
+    "Hit rate based only on the player's most recent 10 games, showing current form.",
+  "Games Played":
+    "Total games this season where this stat was tracked. More games = more reliable hit rate.",
+};
+
+function TermTooltip({ term, children }: { term: string; children: React.ReactNode }) {
+  const explanation = TERMS[term];
+  if (!explanation) return <>{children}</>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-0.5 cursor-help border-b border-dotted border-muted-foreground/40">
+          {children}
+          <HelpCircle className="h-3 w-3 text-muted-foreground/60" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
+        <p className="font-semibold text-foreground mb-0.5">{term}</p>
+        <p className="text-muted-foreground">{explanation}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── Confidence badge ──────────────────────────────────────────────
+
+function ConfidenceBadge({ gamesPlayed }: { gamesPlayed: number }) {
+  if (gamesPlayed >= 30)
+    return <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[9px] font-bold text-success">Reliable</span>;
+  if (gamesPlayed >= 15)
+    return <span className="rounded-full bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-bold text-yellow-500">Moderate</span>;
+  return <span className="rounded-full bg-destructive/15 px-1.5 py-0.5 text-[9px] font-bold text-destructive">Small sample</span>;
+}
+
+// ─── Trend indicator ───────────────────────────────────────────────
+
+function TrendIndicator({ hitRate, hitRateLast10 }: { hitRate: number; hitRateLast10: number }) {
+  const diff = hitRateLast10 - hitRate;
+  if (Math.abs(diff) < 3)
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+            <Minus className="h-3 w-3" />
+            <span className="text-[10px] font-mono">Stable</span>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="text-xs">Recent form is similar to the season average</TooltipContent>
+      </Tooltip>
+    );
+  if (diff > 0)
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-0.5 text-success">
+            <TrendingUp className="h-3 w-3" />
+            <span className="text-[10px] font-mono">+{diff.toFixed(0)}%</span>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="text-xs">Trending up — recent games are better than season average</TooltipContent>
+      </Tooltip>
+    );
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-0.5 text-destructive">
+          <TrendingDown className="h-3 w-3" />
+          <span className="text-[10px] font-mono">{diff.toFixed(0)}%</span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="text-xs">Trending down — recent games are below season average</TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── Simple filter chips ───────────────────────────────────────────
+
+const STAT_CATEGORIES: Record<string, string[]> = {
+  NBA: ["Points", "Rebounds", "Assists", "3-Pointers", "Steals", "Blocks"],
+  NFL: ["Pass Yards", "Rush Yards", "Receptions", "TDs"],
+  MLB: ["Hits", "RBIs", "Strikeouts", "Total Bases"],
+  NHL: ["Goals", "Assists", "Shots", "Saves"],
+  NCAAB: ["Points", "Rebounds", "Assists"],
+  NCAAF: ["Pass Yards", "Rush Yards", "TDs"],
+  UFC: [],
+  PGA: [],
+};
+
+// ─── Page ──────────────────────────────────────────────────────────
+
+const PropExplorerPage = () => {
+  const [sport, setSport] = useState<Sport>("NBA");
+  const [search, setSearch] = useState("");
+  const [selectedStat, setSelectedStat] = useState<string | null>(null);
+  const [minHitRate, setMinHitRate] = useState<number>(0);
+
+  const allProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
+  const stats = useMemo(() => Array.from(new Set(allProps.map((p) => p.stat))).sort(), [allProps]);
+
+  const filtered = useMemo(() => {
+    let list = allProps;
+    if (selectedStat) list = list.filter((p) => p.stat === selectedStat);
+    if (minHitRate > 0) list = list.filter((p) => p.hitRate >= minHitRate);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.playerName.toLowerCase().includes(q) ||
+          p.teamAbbr.toLowerCase().includes(q) ||
+          p.stat.toLowerCase().includes(q)
+      );
+    }
+    return list.sort((a, b) => b.hitRate - a.hitRate);
+  }, [allProps, selectedStat, minHitRate, search]);
+
+  const hasFilters = selectedStat || minHitRate > 0 || search;
+
+  return (
+    <div className="container py-6 max-w-4xl">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Prop Explorer</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Browse player props with plain-English explanations.{" "}
+          <TermTooltip term="Prop">
+            <span className="text-primary">What's a prop?</span>
+          </TermTooltip>
+        </p>
+      </div>
+
+      {/* Sport filter */}
+      <div className="mb-4">
+        <SportFilter active={sport} onChange={(s) => { setSport(s); setSelectedStat(null); }} />
+      </div>
+
+      {/* Search + quick filters */}
+      <div className="mb-4 space-y-3">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by player, team, or stat…"
+            className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+          />
+        </div>
+
+        {/* Stat chips */}
+        <div className="flex flex-wrap gap-1.5">
+          <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground mr-1">
+            <Filter className="h-3 w-3" /> Stat:
+          </span>
+          <button
+            onClick={() => setSelectedStat(null)}
+            className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition-colors ${
+              !selectedStat
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            All
+          </button>
+          {stats.map((stat) => (
+            <button
+              key={stat}
+              onClick={() => setSelectedStat(selectedStat === stat ? null : stat)}
+              className={`rounded-full px-2.5 py-1 text-[10px] font-semibold transition-colors ${
+                selectedStat === stat
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {stat}
+            </button>
+          ))}
+        </div>
+
+        {/* Hit rate slider */}
+        <div className="flex items-center gap-3">
+          <TermTooltip term="Hit Rate">
+            <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+              Min Hit Rate
+            </span>
+          </TermTooltip>
+          <input
+            type="range"
+            min={0}
+            max={90}
+            step={5}
+            value={minHitRate}
+            onChange={(e) => setMinHitRate(Number(e.target.value))}
+            className="flex-1 accent-primary h-1.5"
+          />
+          <span className="font-mono text-xs font-semibold text-foreground w-10 text-right">
+            {minHitRate}%
+          </span>
+        </div>
+
+        {hasFilters && (
+          <button
+            onClick={() => { setSearch(""); setSelectedStat(null); setMinHitRate(0); }}
+            className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-3 w-3" /> Clear filters
+          </button>
+        )}
+      </div>
+
+      {/* Results count */}
+      <p className="mb-3 text-[11px] text-muted-foreground">
+        {filtered.length} prop{filtered.length !== 1 ? "s" : ""} found
+      </p>
+
+      {/* Props list */}
+      <div className="space-y-3">
+        {filtered.map((prop) => (
+          <ExplorerCard key={prop.id} prop={prop} />
+        ))}
+        {filtered.length === 0 && (
+          <div className="py-16 text-center">
+            <p className="text-sm text-muted-foreground">No props match your filters</p>
+            <button
+              onClick={() => { setSearch(""); setSelectedStat(null); setMinHitRate(0); }}
+              className="mt-2 text-xs text-primary hover:underline"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Glossary */}
+      <div className="mt-10 rounded-xl border border-border/60 bg-card/50 p-5">
+        <h2 className="mb-3 text-sm font-bold text-foreground">📖 Quick Glossary</h2>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {Object.entries(TERMS).map(([term, desc]) => (
+            <div key={term} className="flex gap-2">
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap">{term}:</span>
+              <span className="text-xs text-muted-foreground">{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Explorer Card ─────────────────────────────────────────────────
+
+function ExplorerCard({ prop }: { prop: PropLine }) {
+  const gamesOver = Math.round((prop.hitRate / 100) * prop.gamesPlayed);
+  const bestOver = prop.sportsbooks.length > 0
+    ? prop.sportsbooks.reduce((best, sb) => (sb.over > best.over ? sb : best))
+    : null;
+  const bestUnder = prop.sportsbooks.length > 0
+    ? prop.sportsbooks.reduce((best, sb) => (sb.under > best.under ? sb : best))
+    : null;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+      {/* Top row: player + team + confidence */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/player/${prop.playerId}`}
+            className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+          >
+            {prop.playerName}
+          </Link>
+          <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+            {prop.teamAbbr}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <TrendIndicator hitRate={prop.hitRate} hitRateLast10={prop.hitRateLast10} />
+          <ConfidenceBadge gamesPlayed={prop.gamesPlayed} />
+        </div>
+      </div>
+
+      {/* Middle: stat + line + hit rate */}
+      <div className="mb-3 flex items-center gap-4">
+        <div className="flex-1">
+          <div className="flex items-baseline gap-2">
+            <TermTooltip term="Line">
+              <span className="text-xs text-muted-foreground">{prop.stat}</span>
+            </TermTooltip>
+            <span className="font-mono text-xl font-bold text-foreground">{prop.line}</span>
+          </div>
+        </div>
+        <div className="text-right">
+          <TermTooltip term="Hit Rate">
+            <span className="text-[10px] text-muted-foreground">Season</span>
+          </TermTooltip>
+          <p className="font-mono text-lg font-bold text-foreground">{prop.hitRate}%</p>
+          <p className="text-[10px] font-mono text-muted-foreground">
+            {gamesOver}/{prop.gamesPlayed} over
+          </p>
+        </div>
+      </div>
+
+      {/* Hit rate bar */}
+      <div className="mb-3">
+        <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="h-full rounded-l-full bg-foreground/30 transition-all cursor-help"
+                style={{ width: `${prop.hitRate}%` }}
+              />
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">
+              Over the line in {gamesOver} of {prop.gamesPlayed} games ({prop.hitRate}%)
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <div className="mt-1 flex justify-between text-[9px] text-muted-foreground">
+          <span>0%</span>
+          <TermTooltip term="Last 10">
+            <span className="font-mono">L10: {prop.hitRateLast10}%</span>
+          </TermTooltip>
+          <span>100%</span>
+        </div>
+      </div>
+
+      {/* Best odds row */}
+      {(bestOver || bestUnder) && (
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">Best odds:</span>
+          {bestOver && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="rounded-md bg-success/10 px-2 py-0.5 text-[10px] font-mono font-semibold text-success cursor-help">
+                  O {formatOdds(bestOver.over)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">
+                Best Over odds at {bestOver.sportsbook} — {TERMS.Over}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {bestUnder && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="rounded-md bg-destructive/10 px-2 py-0.5 text-[10px] font-mono font-semibold text-destructive cursor-help">
+                  U {formatOdds(bestUnder.under)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">
+                Best Under odds at {bestUnder.sportsbook} — {TERMS.Under}
+              </TooltipContent>
+            </Tooltip>
+          )}
+          <span className="ml-auto text-[9px] text-muted-foreground">
+            {prop.sportsbooks.length} book{prop.sportsbooks.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default PropExplorerPage;

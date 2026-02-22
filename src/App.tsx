@@ -26,6 +26,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SportsRadarTestPage from "./pages/SportsRadarTestPage";
 import PricingPage from "./pages/PricingPage";
 import ProfilePage from "./pages/ProfilePage";
+import PropExplorerPage from "./pages/PropExplorerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/login" element={<AuthPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/props" element={<PropsPage />} />
+          <Route path="/explore" element={<PropExplorerPage />} />
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/player/:id" element={<PlayerDetailPage />} />
           <Route path="/game/:id" element={<GameDetailPage />} />
