@@ -9,8 +9,6 @@ const navItems = [
   { label: "Props", path: "/props" },
   { label: "Research", path: "/research" },
   { label: "AI Chat", path: "/ai-chat" },
-  { label: "Players", path: "/players" },
-  { label: "Teams", path: "/teams" },
 ];
 
 const AppHeader = () => {
