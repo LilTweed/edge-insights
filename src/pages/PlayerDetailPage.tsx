@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Share2, RefreshCw } from "lucide-react";
 import { usePlayerStats, type EspnSport } from "@/hooks/useEspnData";
 
-const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF"];
+const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "MLS", "WNBA", "NASCAR", "TENNIS"];
 
 const PlayerDetailPage = () => {
   const { id } = useParams<{ id: string }>();

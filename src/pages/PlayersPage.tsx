@@ -7,7 +7,7 @@ import SportFilter from "@/components/SportFilter";
 import { useEspnTeams, useTeamRoster, type EspnSport, type EspnRosterPlayer } from "@/hooks/useEspnData";
 import { RefreshCw, Search } from "lucide-react";
 
-const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF"] as const;
+const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "MLS", "WNBA", "NASCAR", "TENNIS"] as const;
 
 const PlayersPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");

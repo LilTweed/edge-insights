@@ -102,7 +102,7 @@ export interface EspnPlayerStats {
 }
 
 type EspnEndpoint = "scoreboard" | "teams" | "standings" | "roster" | "player-stats" | "search";
-export type EspnSport = "NBA" | "NFL" | "MLB" | "NHL" | "NCAAB" | "NCAAF";
+export type EspnSport = "NBA" | "NFL" | "MLB" | "NHL" | "NCAAB" | "NCAAF" | "UFC" | "PGA" | "MLS" | "WNBA" | "NASCAR" | "TENNIS";
 
 async function fetchEspn(sport: EspnSport, endpoint: EspnEndpoint, extra?: Record<string, string>) {
   const { data, error } = await supabase.functions.invoke("espn-data", {

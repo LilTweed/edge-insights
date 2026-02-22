@@ -231,3 +231,125 @@ export const nhlProps: PropLine[] = [
   { id: "nhlp2", playerId: "ao8", playerName: "Alex Ovechkin", teamAbbr: "WSH", stat: "Points", line: 0.5, gamesPlayed: 58, sport: "NHL", hitRate: 68, hitRateLast10: 72, sportsbooks: [{ sportsbook: "FanDuel", line: 0.5, over: -142, under: 118 }, { sportsbook: "DraftKings", line: 0.5, over: -138, under: 115 }, { sportsbook: "Fanatics", line: 0.5, over: -145, under: 120 }, { sportsbook: "BetMGM", line: 0.5, over: -140, under: 118 }] },
 ];
 
+// ===================== UFC =====================
+export const ufcTeams: Team[] = [
+  { id: "ufc_hw", name: "Heavyweight", abbreviation: "HW", city: "UFC", record: "", conference: "Men's", division: "Heavyweight", sport: "UFC", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "ufc_lhw", name: "Light Heavyweight", abbreviation: "LHW", city: "UFC", record: "", conference: "Men's", division: "Light Heavyweight", sport: "UFC", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "ufc_mw", name: "Middleweight", abbreviation: "MW", city: "UFC", record: "", conference: "Men's", division: "Middleweight", sport: "UFC", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "ufc_ww", name: "Welterweight", abbreviation: "WW", city: "UFC", record: "", conference: "Men's", division: "Welterweight", sport: "UFC", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "ufc_lw", name: "Lightweight", abbreviation: "LW", city: "UFC", record: "", conference: "Men's", division: "Lightweight", sport: "UFC", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+];
+
+export const ufcGames: Game[] = [];
+
+// UFC players: stats repurposed — points=wins, rebounds=losses, assists=KOs, steals=submissions
+export const ufcPlayers: Player[] = [
+  { id: "ufc_ip", name: "Islam Makhachev", team: "Lightweight", teamAbbr: "LW", position: "Champion", number: 0, sport: "UFC", stats: { gamesPlayed: 26 }, seasonAverages: { points: 26, rebounds: 1, assists: 5, steals: 11, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 10, rebounds: 0, assists: 3, steals: 4, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 5, rebounds: 0, assists: 2, steals: 2, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 } },
+  { id: "ufc_ad", name: "Alex Pereira", team: "Light Heavyweight", teamAbbr: "LHW", position: "Champion", number: 0, sport: "UFC", stats: { gamesPlayed: 12 }, seasonAverages: { points: 11, rebounds: 1, assists: 8, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 9, rebounds: 1, assists: 7, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 5, rebounds: 0, assists: 4, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 } },
+  { id: "ufc_jj", name: "Jon Jones", team: "Heavyweight", teamAbbr: "HW", position: "Champion", number: 0, sport: "UFC", stats: { gamesPlayed: 29 }, seasonAverages: { points: 28, rebounds: 1, assists: 10, steals: 6, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 9, rebounds: 1, assists: 3, steals: 3, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 4, rebounds: 1, assists: 1, steals: 2, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 } },
+  { id: "ufc_sd", name: "Sean O'Malley", team: "Bantamweight", teamAbbr: "BW", position: "Fighter", number: 0, sport: "UFC", stats: { gamesPlayed: 20 }, seasonAverages: { points: 18, rebounds: 2, assists: 11, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 8, rebounds: 2, assists: 5, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 4, rebounds: 1, assists: 3, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 } },
+];
+
+export const ufcProps: PropLine[] = [
+  { id: "ufcp1", playerId: "ufc_ip", playerName: "Islam Makhachev", teamAbbr: "LW", stat: "Total Rounds", line: 2.5, gamesPlayed: 26, sport: "UFC", hitRate: 58, hitRateLast10: 62, sportsbooks: [{ sportsbook: "FanDuel", line: 2.5, over: -130, under: 108 }, { sportsbook: "DraftKings", line: 2.5, over: -125, under: 105 }, { sportsbook: "Fanatics", line: 2.5, over: -135, under: 112 }, { sportsbook: "BetMGM", line: 2.5, over: -128, under: 106 }] },
+  { id: "ufcp2", playerId: "ufc_ad", playerName: "Alex Pereira", teamAbbr: "LHW", stat: "Total Rounds", line: 1.5, gamesPlayed: 12, sport: "UFC", hitRate: 42, hitRateLast10: 40, sportsbooks: [{ sportsbook: "FanDuel", line: 1.5, over: 105, under: -125 }, { sportsbook: "DraftKings", line: 1.5, over: 110, under: -130 }, { sportsbook: "Fanatics", line: 1.5, over: 108, under: -128 }, { sportsbook: "BetMGM", line: 1.5, over: 102, under: -122 }] },
+  { id: "ufcp3", playerId: "ufc_jj", playerName: "Jon Jones", teamAbbr: "HW", stat: "Total Rounds", line: 3.5, gamesPlayed: 29, sport: "UFC", hitRate: 55, hitRateLast10: 50, sportsbooks: [{ sportsbook: "FanDuel", line: 3.5, over: -110, under: -110 }, { sportsbook: "DraftKings", line: 3.5, over: -108, under: -112 }, { sportsbook: "Fanatics", line: 3.5, over: -115, under: -105 }, { sportsbook: "BetMGM", line: 3.5, over: -105, under: -115 }] },
+];
+
+// ===================== PGA (Golf) =====================
+export const pgaTeams: Team[] = [
+  { id: "pga_tour", name: "PGA Tour", abbreviation: "PGA", city: "PGA", record: "", conference: "PGA", division: "Tour", sport: "PGA", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "pga_liv", name: "LIV Golf", abbreviation: "LIV", city: "LIV", record: "", conference: "LIV", division: "LIV", sport: "PGA", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+];
+
+export const pgaGames: Game[] = [];
+
+// Golf players: points=wins(season), rebounds=top10s, assists=cuts made, fgPct=scoring avg, threePct=driving distance
+export const pgaPlayers: Player[] = [
+  { id: "pga_ss", name: "Scottie Scheffler", team: "PGA Tour", teamAbbr: "PGA", position: "No. 1", number: 0, sport: "PGA", stats: { gamesPlayed: 18 }, seasonAverages: { points: 9, rebounds: 14, assists: 17, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 68.2, threePct: 302.5, ftPct: 0 }, last10: { points: 5, rebounds: 8, assists: 10, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 67.8, threePct: 305.2, ftPct: 0 }, last5: { points: 3, rebounds: 4, assists: 5, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 67.5, threePct: 308.1, ftPct: 0 } },
+  { id: "pga_rm", name: "Rory McIlroy", team: "PGA Tour", teamAbbr: "PGA", position: "No. 3", number: 0, sport: "PGA", stats: { gamesPlayed: 16 }, seasonAverages: { points: 3, rebounds: 10, assists: 14, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 69.1, threePct: 318.8, ftPct: 0 }, last10: { points: 2, rebounds: 6, assists: 9, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 68.8, threePct: 320.5, ftPct: 0 }, last5: { points: 1, rebounds: 3, assists: 5, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 69.2, threePct: 322.1, ftPct: 0 } },
+  { id: "pga_xc", name: "Xander Schauffele", team: "PGA Tour", teamAbbr: "PGA", position: "No. 2", number: 0, sport: "PGA", stats: { gamesPlayed: 17 }, seasonAverages: { points: 4, rebounds: 11, assists: 15, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 68.5, threePct: 305.8, ftPct: 0 }, last10: { points: 3, rebounds: 7, assists: 9, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 68.2, threePct: 308.2, ftPct: 0 }, last5: { points: 2, rebounds: 4, assists: 5, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 67.9, threePct: 310.5, ftPct: 0 } },
+];
+
+export const pgaProps: PropLine[] = [
+  { id: "pgap1", playerId: "pga_ss", playerName: "Scottie Scheffler", teamAbbr: "PGA", stat: "Top 10 Finish", line: 0.5, gamesPlayed: 18, sport: "PGA", hitRate: 78, hitRateLast10: 82, sportsbooks: [{ sportsbook: "FanDuel", line: 0.5, over: -220, under: 175 }, { sportsbook: "DraftKings", line: 0.5, over: -210, under: 168 }, { sportsbook: "Fanatics", line: 0.5, over: -225, under: 180 }, { sportsbook: "BetMGM", line: 0.5, over: -215, under: 172 }] },
+  { id: "pgap2", playerId: "pga_rm", playerName: "Rory McIlroy", teamAbbr: "PGA", stat: "Top 10 Finish", line: 0.5, gamesPlayed: 16, sport: "PGA", hitRate: 62, hitRateLast10: 65, sportsbooks: [{ sportsbook: "FanDuel", line: 0.5, over: -155, under: 130 }, { sportsbook: "DraftKings", line: 0.5, over: -150, under: 125 }, { sportsbook: "Fanatics", line: 0.5, over: -160, under: 135 }, { sportsbook: "BetMGM", line: 0.5, over: -152, under: 128 }] },
+];
+
+// ===================== MLS =====================
+export const mlsTeams: Team[] = [
+  { id: "mls_lafc", name: "LAFC", abbreviation: "LAFC", city: "Los Angeles", record: "18-8-8", conference: "Western", division: "Western", sport: "MLS", stats: { ppg: 1.8, oppPpg: 1.1, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "mls_inter", name: "Inter Miami", abbreviation: "MIA", city: "Fort Lauderdale", record: "22-4-8", conference: "Eastern", division: "Eastern", sport: "MLS", ranking: 1, stats: { ppg: 2.3, oppPpg: 1.0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "mls_cin", name: "FC Cincinnati", abbreviation: "CIN", city: "Cincinnati", record: "17-9-8", conference: "Eastern", division: "Eastern", sport: "MLS", stats: { ppg: 1.6, oppPpg: 1.2, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "mls_col", name: "Columbus Crew", abbreviation: "CLB", city: "Columbus", record: "19-7-8", conference: "Eastern", division: "Eastern", sport: "MLS", ranking: 2, stats: { ppg: 1.9, oppPpg: 1.0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+];
+
+export const mlsGames: Game[] = [];
+
+export const mlsPlayers: Player[] = [
+  { id: "mls_lm", name: "Lionel Messi", team: "Inter Miami", teamAbbr: "MIA", position: "FW", number: 10, sport: "MLS", stats: { gamesPlayed: 19 }, seasonAverages: { points: 15, rebounds: 16, assists: 15, steals: 0, blocks: 0, turnovers: 0, minutes: 75, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 8, rebounds: 9, assists: 8, steals: 0, blocks: 0, turnovers: 0, minutes: 78, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 5, rebounds: 5, assists: 4, steals: 0, blocks: 0, turnovers: 0, minutes: 80, fgPct: 0, threePct: 0, ftPct: 0 } },
+  { id: "mls_dc", name: "Denis Bouanga", team: "LAFC", teamAbbr: "LAFC", position: "FW", number: 99, sport: "MLS", stats: { gamesPlayed: 32 }, seasonAverages: { points: 20, rebounds: 8, assists: 20, steals: 0, blocks: 0, turnovers: 0, minutes: 85, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 6, rebounds: 3, assists: 7, steals: 0, blocks: 0, turnovers: 0, minutes: 86, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 4, rebounds: 2, assists: 3, steals: 0, blocks: 0, turnovers: 0, minutes: 88, fgPct: 0, threePct: 0, ftPct: 0 } },
+];
+
+export const mlsProps: PropLine[] = [
+  { id: "mlsp1", playerId: "mls_lm", playerName: "Lionel Messi", teamAbbr: "MIA", stat: "Shots on Target", line: 2.5, gamesPlayed: 19, sport: "MLS", hitRate: 60, hitRateLast10: 65, sportsbooks: [{ sportsbook: "FanDuel", line: 2.5, over: -115, under: -105 }, { sportsbook: "DraftKings", line: 2.5, over: -110, under: -110 }, { sportsbook: "Fanatics", line: 2.5, over: -118, under: -102 }, { sportsbook: "BetMGM", line: 2.5, over: -112, under: -108 }] },
+  { id: "mlsp2", playerId: "mls_dc", playerName: "Denis Bouanga", teamAbbr: "LAFC", stat: "Shots on Target", line: 1.5, gamesPlayed: 32, sport: "MLS", hitRate: 68, hitRateLast10: 72, sportsbooks: [{ sportsbook: "FanDuel", line: 1.5, over: -145, under: 120 }, { sportsbook: "DraftKings", line: 1.5, over: -140, under: 118 }, { sportsbook: "Fanatics", line: 1.5, over: -148, under: 125 }, { sportsbook: "BetMGM", line: 1.5, over: -142, under: 120 }] },
+];
+
+// ===================== WNBA =====================
+export const wnbaTeams: Team[] = [
+  { id: "wnba_lv", name: "Aces", abbreviation: "LV", city: "Las Vegas", record: "34-6", conference: "Western", division: "Western", sport: "WNBA", ranking: 1, stats: { ppg: 92.5, oppPpg: 80.2, rpg: 38.5, apg: 22.8, fgPct: 47.2, threePct: 35.8, ftPct: 82.5, turnovers: 12.8, steals: 8.5, blocks: 4.2 } },
+  { id: "wnba_ny", name: "Liberty", abbreviation: "NY", city: "New York", record: "32-8", conference: "Eastern", division: "Eastern", sport: "WNBA", ranking: 2, stats: { ppg: 88.2, oppPpg: 78.5, rpg: 36.2, apg: 21.5, fgPct: 46.8, threePct: 36.2, ftPct: 80.8, turnovers: 13.2, steals: 7.8, blocks: 5.1 } },
+  { id: "wnba_ind", name: "Fever", abbreviation: "IND", city: "Indiana", record: "20-20", conference: "Eastern", division: "Eastern", sport: "WNBA", stats: { ppg: 85.5, oppPpg: 84.2, rpg: 35.8, apg: 20.2, fgPct: 44.5, threePct: 34.2, ftPct: 78.5, turnovers: 14.5, steals: 7.2, blocks: 3.8 } },
+  { id: "wnba_min", name: "Lynx", abbreviation: "MIN", city: "Minnesota", record: "30-10", conference: "Western", division: "Western", sport: "WNBA", ranking: 3, stats: { ppg: 86.8, oppPpg: 79.5, rpg: 37.2, apg: 22.5, fgPct: 46.2, threePct: 37.5, ftPct: 81.2, turnovers: 12.5, steals: 8.8, blocks: 4.5 } },
+];
+
+export const wnbaGames: Game[] = [];
+
+export const wnbaPlayers: Player[] = [
+  { id: "wnba_cc", name: "Caitlin Clark", team: "Fever", teamAbbr: "IND", position: "G", number: 22, sport: "WNBA", stats: { gamesPlayed: 40 }, seasonAverages: { points: 19.2, rebounds: 5.7, assists: 8.4, steals: 1.3, blocks: 0.7, turnovers: 5.6, minutes: 35.4, fgPct: 41.7, threePct: 34.4, ftPct: 90.6 }, last10: { points: 22.5, rebounds: 6.2, assists: 9.1, steals: 1.5, blocks: 0.8, turnovers: 4.8, minutes: 36.2, fgPct: 43.5, threePct: 36.8, ftPct: 91.2 }, last5: { points: 24.8, rebounds: 6.8, assists: 9.8, steals: 1.6, blocks: 0.9, turnovers: 4.2, minutes: 37.1, fgPct: 45.2, threePct: 38.5, ftPct: 92.1 } },
+  { id: "wnba_aj", name: "A'ja Wilson", team: "Aces", teamAbbr: "LV", position: "F", number: 22, sport: "WNBA", stats: { gamesPlayed: 38 }, seasonAverages: { points: 26.9, rebounds: 11.9, assists: 2.3, steals: 1.3, blocks: 2.6, turnovers: 2.1, minutes: 34.5, fgPct: 51.8, threePct: 28.5, ftPct: 85.2 }, last10: { points: 28.5, rebounds: 12.5, assists: 2.5, steals: 1.4, blocks: 2.8, turnovers: 2.0, minutes: 35.2, fgPct: 52.5, threePct: 30.2, ftPct: 86.5 }, last5: { points: 30.2, rebounds: 13.1, assists: 2.8, steals: 1.5, blocks: 3.0, turnovers: 1.8, minutes: 36.1, fgPct: 53.8, threePct: 31.5, ftPct: 87.8 } },
+  { id: "wnba_bs", name: "Breanna Stewart", team: "Liberty", teamAbbr: "NY", position: "F", number: 30, sport: "WNBA", stats: { gamesPlayed: 40 }, seasonAverages: { points: 20.1, rebounds: 8.5, assists: 3.5, steals: 1.5, blocks: 1.8, turnovers: 2.5, minutes: 33.8, fgPct: 46.5, threePct: 35.2, ftPct: 88.5 }, last10: { points: 21.8, rebounds: 9.2, assists: 3.8, steals: 1.6, blocks: 2.0, turnovers: 2.2, minutes: 34.5, fgPct: 47.8, threePct: 36.8, ftPct: 89.2 }, last5: { points: 23.5, rebounds: 9.8, assists: 4.1, steals: 1.8, blocks: 2.2, turnovers: 2.0, minutes: 35.2, fgPct: 48.5, threePct: 38.1, ftPct: 90.5 } },
+];
+
+export const wnbaProps: PropLine[] = [
+  { id: "wnbap1", playerId: "wnba_cc", playerName: "Caitlin Clark", teamAbbr: "IND", stat: "Points", line: 18.5, gamesPlayed: 40, sport: "WNBA", hitRate: 55, hitRateLast10: 65, sportsbooks: [{ sportsbook: "FanDuel", line: 18.5, over: -108, under: -112 }, { sportsbook: "DraftKings", line: 19.5, over: -105, under: -115 }, { sportsbook: "Fanatics", line: 18.5, over: -110, under: -110 }, { sportsbook: "BetMGM", line: 18.5, over: -112, under: -108 }] },
+  { id: "wnbap2", playerId: "wnba_cc", playerName: "Caitlin Clark", teamAbbr: "IND", stat: "Assists", line: 7.5, gamesPlayed: 40, sport: "WNBA", hitRate: 60, hitRateLast10: 68, sportsbooks: [{ sportsbook: "FanDuel", line: 7.5, over: -115, under: -105 }, { sportsbook: "DraftKings", line: 7.5, over: -112, under: -108 }, { sportsbook: "Fanatics", line: 8.5, over: 105, under: -125 }, { sportsbook: "BetMGM", line: 7.5, over: -110, under: -110 }] },
+  { id: "wnbap3", playerId: "wnba_aj", playerName: "A'ja Wilson", teamAbbr: "LV", stat: "Points", line: 25.5, gamesPlayed: 38, sport: "WNBA", hitRate: 62, hitRateLast10: 70, sportsbooks: [{ sportsbook: "FanDuel", line: 25.5, over: -115, under: -105 }, { sportsbook: "DraftKings", line: 26.5, over: -105, under: -115 }, { sportsbook: "Fanatics", line: 25.5, over: -112, under: -108 }, { sportsbook: "BetMGM", line: 25.5, over: -118, under: -102 }] },
+  { id: "wnbap4", playerId: "wnba_aj", playerName: "A'ja Wilson", teamAbbr: "LV", stat: "Rebounds", line: 11.5, gamesPlayed: 38, sport: "WNBA", hitRate: 55, hitRateLast10: 62, sportsbooks: [{ sportsbook: "FanDuel", line: 11.5, over: -110, under: -110 }, { sportsbook: "DraftKings", line: 11.5, over: -108, under: -112 }, { sportsbook: "Fanatics", line: 11.5, over: -112, under: -108 }, { sportsbook: "BetMGM", line: 12.5, over: 105, under: -125 }] },
+];
+
+// ===================== NASCAR =====================
+export const nascarTeams: Team[] = [
+  { id: "nsc_hms", name: "Hendrick Motorsports", abbreviation: "HMS", city: "Charlotte", record: "", conference: "Cup", division: "Cup Series", sport: "NASCAR", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "nsc_jgr", name: "Joe Gibbs Racing", abbreviation: "JGR", city: "Huntersville", record: "", conference: "Cup", division: "Cup Series", sport: "NASCAR", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "nsc_tfr", name: "Team Penske", abbreviation: "PEN", city: "Mooresville", record: "", conference: "Cup", division: "Cup Series", sport: "NASCAR", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+];
+
+export const nascarGames: Game[] = [];
+export const nascarPlayers: Player[] = [
+  { id: "nsc_ke", name: "Kyle Larson", team: "Hendrick Motorsports", teamAbbr: "HMS", position: "Driver", number: 5, sport: "NASCAR", stats: { gamesPlayed: 36 }, seasonAverages: { points: 6, rebounds: 18, assists: 4, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 2, rebounds: 6, assists: 1, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 1, rebounds: 3, assists: 1, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 } },
+  { id: "nsc_cb", name: "Christopher Bell", team: "Joe Gibbs Racing", teamAbbr: "JGR", position: "Driver", number: 20, sport: "NASCAR", stats: { gamesPlayed: 36 }, seasonAverages: { points: 5, rebounds: 16, assists: 3, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last10: { points: 2, rebounds: 5, assists: 1, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 }, last5: { points: 1, rebounds: 3, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 } },
+];
+export const nascarProps: PropLine[] = [];
+
+// ===================== TENNIS =====================
+export const tennisTeams: Team[] = [
+  { id: "ten_atp", name: "ATP Tour", abbreviation: "ATP", city: "ATP", record: "", conference: "Men's", division: "ATP", sport: "TENNIS", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+  { id: "ten_wta", name: "WTA Tour", abbreviation: "WTA", city: "WTA", record: "", conference: "Women's", division: "WTA", sport: "TENNIS", stats: { ppg: 0, oppPpg: 0, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0, steals: 0, blocks: 0 } },
+];
+
+export const tennisGames: Game[] = [];
+
+export const tennisPlayers: Player[] = [
+  { id: "ten_js", name: "Jannik Sinner", team: "ATP Tour", teamAbbr: "ATP", position: "No. 1", number: 0, sport: "TENNIS", stats: { gamesPlayed: 58 }, seasonAverages: { points: 48, rebounds: 6, assists: 48, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 67.5, threePct: 0, ftPct: 0 }, last10: { points: 9, rebounds: 1, assists: 9, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 68.2, threePct: 0, ftPct: 0 }, last5: { points: 5, rebounds: 0, assists: 5, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 69.5, threePct: 0, ftPct: 0 } },
+  { id: "ten_ca", name: "Carlos Alcaraz", team: "ATP Tour", teamAbbr: "ATP", position: "No. 2", number: 0, sport: "TENNIS", stats: { gamesPlayed: 55 }, seasonAverages: { points: 44, rebounds: 8, assists: 44, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 65.8, threePct: 0, ftPct: 0 }, last10: { points: 8, rebounds: 2, assists: 8, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 66.5, threePct: 0, ftPct: 0 }, last5: { points: 5, rebounds: 0, assists: 5, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 67.8, threePct: 0, ftPct: 0 } },
+  { id: "ten_nd", name: "Novak Djokovic", team: "ATP Tour", teamAbbr: "ATP", position: "No. 5", number: 0, sport: "TENNIS", stats: { gamesPlayed: 42 }, seasonAverages: { points: 38, rebounds: 5, assists: 38, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 64.2, threePct: 0, ftPct: 0 }, last10: { points: 7, rebounds: 2, assists: 7, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 63.8, threePct: 0, ftPct: 0 }, last5: { points: 3, rebounds: 2, assists: 3, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 62.5, threePct: 0, ftPct: 0 } },
+];
+
+export const tennisProps: PropLine[] = [
+  { id: "tenp1", playerId: "ten_js", playerName: "Jannik Sinner", teamAbbr: "ATP", stat: "Total Games", line: 21.5, gamesPlayed: 58, sport: "TENNIS", hitRate: 52, hitRateLast10: 55, sportsbooks: [{ sportsbook: "FanDuel", line: 21.5, over: -110, under: -110 }, { sportsbook: "DraftKings", line: 22.5, over: -105, under: -115 }, { sportsbook: "Fanatics", line: 21.5, over: -108, under: -112 }, { sportsbook: "BetMGM", line: 21.5, over: -112, under: -108 }] },
+  { id: "tenp2", playerId: "ten_ca", playerName: "Carlos Alcaraz", teamAbbr: "ATP", stat: "Total Games", line: 22.5, gamesPlayed: 55, sport: "TENNIS", hitRate: 55, hitRateLast10: 58, sportsbooks: [{ sportsbook: "FanDuel", line: 22.5, over: -108, under: -112 }, { sportsbook: "DraftKings", line: 22.5, over: -110, under: -110 }, { sportsbook: "Fanatics", line: 23.5, over: -102, under: -118 }, { sportsbook: "BetMGM", line: 22.5, over: -105, under: -115 }] },
+  { id: "tenp3", playerId: "ten_nd", playerName: "Novak Djokovic", teamAbbr: "ATP", stat: "Aces", line: 5.5, gamesPlayed: 42, sport: "TENNIS", hitRate: 48, hitRateLast10: 45, sportsbooks: [{ sportsbook: "FanDuel", line: 5.5, over: -105, under: -115 }, { sportsbook: "DraftKings", line: 5.5, over: -108, under: -112 }, { sportsbook: "Fanatics", line: 5.5, over: -102, under: -118 }, { sportsbook: "BetMGM", line: 6.5, over: 115, under: -138 }] },
+];
+

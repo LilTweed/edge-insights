@@ -14,6 +14,12 @@ const SPORT_MAP: Record<string, { sport: string; league: string }> = {
   NHL: { sport: 'hockey', league: 'nhl' },
   NCAAB: { sport: 'basketball', league: 'mens-college-basketball' },
   NCAAF: { sport: 'football', league: 'college-football' },
+  UFC: { sport: 'mma', league: 'ufc' },
+  PGA: { sport: 'golf', league: 'pga' },
+  MLS: { sport: 'soccer', league: 'usa.1' },
+  WNBA: { sport: 'basketball', league: 'wnba' },
+  NASCAR: { sport: 'racing', league: 'nascar-cup' },  // Note: changed from 'nascar' to 'nascar-cup' which is ESPN's league identifier
+  TENNIS: { sport: 'tennis', league: 'atp' },
 };
 
 function espnUrl(sportCode: string, endpoint: string, params = ''): string {
