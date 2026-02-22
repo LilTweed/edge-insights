@@ -64,6 +64,10 @@ const OnboardingTour = () => {
     if (!localStorage.getItem(STORAGE_KEY)) {
       setVisible(true);
     }
+
+    const handler = () => { setStep(0); setVisible(true); };
+    window.addEventListener("lvrg-restart-tour", handler);
+    return () => window.removeEventListener("lvrg-restart-tour", handler);
   }, []);
 
   const dismiss = () => {

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { HelpCircle } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const navItems = [
@@ -40,7 +41,16 @@ const AppHeader = () => {
             </Link>
           ))}
         </nav>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => window.dispatchEvent(new Event("lvrg-restart-tour"))}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            aria-label="Restart onboarding tour"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </button>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
