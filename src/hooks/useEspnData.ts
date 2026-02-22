@@ -49,12 +49,64 @@ export interface LiveStanding {
   sport: string;
 }
 
-type EspnEndpoint = "scoreboard" | "teams" | "standings";
-type EspnSport = "NBA" | "NFL" | "MLB" | "NHL" | "NCAAB" | "NCAAF";
+export interface EspnTeam {
+  id: string;
+  name: string;
+  abbreviation: string;
+  logo: string;
+  record: string;
+  sport: string;
+  standingSummary: string;
+}
 
-async function fetchEspn(sport: EspnSport, endpoint: EspnEndpoint) {
+export interface EspnRosterPlayer {
+  id: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  position: string;
+  number: string;
+  headshot: string;
+  teamId: string;
+  sport: string;
+  age: number;
+  height: string;
+  weight: string;
+  experience: number;
+  college: string;
+  birthPlace: string;
+  status: string;
+}
+
+export interface EspnSeasonStat {
+  season: string;
+  category: string;
+  stats: Record<string, string>;
+}
+
+export interface EspnAthleteInfo {
+  id: string;
+  name: string;
+  team: string;
+  teamAbbr: string;
+  position: string;
+  number: string;
+  headshot: string;
+}
+
+export interface EspnPlayerStats {
+  athlete: EspnAthleteInfo | null;
+  seasons: EspnSeasonStat[];
+  career: any;
+  fetchedAt: string;
+}
+
+type EspnEndpoint = "scoreboard" | "teams" | "standings" | "roster" | "player-stats" | "search";
+export type EspnSport = "NBA" | "NFL" | "MLB" | "NHL" | "NCAAB" | "NCAAF";
+
+async function fetchEspn(sport: EspnSport, endpoint: EspnEndpoint, extra?: Record<string, string>) {
   const { data, error } = await supabase.functions.invoke("espn-data", {
-    body: { sport, endpoint },
+    body: { sport, endpoint, ...extra },
   });
   if (error) throw new Error(error.message);
   if (!data?.success) throw new Error(data?.error || "Failed to fetch");
@@ -65,7 +117,7 @@ export function useLiveScoreboard(sport: EspnSport) {
   return useQuery({
     queryKey: ["espn", "scoreboard", sport],
     queryFn: () => fetchEspn(sport, "scoreboard"),
-    refetchInterval: 30_000, // 30 seconds
+    refetchInterval: 30_000,
     staleTime: 15_000,
     select: (data) => ({
       games: (data.games || []) as LiveGame[],
@@ -78,11 +130,55 @@ export function useLiveStandings(sport: EspnSport) {
   return useQuery({
     queryKey: ["espn", "standings", sport],
     queryFn: () => fetchEspn(sport, "standings"),
-    refetchInterval: 60_000, // 1 minute
+    refetchInterval: 60_000,
     staleTime: 30_000,
     select: (data) => ({
       standings: (data.standings || []) as LiveStanding[],
       fetchedAt: data.fetchedAt as string,
     }),
+  });
+}
+
+export function useEspnTeams(sport: EspnSport) {
+  return useQuery({
+    queryKey: ["espn", "teams", sport],
+    queryFn: () => fetchEspn(sport, "teams"),
+    staleTime: 5 * 60_000, // 5 min
+    select: (data) => (data.teams || []) as EspnTeam[],
+  });
+}
+
+export function useTeamRoster(sport: EspnSport, teamId: string | undefined) {
+  return useQuery({
+    queryKey: ["espn", "roster", sport, teamId],
+    queryFn: () => fetchEspn(sport, "roster", { teamId: teamId! }),
+    enabled: !!teamId,
+    staleTime: 5 * 60_000,
+    select: (data) => (data.roster || []) as EspnRosterPlayer[],
+  });
+}
+
+export function usePlayerStats(sport: EspnSport, athleteId: string | undefined) {
+  return useQuery({
+    queryKey: ["espn", "player-stats", sport, athleteId],
+    queryFn: () => fetchEspn(sport, "player-stats", { athleteId: athleteId! }),
+    enabled: !!athleteId,
+    staleTime: 2 * 60_000, // 2 min
+    select: (data): EspnPlayerStats => ({
+      athlete: data.athlete || null,
+      seasons: data.seasons || [],
+      career: data.career || null,
+      fetchedAt: data.fetchedAt,
+    }),
+  });
+}
+
+export function usePlayerSearch(sport: EspnSport, query: string) {
+  return useQuery({
+    queryKey: ["espn", "search", sport, query],
+    queryFn: () => fetchEspn(sport, "search", { query }),
+    enabled: query.length >= 2,
+    staleTime: 30_000,
+    select: (data) => data.athletes || [],
   });
 }
