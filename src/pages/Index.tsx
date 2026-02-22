@@ -2,7 +2,7 @@ import { useState } from "react";
 import { allGames, type Sport } from "@/data/mockData";
 import GameCard from "@/components/GameCard";
 import SportFilter from "@/components/SportFilter";
-import HltvStatsPanel from "@/components/HltvStatsPanel";
+
 import LiveGameCard from "@/components/LiveGameCard";
 import { useLiveScoreboard } from "@/hooks/useEspnData";
 import { RefreshCw } from "lucide-react";
@@ -13,7 +13,7 @@ type EspnSport = (typeof ESPN_SPORTS)[number];
 const GamesPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");
   const isEspnSport = ESPN_SPORTS.includes(sport as EspnSport);
-  const isEsport = ["CS2", "LOL", "VAL"].includes(sport);
+  
 
   const {
     data: liveData,
@@ -51,11 +51,6 @@ const GamesPage = () => {
         <SportFilter active={sport} onChange={setSport} />
       </div>
 
-      {sport === "CS2" && (
-        <div className="mb-6">
-          <HltvStatsPanel />
-        </div>
-      )}
 
       {/* Live ESPN games */}
       {isEspnSport && (
@@ -89,12 +84,7 @@ const GamesPage = () => {
           {mockGames.map((game) => (
             <GameCard key={game.id} game={game} />
           ))}
-          {mockGames.length === 0 && isEsport && sport !== "CS2" && (
-            <p className="col-span-2 text-center text-sm text-muted-foreground py-12">
-              No {sport} games scheduled — live data coming soon
-            </p>
-          )}
-          {mockGames.length === 0 && !isEsport && (
+          {mockGames.length === 0 && (
             <p className="col-span-2 text-center text-sm text-muted-foreground py-12">
               No games scheduled
             </p>

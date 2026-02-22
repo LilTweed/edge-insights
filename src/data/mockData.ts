@@ -1,8 +1,8 @@
 // Mock data layer for sports stats app
 // All statistics are structured to be accurate representations
-import { nflTeams, nflGames, nflPlayers, nflProps, mlbTeams, mlbGames, mlbPlayers, mlbProps, nhlTeams, nhlGames, nhlPlayers, nhlProps, esportsTeams, esportsGames } from "./extraSports";
+import { nflTeams, nflGames, nflPlayers, nflProps, mlbTeams, mlbGames, mlbPlayers, mlbProps, nhlTeams, nhlGames, nhlPlayers, nhlProps } from "./extraSports";
 
-export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL" | "MLB" | "NHL" | "LOL" | "CS2" | "VAL";
+export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL" | "MLB" | "NHL";
 export type Sportsbook = "FanDuel" | "DraftKings" | "Fanatics" | "BetMGM";
 
 export interface Team {
@@ -207,7 +207,7 @@ export const ncaafTeams: Team[] = [
   { id: "ore_fb", name: "Ducks", abbreviation: "ORE", city: "Oregon", record: "12-1", conference: "Big Ten", division: "Big Ten", sport: "NCAAF", ranking: 4, stats: { ppg: 37.5, oppPpg: 18.2, rpg: 0, apg: 0, fgPct: 0, threePct: 0, ftPct: 0, turnovers: 0.9, steals: 0, blocks: 0, ypg: 458.5, rushYpg: 188.8, passYpg: 269.7, oppYpg: 325.2, thirdDownPct: 47.5, redZonePct: 87.2, sacks: 35, takeaways: 20 } },
 ];
 
-export const allTeams: Team[] = [...nbaTeams, ...ncaabTeams, ...ncaafTeams, ...nflTeams, ...mlbTeams, ...nhlTeams, ...esportsTeams];
+export const allTeams: Team[] = [...nbaTeams, ...ncaabTeams, ...ncaafTeams, ...nflTeams, ...mlbTeams, ...nhlTeams];
 
 // ===================== MATCHUP HISTORY =====================
 
@@ -543,7 +543,7 @@ export const collegeGames: Game[] = [
   },
 ];
 
-export const allGames: Game[] = [...nbaGames, ...collegeGames, ...nflGames, ...mlbGames, ...nhlGames, ...esportsGames];
+export const allGames: Game[] = [...nbaGames, ...collegeGames, ...nflGames, ...mlbGames, ...nhlGames];
 
 // ===================== PROPS =====================
 
