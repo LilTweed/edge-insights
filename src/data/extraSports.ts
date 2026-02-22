@@ -54,27 +54,42 @@ export const nflGames: Game[] = [
   },
 ];
 
+// NFL players: points=passYd/G, rebounds=rushYd/G, assists=TDs/G, steals=targets, turnovers=INT/G, fgPct=cmp%, ftPct=QBR
 export const nflPlayers: Player[] = [
   {
     id: "pm15", name: "Patrick Mahomes", team: "Chiefs", teamAbbr: "KC", position: "QB", number: 15, sport: "NFL",
     stats: { gamesPlayed: 16 },
-    seasonAverages: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.7, minutes: 0, fgPct: 67.2, threePct: 0, ftPct: 0 },
-    last10: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.6, minutes: 0, fgPct: 68.5, threePct: 0, ftPct: 0 },
-    last5: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.5, minutes: 0, fgPct: 70.1, threePct: 0, ftPct: 0 },
+    seasonAverages: { points: 278.5, rebounds: 25.2, assists: 2.1, steals: 0, blocks: 0, turnovers: 0.7, minutes: 0, fgPct: 67.2, threePct: 0, ftPct: 82.5 },
+    last10: { points: 285.2, rebounds: 28.5, assists: 2.3, steals: 0, blocks: 0, turnovers: 0.6, minutes: 0, fgPct: 68.5, threePct: 0, ftPct: 85.2 },
+    last5: { points: 295.8, rebounds: 32.1, assists: 2.6, steals: 0, blocks: 0, turnovers: 0.5, minutes: 0, fgPct: 70.1, threePct: 0, ftPct: 88.1 },
   },
   {
     id: "ja5", name: "Josh Allen", team: "Bills", teamAbbr: "BUF", position: "QB", number: 17, sport: "NFL",
     stats: { gamesPlayed: 16 },
-    seasonAverages: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.8, minutes: 0, fgPct: 63.8, threePct: 0, ftPct: 0 },
-    last10: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.7, minutes: 0, fgPct: 65.2, threePct: 0, ftPct: 0 },
-    last5: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.6, minutes: 0, fgPct: 66.8, threePct: 0, ftPct: 0 },
+    seasonAverages: { points: 265.2, rebounds: 52.8, assists: 2.4, steals: 0, blocks: 0, turnovers: 0.8, minutes: 0, fgPct: 63.8, threePct: 0, ftPct: 78.2 },
+    last10: { points: 272.5, rebounds: 55.2, assists: 2.6, steals: 0, blocks: 0, turnovers: 0.7, minutes: 0, fgPct: 65.2, threePct: 0, ftPct: 80.5 },
+    last5: { points: 280.1, rebounds: 58.5, assists: 2.8, steals: 0, blocks: 0, turnovers: 0.6, minutes: 0, fgPct: 66.8, threePct: 0, ftPct: 82.8 },
   },
   {
     id: "lj8", name: "Lamar Jackson", team: "Ravens", teamAbbr: "BAL", position: "QB", number: 8, sport: "NFL",
     stats: { gamesPlayed: 16 },
-    seasonAverages: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.6, minutes: 0, fgPct: 66.5, threePct: 0, ftPct: 0 },
-    last10: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.5, minutes: 0, fgPct: 68.2, threePct: 0, ftPct: 0 },
-    last5: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0.4, minutes: 0, fgPct: 70.5, threePct: 0, ftPct: 0 },
+    seasonAverages: { points: 245.8, rebounds: 72.5, assists: 2.6, steals: 0, blocks: 0, turnovers: 0.6, minutes: 0, fgPct: 66.5, threePct: 0, ftPct: 85.8 },
+    last10: { points: 255.2, rebounds: 78.2, assists: 2.8, steals: 0, blocks: 0, turnovers: 0.5, minutes: 0, fgPct: 68.2, threePct: 0, ftPct: 88.2 },
+    last5: { points: 262.5, rebounds: 82.5, assists: 3.0, steals: 0, blocks: 0, turnovers: 0.4, minutes: 0, fgPct: 70.5, threePct: 0, ftPct: 90.5 },
+  },
+  {
+    id: "dh4", name: "Derrick Henry", team: "Ravens", teamAbbr: "BAL", position: "RB", number: 22, sport: "NFL",
+    stats: { gamesPlayed: 16 },
+    seasonAverages: { points: 108.5, rebounds: 2.5, assists: 1.2, steals: 18.2, blocks: 0, turnovers: 0.3, minutes: 0, fgPct: 5.2, threePct: 0, ftPct: 0 },
+    last10: { points: 115.2, rebounds: 2.8, assists: 1.4, steals: 20.5, blocks: 0, turnovers: 0.2, minutes: 0, fgPct: 5.5, threePct: 0, ftPct: 0 },
+    last5: { points: 122.8, rebounds: 3.2, assists: 1.6, steals: 22.8, blocks: 0, turnovers: 0.2, minutes: 0, fgPct: 5.8, threePct: 0, ftPct: 0 },
+  },
+  {
+    id: "jj23", name: "Ja'Marr Chase", team: "Bengals", teamAbbr: "CIN", position: "WR", number: 1, sport: "NFL",
+    stats: { gamesPlayed: 16 },
+    seasonAverages: { points: 6.8, rebounds: 98.5, assists: 0.8, steals: 9.2, blocks: 0, turnovers: 0.1, minutes: 0, fgPct: 14.5, threePct: 0, ftPct: 0 },
+    last10: { points: 7.2, rebounds: 105.2, assists: 0.9, steals: 9.8, blocks: 0, turnovers: 0.1, minutes: 0, fgPct: 15.2, threePct: 0, ftPct: 0 },
+    last5: { points: 7.8, rebounds: 112.5, assists: 1.0, steals: 10.5, blocks: 0, turnovers: 0.0, minutes: 0, fgPct: 15.8, threePct: 0, ftPct: 0 },
   },
 ];
 
@@ -120,20 +135,28 @@ export const mlbGames: Game[] = [
   },
 ];
 
+// MLB players: points=HR, rebounds=RBI, assists=Hits, steals=SB, blocks=BB, fgPct=AVG(x1000), threePct=OPS
 export const mlbPlayers: Player[] = [
   {
     id: "so17", name: "Shohei Ohtani", team: "Dodgers", teamAbbr: "LAD", position: "DH", number: 17, sport: "MLB",
     stats: { gamesPlayed: 159 },
-    seasonAverages: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last10: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last5: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
+    seasonAverages: { points: 54, rebounds: 130, assists: 197, steals: 59, blocks: 81, turnovers: 0, minutes: 0, fgPct: 304, threePct: 1.036, ftPct: 0 },
+    last10: { points: 4, rebounds: 12, assists: 14, steals: 5, blocks: 8, turnovers: 0, minutes: 0, fgPct: 340, threePct: 1.125, ftPct: 0 },
+    last5: { points: 3, rebounds: 8, assists: 8, steals: 3, blocks: 5, turnovers: 0, minutes: 0, fgPct: 360, threePct: 1.180, ftPct: 0 },
   },
   {
     id: "aj99", name: "Aaron Judge", team: "Yankees", teamAbbr: "NYY", position: "RF", number: 99, sport: "MLB",
     stats: { gamesPlayed: 158 },
-    seasonAverages: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last10: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last5: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
+    seasonAverages: { points: 58, rebounds: 144, assists: 180, steals: 3, blocks: 92, turnovers: 0, minutes: 0, fgPct: 322, threePct: 1.089, ftPct: 0 },
+    last10: { points: 5, rebounds: 14, assists: 13, steals: 0, blocks: 10, turnovers: 0, minutes: 0, fgPct: 350, threePct: 1.145, ftPct: 0 },
+    last5: { points: 3, rebounds: 9, assists: 7, steals: 0, blocks: 6, turnovers: 0, minutes: 0, fgPct: 368, threePct: 1.200, ftPct: 0 },
+  },
+  {
+    id: "mt27", name: "Mike Trout", team: "Angels", teamAbbr: "LAA", position: "CF", number: 27, sport: "MLB",
+    stats: { gamesPlayed: 82 },
+    seasonAverages: { points: 18, rebounds: 44, assists: 72, steals: 2, blocks: 52, turnovers: 0, minutes: 0, fgPct: 282, threePct: 0.918, ftPct: 0 },
+    last10: { points: 2, rebounds: 6, assists: 8, steals: 1, blocks: 6, turnovers: 0, minutes: 0, fgPct: 310, threePct: 0.985, ftPct: 0 },
+    last5: { points: 1, rebounds: 4, assists: 5, steals: 0, blocks: 3, turnovers: 0, minutes: 0, fgPct: 325, threePct: 1.010, ftPct: 0 },
   },
 ];
 
@@ -178,20 +201,28 @@ export const nhlGames: Game[] = [
   },
 ];
 
+// NHL players: points=Goals, rebounds=TotalPts, assists=Assists, steals=+/-, blocks=SOG, turnovers=PIM, minutes=TOI
 export const nhlPlayers: Player[] = [
   {
     id: "ao8", name: "Alex Ovechkin", team: "Capitals", teamAbbr: "WSH", position: "LW", number: 8, sport: "NHL",
     stats: { gamesPlayed: 58 },
-    seasonAverages: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last10: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last5: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
+    seasonAverages: { points: 28, rebounds: 52, assists: 24, steals: 12, blocks: 225, turnovers: 42, minutes: 18.5, fgPct: 0, threePct: 0, ftPct: 0 },
+    last10: { points: 5, rebounds: 9, assists: 4, steals: 3, blocks: 42, turnovers: 8, minutes: 19.2, fgPct: 0, threePct: 0, ftPct: 0 },
+    last5: { points: 3, rebounds: 5, assists: 2, steals: 2, blocks: 22, turnovers: 4, minutes: 19.8, fgPct: 0, threePct: 0, ftPct: 0 },
   },
   {
     id: "cm97", name: "Connor McDavid", team: "Oilers", teamAbbr: "EDM", position: "C", number: 97, sport: "NHL",
     stats: { gamesPlayed: 60 },
-    seasonAverages: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last10: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
-    last5: { points: 0, rebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, minutes: 0, fgPct: 0, threePct: 0, ftPct: 0 },
+    seasonAverages: { points: 22, rebounds: 82, assists: 60, steals: 18, blocks: 198, turnovers: 28, minutes: 21.5, fgPct: 0, threePct: 0, ftPct: 0 },
+    last10: { points: 4, rebounds: 15, assists: 11, steals: 5, blocks: 38, turnovers: 4, minutes: 22.1, fgPct: 0, threePct: 0, ftPct: 0 },
+    last5: { points: 3, rebounds: 9, assists: 6, steals: 3, blocks: 20, turnovers: 2, minutes: 22.5, fgPct: 0, threePct: 0, ftPct: 0 },
+  },
+  {
+    id: "am34", name: "Auston Matthews", team: "Maple Leafs", teamAbbr: "TOR", position: "C", number: 34, sport: "NHL",
+    stats: { gamesPlayed: 55 },
+    seasonAverages: { points: 30, rebounds: 55, assists: 25, steals: 15, blocks: 210, turnovers: 22, minutes: 20.8, fgPct: 0, threePct: 0, ftPct: 0 },
+    last10: { points: 6, rebounds: 10, assists: 4, steals: 4, blocks: 42, turnovers: 2, minutes: 21.2, fgPct: 0, threePct: 0, ftPct: 0 },
+    last5: { points: 4, rebounds: 6, assists: 2, steals: 3, blocks: 22, turnovers: 0, minutes: 21.5, fgPct: 0, threePct: 0, ftPct: 0 },
   },
 ];
 
