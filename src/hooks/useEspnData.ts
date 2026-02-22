@@ -101,8 +101,31 @@ export interface EspnPlayerStats {
   fetchedAt: string;
 }
 
-type EspnEndpoint = "scoreboard" | "teams" | "standings" | "roster" | "player-stats" | "search";
+type EspnEndpoint = "scoreboard" | "teams" | "standings" | "roster" | "player-stats" | "game-log" | "splits" | "search";
 export type EspnSport = "NBA" | "NFL" | "MLB" | "NHL" | "NCAAB" | "NCAAF" | "UFC" | "PGA" | "MLS" | "WNBA" | "NASCAR" | "TENNIS";
+
+export interface GameLogEntry {
+  eventId: string;
+  date: string;
+  opponent: string;
+  opponentAbbr: string;
+  opponentLogo: string;
+  homeAway: string;
+  atVs: string;
+  result: string;
+  score: string;
+  stats: Record<string, string>;
+  category: string;
+  seasonType: string;
+  isTotal?: boolean;
+}
+
+export interface GameLogData {
+  games: GameLogEntry[];
+  labels: string[];
+  seasonType: string;
+  fetchedAt: string;
+}
 
 async function fetchEspn(sport: EspnSport, endpoint: EspnEndpoint, extra?: Record<string, string>) {
   const { data, error } = await supabase.functions.invoke("espn-data", {
@@ -180,5 +203,20 @@ export function usePlayerSearch(sport: EspnSport, query: string) {
     enabled: query.length >= 2,
     staleTime: 30_000,
     select: (data) => data.athletes || [],
+  });
+}
+
+export function usePlayerGameLog(sport: EspnSport, athleteId: string | undefined) {
+  return useQuery({
+    queryKey: ["espn", "game-log", sport, athleteId],
+    queryFn: () => fetchEspn(sport, "game-log", { athleteId: athleteId! }),
+    enabled: !!athleteId,
+    staleTime: 2 * 60_000,
+    select: (data): GameLogData => ({
+      games: (data.games || []) as GameLogEntry[],
+      labels: data.labels || [],
+      seasonType: data.seasonType || '',
+      fetchedAt: data.fetchedAt,
+    }),
   });
 }
