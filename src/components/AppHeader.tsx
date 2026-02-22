@@ -6,7 +6,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 const navItems = [
   { label: "Games", path: "/" },
   { label: "Props", path: "/props" },
-  { label: "Builder", path: "/builder" },
   { label: "AI Chat", path: "/ai-chat" },
   { label: "Notes", path: "/notes" },
   { label: "Players", path: "/players" },
