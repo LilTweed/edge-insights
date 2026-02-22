@@ -17,9 +17,9 @@ const AppHeader = () => {
       <div className="container flex h-14 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">SE</span>
+            <span className="text-sm font-bold text-primary-foreground">LV</span>
           </div>
-          <span className="text-lg font-bold tracking-tight text-foreground">StatEdge</span>
+          <span className="text-lg font-bold tracking-tight text-foreground">LVRG</span>
         </Link>
         <nav className="flex items-center gap-1">
           {navItems.map((item) => (
