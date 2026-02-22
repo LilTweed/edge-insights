@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
-import { getTeam, matchupHistories, allGames, allPlayers, allTeams, injuries, propLines, getTeamsBySport, formatOdds } from "@/data/mockData";
+import { getTeam, matchupHistories, allGames, allPlayers, allTeams, injuries, propLines, getTeamsBySport, formatOdds, injuryHistories } from "@/data/mockData";
 import PlayerCard from "@/components/PlayerCard";
 import { useState } from "react";
+import { InjuryHistoryPanel, EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
 
 const injuryStatusColor = (status: string) => {
   switch (status) {
@@ -340,80 +341,28 @@ const TeamDetailPage = () => {
         </>
       )}
 
-      {/* Head-to-Head Records */}
-      {teamMatchups.length > 0 && (
+      {/* Enhanced Head-to-Head Records */}
+      <EnhancedH2HPanel matchups={teamMatchups} teamId={team.id} />
+
+      {/* Team Injury Histories */}
+      {showAdvanced && teamPlayers.length > 0 && (
         <div className="mb-6">
-          <h2 className="mb-3 text-lg font-bold text-foreground">Head-to-Head Records</h2>
+          <h2 className="mb-3 text-lg font-bold text-foreground">🩺 Roster Injury Histories</h2>
           <div className="space-y-4">
-            {teamMatchups.map((m) => {
-              const isTeam1 = m.team1Id === team.id;
-              const oppId = isTeam1 ? m.team2Id : m.team1Id;
-              const oppTeam = allTeams.find(t => t.id === oppId);
-              if (!oppTeam) return null;
-
-              const record = isTeam1
-                ? `${m.allTime.wins}-${m.allTime.losses}`
-                : `${m.allTime.losses}-${m.allTime.wins}`;
-
-              return (
-                <div key={oppId} className="rounded-xl border border-border bg-card p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary text-[9px] font-bold text-secondary-foreground">
-                        {oppTeam.abbreviation}
-                      </div>
-                      <Link to={`/team/${oppId}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
-                        vs {oppTeam.city} {oppTeam.name}
-                      </Link>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-sm font-bold text-foreground">{record}</p>
-                      <p className="text-[10px] text-muted-foreground">All-Time</p>
-                    </div>
-                  </div>
-
-                  <div className={`grid gap-2 mb-3 ${showAdvanced ? "grid-cols-4" : "grid-cols-3"}`}>
-                    <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                      <p className="font-mono text-sm font-bold text-foreground">
-                        {isTeam1 ? m.last10.team1Wins : m.last10.team2Wins}-{isTeam1 ? m.last10.team2Wins : m.last10.team1Wins}
-                      </p>
-                      <p className="text-[9px] text-muted-foreground">Last 10</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                      <p className="font-mono text-sm font-bold text-foreground">
-                        {isTeam1 ? m.last5.team1Wins : m.last5.team2Wins}-{isTeam1 ? m.last5.team2Wins : m.last5.team1Wins}
-                      </p>
-                      <p className="text-[9px] text-muted-foreground">Last 5</p>
-                    </div>
-                    <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                      <p className="font-mono text-xs font-bold text-foreground">{m.streak}</p>
-                      <p className="text-[9px] text-muted-foreground">Streak</p>
-                    </div>
-                    {showAdvanced && (
-                      <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                        <p className="font-mono text-xs font-bold text-foreground">
-                          {isTeam1 ? m.avgScore.team1 : m.avgScore.team2}-{isTeam1 ? m.avgScore.team2 : m.avgScore.team1}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground">Avg Score</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-medium text-muted-foreground">Recent Meetings</span>
-                    {m.last5.results.map((r, i) => (
-                      <div key={i} className="flex items-center justify-between rounded-lg bg-secondary/40 px-2.5 py-1.5">
-                        <span className="text-[11px] text-muted-foreground">{r.date}</span>
-                        <span className="font-mono text-[11px] font-semibold text-foreground">
-                          {isTeam1 ? r.team1Score : r.team2Score} - {isTeam1 ? r.team2Score : r.team1Score}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground max-w-[120px] truncate">{r.location}</span>
-                      </div>
-                    ))}
-                  </div>
+            {teamPlayers
+              .map(p => ({ player: p, history: injuryHistories.find(h => h.playerId === p.id) }))
+              .filter(({ history }) => history && history.history.length > 0)
+              .map(({ player: p, history }) => (
+                <div key={p.id}>
+                  <h3 className="mb-1 text-sm font-semibold text-foreground">
+                    <Link to={`/player/${p.id}`} className="hover:text-primary transition-colors">
+                      #{p.number} {p.name}
+                    </Link>
+                    <span className="ml-2 text-xs text-muted-foreground">{p.position}</span>
+                  </h3>
+                  <InjuryHistoryPanel injuryHistory={history} />
                 </div>
-              );
-            })}
+              ))}
           </div>
         </div>
       )}

@@ -67,6 +67,21 @@ export interface Injury {
   returnDate?: string;
 }
 
+export interface InjuryHistoryEntry {
+  date: string;
+  injury: string;
+  missedGames: number;
+  severity: "Minor" | "Moderate" | "Major" | "Season-Ending";
+  bodyPart: string;
+}
+
+export interface PlayerInjuryHistory {
+  playerId: string;
+  playerName: string;
+  teamAbbr: string;
+  history: InjuryHistoryEntry[];
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -630,3 +645,78 @@ export const injuries: Injury[] = [
   { player: "Gabriel Landeskog", teamAbbr: "COL", status: "Out", injury: "Knee surgery", returnDate: "Indefinite" },
   { player: "Kaapo Kakko", teamAbbr: "NYR", status: "Day-to-Day", injury: "Upper body" },
 ];
+
+// ===================== INJURY HISTORY =====================
+export const injuryHistories: PlayerInjuryHistory[] = [
+  // NBA
+  {
+    playerId: "jt0", playerName: "Jayson Tatum", teamAbbr: "BOS",
+    history: [
+      { date: "Dec 2024", injury: "Ankle sprain", missedGames: 3, severity: "Minor", bodyPart: "Ankle" },
+      { date: "Mar 2024", injury: "Knee tendinitis", missedGames: 5, severity: "Moderate", bodyPart: "Knee" },
+      { date: "Nov 2023", injury: "Groin strain", missedGames: 2, severity: "Minor", bodyPart: "Groin" },
+    ],
+  },
+  {
+    playerId: "jb30", playerName: "Jalen Brunson", teamAbbr: "NYK",
+    history: [
+      { date: "Jan 2025", injury: "Hand contusion", missedGames: 1, severity: "Minor", bodyPart: "Hand" },
+      { date: "Apr 2024", injury: "Knee injury (playoffs)", missedGames: 4, severity: "Moderate", bodyPart: "Knee" },
+      { date: "Feb 2024", injury: "Quad strain", missedGames: 3, severity: "Minor", bodyPart: "Quad" },
+    ],
+  },
+  {
+    playerId: "ga34", playerName: "Giannis Antetokounmpo", teamAbbr: "MIL",
+    history: [
+      { date: "Jan 2025", injury: "Calf strain", missedGames: 7, severity: "Moderate", bodyPart: "Calf" },
+      { date: "Nov 2024", injury: "Knee soreness", missedGames: 3, severity: "Minor", bodyPart: "Knee" },
+      { date: "Apr 2024", injury: "Achilles strain", missedGames: 10, severity: "Major", bodyPart: "Achilles" },
+      { date: "Jan 2024", injury: "Hamstring tightness", missedGames: 2, severity: "Minor", bodyPart: "Hamstring" },
+    ],
+  },
+  {
+    playerId: "lj23", playerName: "LeBron James", teamAbbr: "LAL",
+    history: [
+      { date: "Feb 2025", injury: "Foot soreness", missedGames: 2, severity: "Minor", bodyPart: "Foot" },
+      { date: "Dec 2024", injury: "Ankle sprain", missedGames: 4, severity: "Moderate", bodyPart: "Ankle" },
+      { date: "Mar 2024", injury: "Knee tendinitis", missedGames: 3, severity: "Minor", bodyPart: "Knee" },
+      { date: "Feb 2023", injury: "Foot tendon injury", missedGames: 15, severity: "Major", bodyPart: "Foot" },
+    ],
+  },
+  {
+    playerId: "sga2", playerName: "Shai Gilgeous-Alexander", teamAbbr: "OKC",
+    history: [
+      { date: "Nov 2024", injury: "Hip contusion", missedGames: 1, severity: "Minor", bodyPart: "Hip" },
+      { date: "Jan 2024", injury: "Rest / load management", missedGames: 2, severity: "Minor", bodyPart: "General" },
+    ],
+  },
+  {
+    playerId: "nj15", playerName: "Nikola Jokic", teamAbbr: "DEN",
+    history: [
+      { date: "Dec 2024", injury: "Rest / load management", missedGames: 1, severity: "Minor", bodyPart: "General" },
+    ],
+  },
+  // NCAAB
+  {
+    playerId: "jb_aub", playerName: "Johni Broome", teamAbbr: "AUB",
+    history: [
+      { date: "Feb 2025", injury: "Left ankle sprain", missedGames: 2, severity: "Minor", bodyPart: "Ankle" },
+      { date: "Dec 2024", injury: "Knee contusion", missedGames: 1, severity: "Minor", bodyPart: "Knee" },
+    ],
+  },
+  {
+    playerId: "cc_duk", playerName: "Cooper Flagg", teamAbbr: "DUKE",
+    history: [
+      { date: "Jan 2025", injury: "Ankle tweak", missedGames: 1, severity: "Minor", bodyPart: "Ankle" },
+    ],
+  },
+  {
+    playerId: "mc_ala", playerName: "Mark Sears", teamAbbr: "BAMA",
+    history: [
+      { date: "Feb 2025", injury: "Ankle sprain", missedGames: 0, severity: "Minor", bodyPart: "Ankle" },
+      { date: "Nov 2024", injury: "Shoulder soreness", missedGames: 1, severity: "Minor", bodyPart: "Shoulder" },
+    ],
+  },
+];
+
+export const getInjuryHistory = (playerId: string) => injuryHistories.find(h => h.playerId === playerId);

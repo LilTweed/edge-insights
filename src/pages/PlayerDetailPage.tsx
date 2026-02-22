@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
-import { getPlayer, getPropsForPlayer, injuries, matchupHistories, allGames, allTeams, allPlayers, formatOdds } from "@/data/mockData";
+import { getPlayer, getPropsForPlayer, injuries, matchupHistories, allGames, allTeams, allPlayers, formatOdds, getInjuryHistory } from "@/data/mockData";
+import { InjuryHistoryPanel, EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
 import PropCard from "@/components/PropCard";
 import { useState } from "react";
 
@@ -342,73 +343,12 @@ const PlayerDetailPage = () => {
             </div>
           )}
 
+          {/* Injury History */}
+          <InjuryHistoryPanel injuryHistory={getInjuryHistory(player.id)} playerName={player.name} />
+
           {/* H2H Matchups (team-level) */}
-          {teamMatchups.length > 0 && playerTeam && (
-            <div className="mb-6">
-              <h2 className="mb-3 text-lg font-bold text-foreground">⚔️ Upcoming Opponent H2H History</h2>
-              <div className="space-y-3">
-                {teamMatchups.map((m) => {
-                  const isTeam1 = m.team1Id === playerTeam.id;
-                  const oppId = isTeam1 ? m.team2Id : m.team1Id;
-                  const oppTeam = allTeams.find(t => t.id === oppId);
-                  if (!oppTeam) return null;
-
-                  const record = isTeam1
-                    ? `${m.allTime.wins}-${m.allTime.losses}`
-                    : `${m.allTime.losses}-${m.allTime.wins}`;
-
-                  return (
-                    <div key={oppId} className="rounded-xl border border-border bg-card p-4">
-                      <div className="mb-3 flex items-center justify-between">
-                        <Link to={`/team/${oppId}`} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
-                          vs {oppTeam.city} {oppTeam.name}
-                        </Link>
-                        <div className="text-right">
-                          <p className="font-mono text-sm font-bold text-foreground">{record}</p>
-                          <p className="text-[10px] text-muted-foreground">All-Time</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-4 gap-2 mb-3">
-                        <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                          <p className="font-mono text-xs font-bold text-foreground">
-                            {isTeam1 ? m.last10.team1Wins : m.last10.team2Wins}-{isTeam1 ? m.last10.team2Wins : m.last10.team1Wins}
-                          </p>
-                          <p className="text-[9px] text-muted-foreground">L10</p>
-                        </div>
-                        <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                          <p className="font-mono text-xs font-bold text-foreground">
-                            {isTeam1 ? m.last5.team1Wins : m.last5.team2Wins}-{isTeam1 ? m.last5.team2Wins : m.last5.team1Wins}
-                          </p>
-                          <p className="text-[9px] text-muted-foreground">L5</p>
-                        </div>
-                        <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                          <p className="font-mono text-xs font-bold text-foreground">{m.streak}</p>
-                          <p className="text-[9px] text-muted-foreground">Streak</p>
-                        </div>
-                        <div className="rounded-lg bg-secondary/60 p-2 text-center">
-                          <p className="font-mono text-xs font-bold text-foreground">
-                            {isTeam1 ? m.avgScore.team1 : m.avgScore.team2}-{isTeam1 ? m.avgScore.team2 : m.avgScore.team1}
-                          </p>
-                          <p className="text-[9px] text-muted-foreground">Avg Score</p>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-medium text-muted-foreground">Recent Meetings</span>
-                        {m.last5.results.map((r, i) => (
-                          <div key={i} className="flex items-center justify-between rounded-lg bg-secondary/40 px-2.5 py-1.5">
-                            <span className="text-[11px] text-muted-foreground">{r.date}</span>
-                            <span className="font-mono text-[11px] font-semibold text-foreground">
-                              {isTeam1 ? r.team1Score : r.team2Score} - {isTeam1 ? r.team2Score : r.team1Score}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground max-w-[120px] truncate">{r.location}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          {playerTeam && (
+            <EnhancedH2HPanel matchups={teamMatchups} teamId={playerTeam.id} />
           )}
 
           {/* Teammates */}
