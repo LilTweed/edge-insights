@@ -1,9 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { HelpCircle, LogIn, LogOut, User } from "lucide-react";
+import { Crown, HelpCircle, LogIn, LogOut, User } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription, type SubscriptionTier } from "@/hooks/useSubscription";
 
 const navItems = [
   { label: "Games", path: "/" },
@@ -16,6 +17,14 @@ const AppHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { previewTier, setPreviewTier } = useSubscription();
+
+  const tierOptions: { label: string; value: SubscriptionTier | null }[] = [
+    { label: "Off", value: null },
+    { label: "Free", value: "free" },
+    { label: "Basic", value: "basic" },
+    { label: "Adv", value: "advanced" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-2xl backdrop-saturate-150">
@@ -45,6 +54,24 @@ const AppHeader = () => {
         </nav>
 
         <div className="flex items-center gap-0.5">
+          {/* Tier Preview Toggle */}
+          <div className="flex items-center gap-0.5 rounded-lg border border-border/60 px-1 py-0.5">
+            <Crown className="h-3 w-3 text-muted-foreground ml-1" />
+            {tierOptions.map((opt) => (
+              <button
+                key={opt.label}
+                onClick={() => setPreviewTier(opt.value)}
+                className={cn(
+                  "rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                  (previewTier === opt.value || (opt.value === null && previewTier === null))
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
           <NotificationBell />
           <button
             onClick={() => window.dispatchEvent(new Event("lvrg-restart-tour"))}
