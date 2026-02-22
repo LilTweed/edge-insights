@@ -1,6 +1,4 @@
 // Data layer — types, interfaces, and helper functions only
-// All mock data has been removed; the app now uses live data from ESPN and SportsRadar
-import { nflTeams, nflGames, nflPlayers, nflProps, mlbTeams, mlbGames, mlbPlayers, mlbProps, nhlTeams, nhlGames, nhlPlayers, nhlProps, ufcTeams, ufcGames, ufcPlayers, ufcProps, pgaTeams, pgaGames, pgaPlayers, pgaProps } from "./extraSports";
 
 export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL" | "MLB" | "NHL" | "UFC" | "PGA";
 export type Sportsbook = "FanDuel" | "DraftKings" | "Fanatics" | "BetMGM" | "Bovada";
@@ -170,35 +168,13 @@ export const nbaTeams: Team[] = [];
 export const ncaabTeams: Team[] = [];
 export const ncaafTeams: Team[] = [];
 
-export const allTeams: Team[] = [...nbaTeams, ...ncaabTeams, ...ncaafTeams, ...nflTeams, ...mlbTeams, ...nhlTeams, ...ufcTeams, ...pgaTeams];
-
+export const allTeams: Team[] = [];
 export const matchupHistories: MatchupHistory[] = [];
 export const injuries: Injury[] = [];
 export const injuryHistories: PlayerInjuryHistory[] = [];
-
-// ===================== PLAYERS =====================
-
-export const nbaPlayers: Player[] = [];
-export const ncaabPlayers: Player[] = [];
-export const ncaafPlayers: Player[] = [];
-
-export const allPlayers: Player[] = [...nbaPlayers, ...ncaabPlayers, ...ncaafPlayers, ...nflPlayers, ...mlbPlayers, ...nhlPlayers, ...ufcPlayers, ...pgaPlayers];
-
-// ===================== GAMES =====================
-
-export const nbaGames: Game[] = [];
-export const ncaabGames: Game[] = [];
-export const ncaafGames: Game[] = [];
-
-export const allGames: Game[] = [...nbaGames, ...ncaabGames, ...ncaafGames, ...nflGames, ...mlbGames, ...nhlGames, ...ufcGames, ...pgaGames];
-
-// ===================== PROP LINES =====================
-
-export const nbaProps: PropLine[] = [];
-export const ncaabProps: PropLine[] = [];
-export const ncaafProps: PropLine[] = [];
-
-export const propLines: PropLine[] = [...nbaProps, ...ncaabProps, ...ncaafProps, ...nflProps, ...mlbProps, ...nhlProps, ...ufcProps, ...pgaProps];
+export const allPlayers: Player[] = [];
+export const allGames: Game[] = [];
+export const propLines: PropLine[] = [];
 
 // ===================== HELPER FUNCTIONS =====================
 
