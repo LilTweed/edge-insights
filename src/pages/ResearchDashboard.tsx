@@ -216,12 +216,19 @@ const ResearchDashboard = () => {
   }
 
   return (
-    <div className="container py-6">
+    <div className={`container py-6 ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Research Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Research Dashboard</h1>
+          {hasAdvanced && (
+            <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
+              PRO
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          {hasAdvanced ? "Deep-dive into player stats, trends, and matchup data" : "Browse player and team stats at a glance"}
+          {hasAdvanced ? "Player stats · Trend analysis · H2H matchups · Injury modeling" : "Browse player and team stats at a glance"}
         </p>
       </div>
 

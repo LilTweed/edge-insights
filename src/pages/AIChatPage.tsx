@@ -190,28 +190,35 @@ export default function AIChatPage() {
   const prompts = advanced ? advancedQuickPrompts : simpleQuickPrompts;
 
   return (
-    <div className="container flex h-[calc(100vh-3.5rem)] flex-col py-4">
+    <div className={`container flex h-[calc(100vh-3.5rem)] flex-col py-4 ${advanced ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${advanced ? "bg-primary" : "bg-primary"}`}>
-            {advanced ? <BarChart3 size={20} className="text-primary-foreground" /> : <Sparkles size={20} className="text-primary-foreground" />}
+          <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${advanced ? "pro-gradient shadow-[0_0_12px_hsl(var(--pro)/0.3)] animate-pro-glow" : "bg-primary"}`}>
+            {advanced ? <BarChart3 size={20} className="text-pro-foreground" /> : <Sparkles size={20} className="text-primary-foreground" />}
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">
-              {advanced ? "Pro Analyst" : "Quick Picks"}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground">
+                {advanced ? "Pro Analyst" : "Quick Picks"}
+              </h1>
+              {advanced && (
+                <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
+                  PRO
+                </span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {advanced ? "Deep statistical analysis & edge detection" : "Tap a button, get winning bets 🎉"}
+              {advanced ? "Quantitative edge detection · Statistical modeling · Correlation analysis" : "Tap a button, get winning bets 🎉"}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center rounded-xl border border-border bg-card p-0.5">
+        <div className={`flex items-center rounded-xl border p-0.5 ${advanced ? "border-pro/30 bg-pro/5" : "border-border bg-card"}`}>
           <button onClick={() => setAdvanced(false)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${!advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             😎 Easy
           </button>
-          <button onClick={() => { if (hasAdvanced) setAdvanced(true); else alert("Pro mode requires the Advanced plan ($9.99/mo). Visit the Pricing page to upgrade."); }} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+          <button onClick={() => { if (hasAdvanced) setAdvanced(true); else alert("Pro mode requires the Advanced plan ($9.99/mo). Visit the Pricing page to upgrade."); }} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${advanced ? "pro-gradient text-pro-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             <span className="flex items-center gap-1"><Zap size={12} /> Pro {!hasAdvanced && "🔒"}</span>
           </button>
         </div>
@@ -223,13 +230,17 @@ export default function AIChatPage() {
 
       {/* Advanced info bar */}
       {advanced && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2">
-          <Shield size={13} className="text-primary" />
-          <span className="text-[11px] font-medium text-primary">Feeding AI:</span>
-          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{sportPropCount} props</span>
-          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{sportGameCount} games</span>
-          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">{sportInjuryCount} injuries</span>
-          <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">H2H + standings</span>
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-pro/20 bg-pro/5 px-3 py-2 animate-pro-glow">
+          <Shield size={13} className="text-pro" />
+          <span className="text-[11px] font-medium text-pro">Feeding AI:</span>
+          <span className="rounded bg-pro/10 px-1.5 py-0.5 text-[10px] font-medium text-pro">{sportPropCount} props</span>
+          <span className="rounded bg-pro/10 px-1.5 py-0.5 text-[10px] font-medium text-pro">{sportGameCount} games</span>
+          <span className="rounded bg-pro/10 px-1.5 py-0.5 text-[10px] font-medium text-pro">{sportInjuryCount} injuries</span>
+          <span className="rounded bg-pro/10 px-1.5 py-0.5 text-[10px] font-medium text-pro">H2H + standings</span>
+          <div className="ml-auto flex items-center gap-1">
+            <div className="h-1.5 w-1.5 rounded-full bg-pro animate-pulse-dot" />
+            <span className="text-[9px] font-bold text-pro">LIVE ANALYSIS</span>
+          </div>
         </div>
       )}
 
@@ -261,17 +272,23 @@ export default function AIChatPage() {
               </>
             ) : (
               <>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-                  <BarChart3 size={28} className="text-primary" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl pro-gradient shadow-[0_0_20px_hsl(var(--pro)/0.3)] animate-pro-glow">
+                  <BarChart3 size={28} className="text-pro-foreground" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-lg font-semibold text-foreground">Statistical Analysis Engine</h2>
+                  <div className="flex items-center justify-center gap-2">
+                    <h2 className="text-lg font-semibold text-foreground">Statistical Analysis Engine</h2>
+                    <div className="flex items-center gap-1">
+                      <div className="h-1.5 w-1.5 rounded-full bg-pro animate-pulse-dot" />
+                      <span className="text-[9px] font-bold text-pro">ACTIVE</span>
+                    </div>
+                  </div>
                   <p className="mt-1 text-xs text-muted-foreground">{sportPropCount} props · {sportGameCount} games · {sportInjuryCount} injuries · H2H · L10/L5 splits</p>
                 </div>
                 <div className="grid w-full max-w-lg gap-2">
                   {prompts.map((qp) => (
-                    <button key={qp.label} onClick={() => send(qp.prompt)} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 text-left transition-colors hover:border-primary/30 hover:bg-secondary">
-                      <qp.icon size={16} className="shrink-0 text-primary" />
+                    <button key={qp.label} onClick={() => send(qp.prompt)} className="flex items-center gap-3 rounded-xl border border-pro/20 bg-card p-3.5 text-left transition-all hover:border-pro/40 hover:bg-pro/5 hover:shadow-[0_0_8px_hsl(var(--pro)/0.1)]">
+                      <qp.icon size={16} className="shrink-0 text-pro" />
                       <div>
                         <p className="text-sm font-medium text-foreground">{qp.label}</p>
                         <p className="text-[11px] text-muted-foreground">{qp.description}</p>

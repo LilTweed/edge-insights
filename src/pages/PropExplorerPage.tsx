@@ -136,13 +136,20 @@ const PropExplorerPage = () => {
   }
 
   return (
-    <div className="container py-6 max-w-4xl">
+    <div className={`container py-6 max-w-4xl ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Prop Explorer</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Prop Explorer</h1>
+          {hasAdvanced && (
+            <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
+              PRO
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-sm text-muted-foreground">
           {hasAdvanced
-            ? <>Browse player props with detailed odds & analysis. <TermTooltip term="Prop"><span className="text-primary">What's a prop?</span></TermTooltip></>
+            ? <>Deep-dive analysis with confidence scoring & odds comparison. <TermTooltip term="Prop"><span className="text-pro">What's a prop?</span></TermTooltip></>
             : "Discover player props with simple hit rates"}
         </p>
       </div>
@@ -315,20 +322,35 @@ function AdvancedExplorerCard({ prop }: { prop: PropLine }) {
     ? prop.sportsbooks.reduce((best, sb) => (sb.under > best.under ? sb : best))
     : null;
 
+  // Calculate edge for value indicator
+  const bestOverOdds = bestOver ? bestOver.over : 0;
+  const impliedProb = bestOverOdds < 0 ? (-bestOverOdds / (-bestOverOdds + 100)) * 100 : (100 / (bestOverOdds + 100)) * 100;
+  const edge = prop.hitRate - impliedProb;
+  const hasEdge = edge > 5;
+
   return (
-    <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm">
+    <div className={`rounded-xl border p-4 transition-all hover:shadow-md ${
+      hasEdge
+        ? "border-pro/30 bg-pro/5 hover:border-pro/50 hover:shadow-[0_0_12px_hsl(var(--pro)/0.1)]"
+        : "border-border bg-card hover:border-primary/20"
+    }`}>
       {/* Top row */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link
             to={`/player/${prop.playerId}`}
-            className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+            className="text-sm font-semibold text-foreground hover:text-pro transition-colors"
           >
             {prop.playerName}
           </Link>
           <span className="rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
             {prop.teamAbbr}
           </span>
+          {hasEdge && (
+            <span className="rounded-md pro-gradient px-1.5 py-0.5 text-[8px] font-bold text-pro-foreground tracking-wider">
+              +{edge.toFixed(0)}% EDGE
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <TrendIndicator hitRate={prop.hitRate} hitRateLast10={prop.hitRateLast10} />
@@ -359,9 +381,9 @@ function AdvancedExplorerCard({ prop }: { prop: PropLine }) {
 
       {/* Hit rate bar */}
       <div className="mb-3">
-        <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-l-full bg-foreground/30 transition-all"
+            className={`h-full rounded-l-full transition-all ${hasEdge ? "pro-gradient" : "bg-foreground/30"}`}
             style={{ width: `${prop.hitRate}%` }}
           />
         </div>
