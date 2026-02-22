@@ -134,10 +134,10 @@ export default function AIChatPage() {
     }
   }, []);
 
-  if (!hasAdvanced) {
+  if (!isBasicOrAbove) {
     return (
       <div className="container py-10">
-        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="AI Chat">
+        <UpgradeGate requiredTier="basic" currentTier={tier} feature="AI Chat">
           <div />
         </UpgradeGate>
       </div>

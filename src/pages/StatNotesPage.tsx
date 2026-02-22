@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeGate from "@/components/UpgradeGate";
 import { type Sport } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import { Search, Plus, Trash2, StickyNote, X } from "lucide-react";
@@ -13,6 +15,7 @@ interface StatNote {
 }
 
 export default function StatNotesPage() {
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
   const [sport, setSport] = useState<Sport>("NBA");
   const [notes, setNotes] = useState<StatNote[]>(() => {
     try { return JSON.parse(localStorage.getItem("lvrg-stat-notes") || "[]"); } catch { return []; }
@@ -54,6 +57,16 @@ export default function StatNotesPage() {
     }
     return true;
   });
+
+  if (!hasAdvanced) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Stat Notes">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className="container flex h-[calc(100vh-3.5rem)] flex-col py-4">
