@@ -23,7 +23,6 @@ import InstallPage from "./pages/InstallPage";
 import ResearchDashboard from "./pages/ResearchDashboard";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-import SportsRadarTestPage from "./pages/SportsRadarTestPage";
 import PricingPage from "./pages/PricingPage";
 import ProfilePage from "./pages/ProfilePage";
 import PropExplorerPage from "./pages/PropExplorerPage";
@@ -63,7 +62,7 @@ const App = () => (
           {/* Legacy redirect */}
           <Route path="/ai-props" element={<AIChatPage />} />
           <Route path="/install" element={<InstallPage />} />
-          <Route path="/sr-test" element={<SportsRadarTestPage />} />
+          <Route path="/install" element={<InstallPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

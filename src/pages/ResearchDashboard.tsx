@@ -15,8 +15,6 @@ import {
 import SportFilter from "@/components/SportFilter";
 import { EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
 import { useFavoriteTeams } from "@/hooks/useFavoriteTeams";
-import { useEspnTeams, useTeamRoster, type EspnSport } from "@/hooks/useEspnData";
-import EspnPlayerCard from "@/components/EspnPlayerCard";
 import PlayerCard from "@/components/PlayerCard";
 import {
   Search,
@@ -46,7 +44,7 @@ import {
   ReferenceLine,
 } from "recharts";
 
-type Tab = "stats" | "trends" | "matchups" | "teams" | "roster";
+type Tab = "stats" | "trends" | "matchups" | "teams";
 
 const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"] as const;
 
@@ -95,27 +93,8 @@ const ResearchDashboard = () => {
   const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { toggle, isFavorite } = useFavoriteTeams();
-  const [selectedRosterTeamId, setSelectedRosterTeamId] = useState<string>("");
   const { tier, isBasicOrAbove } = useSubscription();
 
-  const isEspnSport = (ESPN_SPORTS as readonly string[]).includes(sport);
-  const { data: espnTeams, isLoading: espnTeamsLoading } = useEspnTeams(sport as EspnSport);
-  const espnTeamList = espnTeams || [];
-  const effectiveRosterTeamId = selectedRosterTeamId || (espnTeamList.length > 0 ? espnTeamList[0].id : "");
-  const { data: rosterData, isLoading: rosterLoading } = useTeamRoster(sport as EspnSport, effectiveRosterTeamId || undefined);
-  const selectedEspnTeam = espnTeamList.find((t) => t.id === effectiveRosterTeamId);
-
-  const filteredRoster = useMemo(() => {
-    if (!rosterData) return [];
-    return rosterData
-      .filter((p) => posFilter === "All" || p.position === posFilter)
-      .filter((p) => !search || p.name.toLowerCase().includes(search.toLowerCase()));
-  }, [rosterData, posFilter, search]);
-
-  const rosterPositions = useMemo(() => {
-    if (!rosterData) return ["All"];
-    return ["All", ...Array.from(new Set(rosterData.map((p) => p.position))).sort()];
-  }, [rosterData]);
 
   const players = useMemo(() => allPlayers.filter((p) => p.sport === sport), [sport]);
   const teams = useMemo(() => allTeams.filter((t) => t.sport === sport), [sport]);
@@ -220,7 +199,6 @@ const ResearchDashboard = () => {
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: "stats", label: "Player Stats", icon: BarChart3 },
-    { key: "roster", label: "Rosters", icon: UserCircle },
     { key: "teams", label: "Teams", icon: Shield },
     { key: "trends", label: "Trends", icon: Activity },
     { key: "matchups", label: "Matchups", icon: Swords },
@@ -245,7 +223,7 @@ const ResearchDashboard = () => {
       </div>
 
       <div className="mb-4">
-        <SportFilter active={sport} onChange={(s) => { setSport(s); setSearch(""); setPosFilter("All"); setTeamFilter("All"); setSelectedRosterTeamId(""); }} />
+        <SportFilter active={sport} onChange={(s) => { setSport(s); setSearch(""); setPosFilter("All"); setTeamFilter("All"); }} />
       </div>
 
       {/* Injury Ticker */}
@@ -601,91 +579,7 @@ const ResearchDashboard = () => {
         </div>
       )}
 
-      {/* ─── ROSTER TAB ─── */}
-      {tab === "roster" && (
-        <div>
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search players..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full max-w-[200px] rounded-lg border border-border bg-card pl-8 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-              />
-            </div>
 
-            {isEspnSport && (
-              <select
-                value={selectedRosterTeamId || effectiveRosterTeamId}
-                onChange={(e) => { setSelectedRosterTeamId(e.target.value); setPosFilter("All"); }}
-                className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-              >
-                {espnTeamsLoading && <option>Loading teams...</option>}
-                {espnTeamList.map((t) => (
-                  <option key={t.id} value={t.id}>{t.abbreviation} — {t.name}</option>
-                ))}
-              </select>
-            )}
-
-            <select
-              value={posFilter}
-              onChange={(e) => setPosFilter(e.target.value)}
-              className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-            >
-              {(tab === "roster" ? rosterPositions : positions).map((pos) => (
-                <option key={pos} value={pos}>{pos === "All" ? "All Positions" : pos}</option>
-              ))}
-            </select>
-          </div>
-
-          {isEspnSport && (
-            <>
-              {(espnTeamsLoading || rosterLoading) && (
-                <div className="flex flex-col items-center gap-2 py-16">
-                  <RefreshCw size={24} className="animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">Loading {selectedEspnTeam?.name || sport} roster…</p>
-                </div>
-              )}
-
-              {!espnTeamsLoading && !rosterLoading && filteredRoster.length > 0 && (
-                <>
-                  <p className="mb-3 text-xs text-muted-foreground">
-                    {filteredRoster.length} players · {selectedEspnTeam?.name} {selectedEspnTeam?.record ? `(${selectedEspnTeam.record})` : ""}
-                  </p>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {filteredRoster.map((player) => (
-                      <EspnPlayerCard
-                        key={player.id}
-                        player={player}
-                        sport={sport as EspnSport}
-                        teamName={selectedEspnTeam?.name}
-                        teamAbbr={selectedEspnTeam?.abbreviation}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {!espnTeamsLoading && !rosterLoading && filteredRoster.length === 0 && rosterData && (
-                <p className="py-12 text-center text-sm text-muted-foreground">No players match your filters</p>
-              )}
-            </>
-          )}
-
-          {!isEspnSport && (
-            <>
-              <p className="mb-3 text-xs text-muted-foreground">{players.length} players</p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {players.filter((p) => !search || p.name.toLowerCase().includes(search.toLowerCase())).filter((p) => posFilter === "All" || p.position === posFilter).map((player) => (
-                  <PlayerCard key={player.id} player={player} />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
 
       {/* ─── TEAMS TAB ─── */}
       {tab === "teams" && (
