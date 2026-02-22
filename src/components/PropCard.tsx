@@ -52,85 +52,41 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip }: PropCardProps) => {
         <span className="font-mono text-xl font-bold text-foreground">{prop.line}</span>
       </div>
 
-      {/* Transparent Hit Rate */}
-      <div className="mb-3 rounded-lg border border-border/50 bg-secondary/30 p-3 space-y-2.5">
+      {/* Hit Rate — neutral, transparent */}
+      <div className="mb-3 rounded-lg border border-border/50 bg-secondary/30 p-3 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Actual Hit Rate</span>
-          <span className="text-[10px] text-muted-foreground">{prop.gamesPlayed} GP sample</span>
+          <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Hit Rate</span>
+          <span className="text-[10px] text-muted-foreground">{prop.gamesPlayed} games</span>
         </div>
 
-        {/* Season bar — shows over vs under split */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-muted-foreground">Season</span>
-            <span className="font-mono text-[11px] font-semibold text-foreground">
-              {gamesOver}–{gamesUnder} <span className="text-muted-foreground">(O–U)</span>
-            </span>
-          </div>
-          <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+        {/* Season split */}
+        <div className="space-y-1">
+          <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full bg-foreground/50 transition-all"
+              className="h-full rounded-l-full bg-foreground/40 transition-all"
               style={{ width: `${prop.hitRate}%` }}
-              title={`Over: ${prop.hitRate}%`}
             />
           </div>
-          <div className="mt-0.5 flex justify-between text-[9px] text-muted-foreground">
-            <span>Over {prop.hitRate}%</span>
-            <span>Under {(100 - prop.hitRate).toFixed(0)}%</span>
+          <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
+            <span>Over {gamesOver}/{prop.gamesPlayed}</span>
+            <span>Under {gamesUnder}/{prop.gamesPlayed}</span>
           </div>
         </div>
 
-        {/* Last 10 bar */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
+        {/* Last 10 split */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground">Last 10</span>
-            <span className="font-mono text-[11px] font-semibold text-foreground">
-              {gamesOverL10}–{gamesUnderL10} <span className="text-muted-foreground">(O–U)</span>
-            </span>
           </div>
-          <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full bg-foreground/40 transition-all"
+              className="h-full rounded-l-full bg-foreground/30 transition-all"
               style={{ width: `${prop.hitRateLast10}%` }}
-              title={`Over L10: ${prop.hitRateLast10}%`}
             />
           </div>
-          <div className="mt-0.5 flex justify-between text-[9px] text-muted-foreground">
-            <span>Over {prop.hitRateLast10}%</span>
-            <span>Under {(100 - prop.hitRateLast10).toFixed(0)}%</span>
-          </div>
-        </div>
-
-        {/* Implied prob vs actual — no bias, just data */}
-        <div className="border-t border-border/50 pt-2">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Market vs Actual</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-md bg-secondary/60 p-2 text-center">
-              <p className="text-[9px] text-muted-foreground mb-0.5">Over</p>
-              <p className="font-mono text-[11px] text-foreground">
-                <span className="text-muted-foreground">Mkt </span>{avgImpliedOver.toFixed(1)}%
-              </p>
-              <p className="font-mono text-[11px] text-foreground">
-                <span className="text-muted-foreground">Act </span>{prop.hitRate}%
-              </p>
-              <p className={`font-mono text-[10px] font-bold mt-0.5 ${Math.abs(edgeOver) < 2 ? "text-muted-foreground" : edgeOver > 0 ? "text-green-400" : "text-red-400"}`}>
-                {edgeOver > 0 ? "+" : ""}{edgeOver.toFixed(1)}% edge
-              </p>
-            </div>
-            <div className="rounded-md bg-secondary/60 p-2 text-center">
-              <p className="text-[9px] text-muted-foreground mb-0.5">Under</p>
-              <p className="font-mono text-[11px] text-foreground">
-                <span className="text-muted-foreground">Mkt </span>{avgImpliedUnder.toFixed(1)}%
-              </p>
-              <p className="font-mono text-[11px] text-foreground">
-                <span className="text-muted-foreground">Act </span>{(100 - prop.hitRate).toFixed(1)}%
-              </p>
-              <p className={`font-mono text-[10px] font-bold mt-0.5 ${Math.abs(edgeUnder) < 2 ? "text-muted-foreground" : edgeUnder > 0 ? "text-green-400" : "text-red-400"}`}>
-                {edgeUnder > 0 ? "+" : ""}{edgeUnder.toFixed(1)}% edge
-              </p>
-            </div>
+          <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
+            <span>Over {gamesOverL10}/{Math.min(10, prop.gamesPlayed)}</span>
+            <span>Under {gamesUnderL10}/{Math.min(10, prop.gamesPlayed)}</span>
           </div>
         </div>
       </div>
