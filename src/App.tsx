@@ -20,6 +20,7 @@ import TermsPage from "./pages/TermsPage";
 import DisclaimerModal from "./components/DisclaimerModal";
 import InstallPage from "./pages/InstallPage";
 import ResearchDashboard from "./pages/ResearchDashboard";
+import SportsRadarTestPage from "./pages/SportsRadarTestPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
           {/* Legacy redirect */}
           <Route path="/ai-props" element={<AIChatPage />} />
           <Route path="/install" element={<InstallPage />} />
+          <Route path="/sr-test" element={<SportsRadarTestPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
