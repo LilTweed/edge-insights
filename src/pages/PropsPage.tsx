@@ -1,9 +1,10 @@
-import { propLines, type Sport } from "@/data/mockData";
+import { propLines, type Sport, type PropLine } from "@/data/mockData";
 import PropCard from "@/components/PropCard";
 import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
-import { useState, useMemo } from "react";
+import MiniSlipBuilder from "@/components/MiniSlipBuilder";
+import { useState, useMemo, useRef } from "react";
 import { Share2, Search, ArrowUpDown } from "lucide-react";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
@@ -145,12 +146,21 @@ const PropsPage = () => {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((prop) => (
-          <PropCard key={prop.id} prop={prop} />
+          <PropCard
+            key={prop.id}
+            prop={prop}
+            onAddToSlip={(p, side) => {
+              // Dispatch event for MiniSlipBuilder to pick up
+              window.dispatchEvent(new CustomEvent("lvrg-add-to-slip", { detail: { prop: p, side } }));
+            }}
+          />
         ))}
         {filtered.length === 0 && (
           <p className="col-span-3 text-center text-sm text-muted-foreground py-12">No props match your filters</p>
         )}
       </div>
+
+      <MiniSlipBuilder props={filtered} />
 
       <ExportableDataView
         open={exportOpen}
