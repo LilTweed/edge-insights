@@ -21,7 +21,7 @@ const defaultAdvanced: AdvancedFilters = {
   maxLine: null,
 };
 
-const ESPN_SPORTS: EspnSport[] = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF"];
+const ESPN_SPORTS: EspnSport[] = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "MLS", "WNBA", "NASCAR", "TENNIS"];
 
 const PropsPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");
