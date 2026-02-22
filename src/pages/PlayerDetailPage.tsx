@@ -11,9 +11,7 @@ const PlayerDetailPage = () => {
     return (
       <div className="container py-12 text-center">
         <p className="text-muted-foreground">Player not found</p>
-        <Link to="/players" className="mt-2 inline-block text-sm text-primary underline">
-          Back to players
-        </Link>
+        <Link to="/players" className="mt-2 inline-block text-sm text-primary underline">Back to players</Link>
       </div>
     );
   }
@@ -41,7 +39,6 @@ const PlayerDetailPage = () => {
         ← Players
       </Link>
 
-      {/* Player Header */}
       <div className="mb-6 flex items-center gap-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">
           #{player.number}
@@ -49,12 +46,11 @@ const PlayerDetailPage = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{player.name}</h1>
           <p className="text-sm text-muted-foreground">
-            {player.teamAbbr} · {player.position} · {player.stats.gamesPlayed} GP
+            {player.teamAbbr} · {player.position} · {player.stats.gamesPlayed} GP · {player.sport}
           </p>
         </div>
       </div>
 
-      {/* Stats Table */}
       <div className="mb-8 overflow-hidden rounded-xl border border-border bg-card">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -80,7 +76,6 @@ const PlayerDetailPage = () => {
         </div>
       </div>
 
-      {/* Player Props */}
       {props.length > 0 && (
         <>
           <h2 className="mb-4 text-lg font-bold text-foreground">Available Props</h2>
