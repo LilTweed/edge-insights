@@ -7,7 +7,6 @@ const navItems = [
   { label: "Games", path: "/" },
   { label: "Props", path: "/props" },
   { label: "AI Chat", path: "/ai-chat" },
-  { label: "Notes", path: "/notes" },
   { label: "Players", path: "/players" },
   { label: "Teams", path: "/teams" },
 ];
