@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.ai-prop-builder]
 verify_jwt = false
+
+[functions.espn-data]
+verify_jwt = false
