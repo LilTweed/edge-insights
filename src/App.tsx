@@ -11,6 +11,7 @@ import PlayerDetailPage from "./pages/PlayerDetailPage";
 import GameDetailPage from "./pages/GameDetailPage";
 import TeamsPage from "./pages/TeamsPage";
 import TeamDetailPage from "./pages/TeamDetailPage";
+import AIPropBuilderPage from "./pages/AIPropBuilderPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/game/:id" element={<GameDetailPage />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/team/:id" element={<TeamDetailPage />} />
+          <Route path="/ai-props" element={<AIPropBuilderPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
