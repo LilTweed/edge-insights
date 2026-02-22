@@ -10,6 +10,7 @@ import { useState, useMemo } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import UpgradeGate from "@/components/UpgradeGate";
 import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, Table2, DollarSign, TrendingUp, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 type ViewMode = "basic" | "advanced" | "compare";
@@ -25,14 +26,14 @@ const defaultAdvanced: AdvancedFilters = {
 };
 
 const PropsPage = () => {
-  const { tier, isBasicOrAbove } = useSubscription();
+  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
   const [sport, setSport] = useState<Sport>("NBA");
   const [exportOpen, setExportOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("hitRate");
   const [sortAsc, setSortAsc] = useState(false);
   const [advanced, setAdvanced] = useState<AdvancedFilters>(defaultAdvanced);
-  const [viewMode, setViewMode] = useState<ViewMode>("advanced");
+  const [viewMode, setViewMode] = useState<ViewMode>("basic");
   const [activeTab, setActiveTab] = useState<PropsTab>("props");
 
   const sportProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
@@ -54,12 +55,14 @@ const PropsPage = () => {
 
   const filtered = useMemo(() => {
     let list = sportProps;
-    if (advanced.teams.length > 0) list = list.filter((p) => advanced.teams.includes(p.teamAbbr));
-    if (advanced.players.length > 0) list = list.filter((p) => advanced.players.includes(p.playerName));
-    if (advanced.stats.length > 0) list = list.filter((p) => advanced.stats.includes(p.stat));
-    if (advanced.minHitRate > 0) list = list.filter((p) => p.hitRate >= advanced.minHitRate);
-    if (advanced.minLine !== null) list = list.filter((p) => p.line >= advanced.minLine!);
-    if (advanced.maxLine !== null) list = list.filter((p) => p.line <= advanced.maxLine!);
+    if (hasAdvanced) {
+      if (advanced.teams.length > 0) list = list.filter((p) => advanced.teams.includes(p.teamAbbr));
+      if (advanced.players.length > 0) list = list.filter((p) => advanced.players.includes(p.playerName));
+      if (advanced.stats.length > 0) list = list.filter((p) => advanced.stats.includes(p.stat));
+      if (advanced.minHitRate > 0) list = list.filter((p) => p.hitRate >= advanced.minHitRate);
+      if (advanced.minLine !== null) list = list.filter((p) => p.line >= advanced.minLine!);
+      if (advanced.maxLine !== null) list = list.filter((p) => p.line <= advanced.maxLine!);
+    }
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -82,7 +85,7 @@ const PropsPage = () => {
       return sortAsc ? diff : -diff;
     });
     return list;
-  }, [sportProps, advanced, search, sortBy, sortAsc]);
+  }, [sportProps, advanced, search, sortBy, sortAsc, hasAdvanced]);
 
   const hitRateByStat = useMemo(() => {
     const stats = new Map<string, { total: number; sumHR: number; sumHRL10: number; count: number }>();
@@ -126,16 +129,19 @@ const PropsPage = () => {
   }
 
   return (
-    <div className="container py-6">
+    <div className="container py-6 max-w-5xl">
+      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Props Overview</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Player props, money lines & over/unders across all sportsbooks
+            {hasAdvanced
+              ? "Player props, money lines & over/unders across all sportsbooks"
+              : "Browse today's player props at a glance"}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {activeTab === "props" && (
+          {activeTab === "props" && hasAdvanced && (
             <>
               <div className="inline-flex rounded-lg border border-border bg-card overflow-hidden">
                 <button
@@ -178,28 +184,30 @@ const PropsPage = () => {
         <SportFilter active={sport} onChange={setSport} />
       </div>
 
-      {/* Tab navigation */}
-      <div className="mb-4 flex gap-1 rounded-xl border border-border bg-card p-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
-              activeTab === tab.key
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-            }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            {tab.label}
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-              activeTab === tab.key ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
-            }`}>
-              {tab.count}
-            </span>
-          </button>
-        ))}
-      </div>
+      {/* Tab navigation — Advanced gets all tabs, Basic just props */}
+      {hasAdvanced ? (
+        <div className="mb-4 flex gap-1 rounded-xl border border-border bg-card p-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
+                activeTab === tab.key
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+              }`}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                activeTab === tab.key ? "bg-primary-foreground/20 text-primary-foreground" : "bg-secondary text-muted-foreground"
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {/* Search bar */}
       <div className="mb-4">
@@ -208,35 +216,45 @@ const PropsPage = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={activeTab === "props" ? "Search player, team, or stat…" : "Search teams…"}
+            placeholder="Search player, team, or stat…"
             className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
           />
         </div>
       </div>
 
-      {/* Player Props Tab */}
-      {activeTab === "props" && (
+      {/* Player Props Tab (or always visible for basic) */}
+      {(activeTab === "props" || !hasAdvanced) && (
         <>
-          <div className="mb-4">
-            <AdvancedSearch
-              availableTeams={availableTeams}
-              availablePlayers={availablePlayers}
-              availableStats={availableStats}
-              filters={advanced}
-              onChange={setAdvanced}
-            />
-          </div>
+          {/* Advanced filters — only for advanced tier */}
+          {hasAdvanced && (
+            <div className="mb-4">
+              <AdvancedSearch
+                availableTeams={availableTeams}
+                availablePlayers={availablePlayers}
+                availableStats={availableStats}
+                filters={advanced}
+                onChange={setAdvanced}
+              />
+            </div>
+          )}
 
           {filtered.length === 0 ? (
-            <p className="py-12 text-center text-sm text-muted-foreground">No props available for {sport}</p>
+            <div className="py-16 text-center">
+              <p className="text-lg font-semibold text-muted-foreground">No props available</p>
+              <p className="mt-1 text-sm text-muted-foreground">Check back when {sport} games are scheduled</p>
+            </div>
           ) : (
             <>
+              {/* Sort controls */}
               <div className="mb-4 flex items-center justify-between">
                 <div className="text-[11px] text-muted-foreground">
                   {filtered.length} prop{filtered.length !== 1 ? "s" : ""}
                 </div>
                 <div className="flex items-center gap-2">
-                  {([["hitRate", "Hit Rate"], ["line", "Line"], ["player", "Name"], ["edge", "Edge"]] as [SortKey, string][]).map(([key, label]) => (
+                  {(hasAdvanced
+                    ? [["hitRate", "Hit Rate"], ["line", "Line"], ["player", "Name"], ["edge", "Edge"]] as [SortKey, string][]
+                    : [["hitRate", "Hit Rate"], ["player", "Name"]] as [SortKey, string][]
+                  ).map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => toggleSort(key)}
@@ -251,28 +269,39 @@ const PropsPage = () => {
                 </div>
               </div>
 
-              {viewMode === "compare" ? (
-                <SportsbookComparisonWidget props={filtered} />
-              ) : (
-                <div className={viewMode === "advanced" ? "grid gap-4 sm:grid-cols-2" : "space-y-3"}>
+              {/* Basic tier: simple clean list */}
+              {!hasAdvanced ? (
+                <div className="space-y-2">
                   {filtered.map((prop) => (
-                    <PropCard key={prop.id} prop={prop} viewMode={viewMode} />
+                    <SimpleCleanPropCard key={prop.id} prop={prop} />
                   ))}
                 </div>
-              )}
+              ) : (
+                <>
+                  {viewMode === "compare" ? (
+                    <SportsbookComparisonWidget props={filtered} />
+                  ) : (
+                    <div className={viewMode === "advanced" ? "grid gap-4 sm:grid-cols-2" : "space-y-3"}>
+                      {filtered.map((prop) => (
+                        <PropCard key={prop.id} prop={prop} viewMode={viewMode} />
+                      ))}
+                    </div>
+                  )}
 
-              {viewMode !== "compare" && filtered.length > 0 && (
-                <div className="mt-6 space-y-4">
-                  <HitRateTransparencyPanel props={filtered} hitRateByStat={hitRateByStat} />
-                </div>
+                  {viewMode !== "compare" && filtered.length > 0 && (
+                    <div className="mt-6 space-y-4">
+                      <HitRateTransparencyPanel props={filtered} hitRateByStat={hitRateByStat} />
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
         </>
       )}
 
-      {/* Moneylines Tab */}
-      {activeTab === "moneylines" && (
+      {/* Moneylines Tab — Advanced only */}
+      {hasAdvanced && activeTab === "moneylines" && (
         filteredGames.filter((g) => g.moneyline.length > 0).length === 0 ? (
           <p className="py-12 text-center text-sm text-muted-foreground">No money lines available for {sport}</p>
         ) : (
@@ -299,8 +328,8 @@ const PropsPage = () => {
         )
       )}
 
-      {/* Over/Unders Tab */}
-      {activeTab === "overunders" && (
+      {/* Over/Unders Tab — Advanced only */}
+      {hasAdvanced && activeTab === "overunders" && (
         filteredGames.filter((g) => g.overUnder.length > 0).length === 0 ? (
           <p className="py-12 text-center text-sm text-muted-foreground">No over/unders available for {sport}</p>
         ) : (
@@ -328,10 +357,38 @@ const PropsPage = () => {
         )
       )}
 
-      <MiniSlipBuilder props={filtered} />
+      {hasAdvanced && <MiniSlipBuilder props={filtered} />}
       {exportOpen && <ExportableDataView open={exportOpen} onClose={() => setExportOpen(false)} title="Props Export" props={filtered} />}
     </div>
   );
 };
+
+/** Simple, clean prop card for Basic tier — modern & minimal */
+function SimpleCleanPropCard({ prop }: { prop: PropLine }) {
+  const gamesOver = Math.round((prop.hitRate / 100) * prop.gamesPlayed);
+  
+  return (
+    <Link
+      to={`/player/${prop.playerId}`}
+      className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3.5 transition-all hover:border-primary/20 hover:shadow-sm"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-[10px] font-bold text-secondary-foreground">
+          {prop.teamAbbr}
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">{prop.playerName}</p>
+          <p className="text-xs text-muted-foreground">{prop.stat} · Line {prop.line}</p>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className={`font-mono text-lg font-bold ${prop.hitRate >= 60 ? "text-success" : prop.hitRate <= 40 ? "text-destructive" : "text-foreground"}`}>
+          {prop.hitRate}%
+        </p>
+        <p className="text-[10px] text-muted-foreground">{gamesOver}/{prop.gamesPlayed} over</p>
+      </div>
+    </Link>
+  );
+}
 
 export default PropsPage;
