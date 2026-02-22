@@ -12,7 +12,9 @@ import PlayerDetailPage from "./pages/PlayerDetailPage";
 import GameDetailPage from "./pages/GameDetailPage";
 import TeamsPage from "./pages/TeamsPage";
 import TeamDetailPage from "./pages/TeamDetailPage";
-import AIPropBuilderPage from "./pages/AIPropBuilderPage";
+import AIChatPage from "./pages/AIChatPage";
+import PropBuilderPage from "./pages/PropBuilderPage";
+import StatNotesPage from "./pages/StatNotesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +35,11 @@ const App = () => (
           <Route path="/game/:id" element={<GameDetailPage />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/team/:id" element={<TeamDetailPage />} />
-          <Route path="/ai-props" element={<AIPropBuilderPage />} />
+          <Route path="/ai-chat" element={<AIChatPage />} />
+          <Route path="/builder" element={<PropBuilderPage />} />
+          <Route path="/notes" element={<StatNotesPage />} />
+          {/* Legacy redirect */}
+          <Route path="/ai-props" element={<AIChatPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
