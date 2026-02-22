@@ -7,7 +7,7 @@ import LiveGameCard from "@/components/LiveGameCard";
 import { useLiveScoreboard } from "@/hooks/useEspnData";
 import { RefreshCw } from "lucide-react";
 
-const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "WNBA"] as const;
+const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"] as const;
 type EspnSport = (typeof ESPN_SPORTS)[number];
 
 const GamesPage = () => {

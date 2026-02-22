@@ -26,8 +26,3 @@ export const pgaTeams: Team[] = [];
 export const pgaGames: Game[] = [];
 export const pgaPlayers: Player[] = [];
 export const pgaProps: PropLine[] = [];
-
-export const wnbaTeams: Team[] = [];
-export const wnbaGames: Game[] = [];
-export const wnbaPlayers: Player[] = [];
-export const wnbaProps: PropLine[] = [];
