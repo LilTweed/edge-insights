@@ -28,8 +28,28 @@ const TOUR_STEPS = [
     icon: "📖",
   },
   {
+    title: "Prop Builder — Build Your Slip",
+    body: "Head to the AI Prop Builder page and open the Prop Builder tab. Search and sort props by edge, hit rate, or line — then click Over/Under to add legs to your slip.",
+    icon: "🛠️",
+  },
+  {
+    title: "Auto-Suggested Picks",
+    body: "The builder auto-detects the best value props by comparing your hit rate edge against implied odds. Look for the ★ Best Value banner and the 🔥 VALUE badges on high-edge props.",
+    icon: "⭐",
+  },
+  {
+    title: "Multi-Book Line Shopping",
+    body: "Expand any prop to see every sportsbook's line and odds side-by-side. Best odds are marked with ★ so you always know where to place your bet.",
+    icon: "💰",
+  },
+  {
+    title: "Stat Notes — Your Research Hub",
+    body: "Use the Stat Notes tab to save player observations, trends, and insights. Tag your notes (e.g. \"trending\", \"injury\") and filter by sport or tag to find them later.",
+    icon: "📝",
+  },
+  {
     title: "You're all set!",
-    body: "Explore Props, Players, and Teams from the nav bar. Toggle Advanced mode on any page for deeper stats. Have fun!",
+    body: "Explore Props, Players, and Teams from the nav bar. Use the AI Chat for instant picks, Prop Builder to craft your slip, and Stat Notes to track your research. Have fun!",
     icon: "🚀",
   },
 ];
