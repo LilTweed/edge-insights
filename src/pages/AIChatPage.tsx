@@ -5,6 +5,8 @@ import {
   type Sport, type PropLine, formatOdds,
 } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeGate from "@/components/UpgradeGate";
 import {
   Send, Loader2, Sparkles, TrendingUp, Layers, Zap, Shield,
   DollarSign, Flame, Target, ThumbsUp, BarChart3, Activity,
@@ -120,6 +122,7 @@ export default function AIChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -130,6 +133,16 @@ export default function AIChatPage() {
       send(`Analyze this prop slip I built with multi-book line shopping. Tell me if it's good and if I should swap any books:\n${slipData}`);
     }
   }, []);
+
+  if (!isBasicOrAbove) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="basic" currentTier={tier} feature="AI Chat">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   const send = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -198,8 +211,8 @@ export default function AIChatPage() {
           <button onClick={() => setAdvanced(false)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${!advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             😎 Easy
           </button>
-          <button onClick={() => setAdvanced(true)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            <span className="flex items-center gap-1"><Zap size={12} /> Pro</span>
+          <button onClick={() => { if (hasAdvanced) setAdvanced(true); else alert("Pro mode requires the Advanced plan ($9.99/mo). Visit the Pricing page to upgrade."); }} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            <span className="flex items-center gap-1"><Zap size={12} /> Pro {!hasAdvanced && "🔒"}</span>
           </button>
         </div>
       </div>
