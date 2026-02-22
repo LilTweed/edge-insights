@@ -129,14 +129,21 @@ const PropsPage = () => {
   }
 
   return (
-    <div className="container py-6 max-w-5xl">
+    <div className={`container py-6 max-w-5xl ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Props Overview</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Props Overview</h1>
+            {hasAdvanced && (
+              <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
+                PRO
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {hasAdvanced
-              ? "Player props, money lines & over/unders across all sportsbooks"
+              ? "Full sportsbook comparison · Edge detection · Multi-book line shopping"
               : "Browse today's player props at a glance"}
           </p>
         </div>

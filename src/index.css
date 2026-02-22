@@ -31,6 +31,10 @@
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
+    --pro: 265 70% 55%;
+    --pro-foreground: 0 0% 100%;
+    --pro-glow: 265 80% 65%;
+
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 222 47% 14%;
@@ -81,6 +85,10 @@
 
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
+
+    --pro: 265 70% 55%;
+    --pro-foreground: 0 0% 100%;
+    --pro-glow: 265 80% 70%;
 
     --border: 222 20% 16%;
     --input: 222 20% 16%;
@@ -172,10 +180,47 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pro-glow {
+  0%, 100% { box-shadow: 0 0 12px 2px hsl(var(--pro) / 0.15); }
+  50% { box-shadow: 0 0 20px 4px hsl(var(--pro) / 0.3); }
+}
+
+@keyframes pro-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
 }
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
+}
+
+.animate-pro-glow {
+  animation: pro-glow 3s ease-in-out infinite;
+}
+
+.animate-pro-shimmer {
+  background: linear-gradient(90deg, transparent 0%, hsl(var(--pro) / 0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: pro-shimmer 3s ease-in-out infinite;
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.pro-gradient {
+  background: linear-gradient(135deg, hsl(var(--pro)), hsl(var(--pro-glow)));
+}
+
+.pro-border {
+  border-image: linear-gradient(135deg, hsl(var(--pro) / 0.4), hsl(var(--pro-glow) / 0.2)) 1;
 }

@@ -1,12 +1,12 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Crown, HelpCircle, Lock, LogIn, LogOut, User } from "lucide-react";
+import { Crown, HelpCircle, Lock, LogIn, LogOut, User, Zap, Wrench, FileText } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription, type SubscriptionTier } from "@/hooks/useSubscription";
 
-type NavItem = { label: string; path: string; minTier: "free" | "basic" | "advanced" };
+type NavItem = { label: string; path: string; minTier: "free" | "basic" | "advanced"; proOnly?: boolean };
 
 const navItems: NavItem[] = [
   { label: "Games", path: "/", minTier: "free" },
@@ -14,6 +14,8 @@ const navItems: NavItem[] = [
   { label: "Explore", path: "/explore", minTier: "basic" },
   { label: "Research", path: "/research", minTier: "basic" },
   { label: "AI Chat", path: "/ai-chat", minTier: "basic" },
+  { label: "Builder", path: "/builder", minTier: "advanced", proOnly: true },
+  { label: "Notes", path: "/notes", minTier: "advanced", proOnly: true },
 ];
 
 const AppHeader = () => {
@@ -36,32 +38,56 @@ const AppHeader = () => {
     { label: "Adv", value: "advanced" },
   ];
 
+  const visibleNavItems = navItems.filter((item) => !item.proOnly || isAdvanced);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-2xl backdrop-saturate-150">
+    <header
+      className={cn(
+        "sticky top-0 z-50 border-b bg-background/70 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300",
+        isAdvanced
+          ? "border-pro/20 shadow-[0_1px_12px_-2px_hsl(var(--pro)/0.15)]"
+          : "border-border/60"
+      )}
+    >
       <div className="container flex h-14 items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary transition-transform group-hover:scale-105">
-            <span className="font-display text-sm font-bold text-primary-foreground tracking-tight">LV</span>
+          <div className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-lg transition-transform group-hover:scale-105",
+            isAdvanced ? "pro-gradient shadow-[0_0_10px_hsl(var(--pro)/0.3)]" : "bg-primary"
+          )}>
+            <span className={cn(
+              "font-display text-sm font-bold tracking-tight",
+              isAdvanced ? "text-pro-foreground" : "text-primary-foreground"
+            )}>LV</span>
           </div>
           <span className="font-display text-lg font-bold tracking-tight text-foreground">LVRG</span>
+          {isAdvanced && (
+            <span className="ml-0.5 rounded-md pro-gradient px-1.5 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider animate-pro-glow">
+              PRO
+            </span>
+          )}
         </Link>
 
         <nav className="flex items-center gap-0.5">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const locked = !hasAccess(item.minTier);
+            const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={cn(
                   "relative rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200",
-                  location.pathname === item.path
+                  isActive && item.proOnly
+                    ? "pro-gradient text-pro-foreground shadow-sm"
+                    : isActive
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/80",
                   locked && "opacity-60"
                 )}
               >
                 <span className="flex items-center gap-1">
+                  {item.proOnly && <Zap className="h-3 w-3" />}
                   {item.label}
                   {locked && <Lock className="h-3 w-3" />}
                 </span>
@@ -81,7 +107,7 @@ const AppHeader = () => {
                 className={cn(
                   "rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
                   (previewTier === opt.value || (opt.value === null && previewTier === null))
-                    ? "bg-primary text-primary-foreground"
+                    ? opt.value === "advanced" ? "pro-gradient text-pro-foreground" : "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >

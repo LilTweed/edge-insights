@@ -43,6 +43,11 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        pro: {
+          DEFAULT: "hsl(var(--pro))",
+          foreground: "hsl(var(--pro-foreground))",
+          glow: "hsl(var(--pro-glow))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
