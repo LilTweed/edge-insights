@@ -3,9 +3,9 @@ import { getPlayer, getPropsForPlayer, injuries, matchupHistories, allGames, all
 import { InjuryHistoryPanel, EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
 import ExportableDataView from "@/components/ExportableDataView";
 import PropCard from "@/components/PropCard";
-import { useState } from "react";
-import { Share2, RefreshCw } from "lucide-react";
-import { usePlayerStats, type EspnSport } from "@/hooks/useEspnData";
+import { useState, useMemo } from "react";
+import { Share2, RefreshCw, Home, Plane } from "lucide-react";
+import { usePlayerStats, usePlayerGameLog, type EspnSport, type GameLogEntry } from "@/hooks/useEspnData";
 
 const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "MLS", "WNBA", "NASCAR", "TENNIS"];
 
@@ -60,6 +60,8 @@ const PlayerDetailPage = () => {
 
 // ======================== ESPN Player Detail ========================
 
+type DetailTab = "seasons" | "gamelog" | "splits";
+
 function EspnPlayerDetail({
   athleteId,
   sport,
@@ -77,8 +79,35 @@ function EspnPlayerDetail({
   showAdvanced: boolean;
   setShowAdvanced: (v: boolean) => void;
 }) {
+  const [tab, setTab] = useState<DetailTab>("seasons");
   const athlete = espnStats?.athlete;
   const seasons = espnStats?.seasons || [];
+
+  // Game log
+  const { data: gameLog, isLoading: logLoading } = usePlayerGameLog(sport, athleteId);
+
+  // Compute home/away splits from game log
+  const splits = useMemo(() => {
+    if (!gameLog?.games) return null;
+    const actual = gameLog.games.filter((g) => !g.isTotal && g.opponent !== "TOTAL");
+    if (actual.length === 0) return null;
+
+    const homeGames = actual.filter((g) => g.homeAway === "home" || g.atVs === "vs");
+    const awayGames = actual.filter((g) => g.homeAway === "away" || g.atVs === "@");
+
+    const computeAvg = (games: GameLogEntry[], key: string) => {
+      const vals = games.map((g) => parseFloat(g.stats[key] || "0")).filter((v) => !isNaN(v));
+      if (vals.length === 0) return "—";
+      return (vals.reduce((s, v) => s + v, 0) / vals.length).toFixed(1);
+    };
+
+    // Find numeric stat keys (skip percentages and made-attempted format)
+    const statKeys = gameLog.labels.filter(
+      (l) => !l.includes("Percentage") && !l.includes("Made-Attempted")
+    );
+
+    return { homeGames, awayGames, statKeys, computeAvg, allGames: actual };
+  }, [gameLog]);
 
   return (
     <div className="container py-6">
@@ -109,16 +138,16 @@ function EspnPlayerDetail({
                 <img
                   src={athlete.headshot}
                   alt={athlete.name}
-                  className="h-16 w-16 rounded-xl bg-secondary object-cover"
+                  className="h-16 w-16 rounded-2xl bg-secondary object-cover ring-1 ring-border/40"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary font-display text-lg font-bold text-primary-foreground">
                   #{athlete?.number || '?'}
                 </div>
               )}
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
                   {athlete?.name || `Player ${athleteId}`}
                 </h1>
                 <p className="text-sm text-muted-foreground">
@@ -129,45 +158,149 @@ function EspnPlayerDetail({
                 )}
               </div>
             </div>
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className={`rounded-lg border px-4 py-2 text-xs font-bold transition-all ${
-                showAdvanced
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40"
-              }`}
-            >
-              {showAdvanced ? "⚡ All Seasons" : "📊 All Seasons"}
-            </button>
           </div>
 
-          {/* Stats tables by category */}
-          {seasons.length > 0 ? (
-            <div className="space-y-6">
-              {groupSeasonsByCategory(seasons, showAdvanced).map(({ category, items }) => (
-                <div key={category} className="overflow-hidden rounded-xl border border-border bg-card">
-                  <div className="border-b border-border bg-secondary/30 px-4 py-2.5">
-                    <h3 className="text-sm font-bold text-foreground">{category || 'Stats'}</h3>
+          {/* Tab Bar */}
+          <div className="mb-6 flex items-center gap-1 rounded-2xl border border-border bg-secondary/30 p-1">
+            {([
+              { key: "seasons", label: "Seasons" },
+              { key: "gamelog", label: "Game Log" },
+              { key: "splits", label: "Home / Away" },
+            ] as { key: DetailTab; label: string }[]).map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex-1 rounded-xl px-4 py-2 text-xs font-semibold transition-all duration-200 ${
+                  tab === t.key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* === Seasons Tab === */}
+          {tab === "seasons" && (
+            <>
+              <div className="mb-4 flex justify-end">
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className={`rounded-xl border px-4 py-2 text-xs font-bold transition-all ${
+                    showAdvanced
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {showAdvanced ? "Show Recent" : "Show All Seasons"}
+                </button>
+              </div>
+              {seasons.length > 0 ? (
+                <div className="space-y-6">
+                  {groupSeasonsByCategory(seasons, showAdvanced).map(({ category, items }) => (
+                    <div key={category} className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+                      <div className="border-b border-border/60 bg-secondary/20 px-4 py-2.5">
+                        <h3 className="font-display text-sm font-bold text-foreground">{category || 'Stats'}</h3>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-border/40 bg-secondary/30">
+                              <th className="px-4 py-2.5 text-left text-2xs font-medium text-muted-foreground sticky left-0 bg-secondary/30">Season</th>
+                              {getStatHeaders(items).map(h => (
+                                <th key={h} className="px-3 py-2.5 text-right text-2xs font-medium text-muted-foreground whitespace-nowrap">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {items.map((item, idx) => (
+                              <tr key={idx} className="border-b border-border/30 last:border-0 hover:bg-secondary/20 transition-colors">
+                                <td className="px-4 py-2.5 text-xs font-semibold text-foreground sticky left-0 bg-card whitespace-nowrap">
+                                  {item.season}
+                                </td>
+                                {getStatHeaders(items).map(h => (
+                                  <td key={h} className="px-3 py-2.5 text-right font-mono text-xs text-foreground">
+                                    {item.stats[h] || '—'}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No detailed stats available</p>
+              )}
+            </>
+          )}
+
+          {/* === Game Log Tab === */}
+          {tab === "gamelog" && (
+            <>
+              {logLoading && (
+                <div className="flex flex-col items-center gap-2 py-12">
+                  <RefreshCw size={20} className="animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">Loading game log…</p>
+                </div>
+              )}
+              {!logLoading && gameLog && gameLog.games.length > 0 && (
+                <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+                  <div className="border-b border-border/60 bg-secondary/20 px-4 py-2.5 flex items-center justify-between">
+                    <h3 className="font-display text-sm font-bold text-foreground">{gameLog.seasonType || 'Game Log'}</h3>
+                    <span className="text-2xs text-muted-foreground">{gameLog.games.filter(g => !g.isTotal).length} games</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-border bg-secondary/50">
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground sticky left-0 bg-secondary/50">Season</th>
-                          {getStatHeaders(items).map(h => (
-                            <th key={h} className="px-3 py-2.5 text-right text-xs font-medium text-muted-foreground whitespace-nowrap">{h}</th>
+                        <tr className="border-b border-border/40 bg-secondary/30">
+                          <th className="px-3 py-2.5 text-left text-2xs font-medium text-muted-foreground sticky left-0 bg-secondary/30 whitespace-nowrap">Date</th>
+                          <th className="px-3 py-2.5 text-left text-2xs font-medium text-muted-foreground whitespace-nowrap">Opp</th>
+                          <th className="px-2 py-2.5 text-center text-2xs font-medium text-muted-foreground">W/L</th>
+                          <th className="px-2 py-2.5 text-center text-2xs font-medium text-muted-foreground">Score</th>
+                          {gameLog.labels.map(l => (
+                            <th key={l} className="px-2.5 py-2.5 text-right text-2xs font-medium text-muted-foreground whitespace-nowrap">{abbreviateLabel(l)}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {items.map((item, idx) => (
-                          <tr key={idx} className="border-b border-border/50 last:border-0">
-                            <td className="px-4 py-2.5 text-xs font-semibold text-foreground sticky left-0 bg-card whitespace-nowrap">
-                              {item.season}
+                        {gameLog.games.map((game, idx) => (
+                          <tr
+                            key={game.eventId + idx}
+                            className={`border-b border-border/30 last:border-0 transition-colors ${
+                              game.isTotal ? "bg-secondary/40 font-semibold" : "hover:bg-secondary/20"
+                            }`}
+                          >
+                            <td className="px-3 py-2 text-xs text-foreground sticky left-0 bg-card whitespace-nowrap">
+                              {game.isTotal ? "TOTAL" : game.date ? new Date(game.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
                             </td>
-                            {getStatHeaders(items).map(h => (
-                              <td key={h} className="px-3 py-2.5 text-right font-mono text-xs text-foreground">
-                                {item.stats[h] || '—'}
+                            <td className="px-3 py-2 text-xs text-foreground whitespace-nowrap">
+                              {!game.isTotal && (
+                                <span className="flex items-center gap-1.5">
+                                  {game.opponentLogo && <img src={game.opponentLogo} alt="" className="h-4 w-4 object-contain" />}
+                                  <span className="text-2xs text-muted-foreground">{game.atVs}</span>
+                                  <span className="font-medium">{game.opponentAbbr || game.opponent}</span>
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-2 py-2 text-center">
+                              {!game.isTotal && (
+                                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-2xs font-bold ${
+                                  game.result === "W" ? "bg-success/15 text-success" : game.result === "L" ? "bg-destructive/15 text-destructive" : "text-muted-foreground"
+                                }`}>
+                                  {game.result}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-2 py-2 text-center text-2xs font-mono text-muted-foreground whitespace-nowrap">
+                              {game.score || "—"}
+                            </td>
+                            {gameLog.labels.map(l => (
+                              <td key={l} className="px-2.5 py-2 text-right font-mono text-xs text-foreground">
+                                {game.stats[l] || '—'}
                               </td>
                             ))}
                           </tr>
@@ -176,19 +309,149 @@ function EspnPlayerDetail({
                     </table>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No detailed stats available</p>
+              )}
+              {!logLoading && (!gameLog || gameLog.games.length === 0) && (
+                <p className="py-12 text-center text-sm text-muted-foreground">No game log available</p>
+              )}
+            </>
           )}
 
-          <p className="mt-4 text-[10px] text-muted-foreground">
-            Data sourced from ESPN · All-time career stats included regardless of team changes · Updated {espnStats?.fetchedAt ? new Date(espnStats.fetchedAt).toLocaleTimeString() : ''}
+          {/* === Splits Tab (Home / Away) === */}
+          {tab === "splits" && (
+            <>
+              {logLoading && (
+                <div className="flex flex-col items-center gap-2 py-12">
+                  <RefreshCw size={20} className="animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">Computing splits…</p>
+                </div>
+              )}
+              {!logLoading && splits && (
+                <div className="space-y-6">
+                  {/* Summary cards */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-border/60 bg-card p-5">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Home className="h-4 w-4 text-primary" />
+                        <h3 className="font-display text-sm font-bold text-foreground">Home</h3>
+                        <span className="ml-auto text-2xs text-muted-foreground">{splits.homeGames.length} games</span>
+                      </div>
+                      <div className="space-y-2">
+                        {splits.statKeys.map(key => (
+                          <div key={key} className="flex items-center justify-between">
+                            <span className="text-2xs text-muted-foreground">{abbreviateLabel(key)}</span>
+                            <span className="font-mono text-xs font-semibold text-foreground">{splits.computeAvg(splits.homeGames, key)}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between">
+                        <span className="text-2xs text-muted-foreground">Record</span>
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          {splits.homeGames.filter(g => g.result === "W").length}-{splits.homeGames.filter(g => g.result === "L").length}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-border/60 bg-card p-5">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Plane className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="font-display text-sm font-bold text-foreground">Away</h3>
+                        <span className="ml-auto text-2xs text-muted-foreground">{splits.awayGames.length} games</span>
+                      </div>
+                      <div className="space-y-2">
+                        {splits.statKeys.map(key => (
+                          <div key={key} className="flex items-center justify-between">
+                            <span className="text-2xs text-muted-foreground">{abbreviateLabel(key)}</span>
+                            <span className="font-mono text-xs font-semibold text-foreground">{splits.computeAvg(splits.awayGames, key)}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between">
+                        <span className="text-2xs text-muted-foreground">Record</span>
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          {splits.awayGames.filter(g => g.result === "W").length}-{splits.awayGames.filter(g => g.result === "L").length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Comparison table */}
+                  <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+                    <div className="border-b border-border/60 bg-secondary/20 px-4 py-2.5">
+                      <h3 className="font-display text-sm font-bold text-foreground">Home vs Away Averages</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border/40 bg-secondary/30">
+                            <th className="px-4 py-2.5 text-left text-2xs font-medium text-muted-foreground">Stat</th>
+                            <th className="px-4 py-2.5 text-right text-2xs font-medium text-muted-foreground">Home</th>
+                            <th className="px-4 py-2.5 text-right text-2xs font-medium text-muted-foreground">Away</th>
+                            <th className="px-4 py-2.5 text-right text-2xs font-medium text-muted-foreground">Diff</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {splits.statKeys.map(key => {
+                            const homeVal = parseFloat(splits.computeAvg(splits.homeGames, key));
+                            const awayVal = parseFloat(splits.computeAvg(splits.awayGames, key));
+                            const diff = isNaN(homeVal) || isNaN(awayVal) ? null : homeVal - awayVal;
+                            return (
+                              <tr key={key} className="border-b border-border/30 last:border-0 hover:bg-secondary/20 transition-colors">
+                                <td className="px-4 py-2.5 text-xs font-medium text-foreground">{abbreviateLabel(key)}</td>
+                                <td className="px-4 py-2.5 text-right font-mono text-xs text-foreground">{splits.computeAvg(splits.homeGames, key)}</td>
+                                <td className="px-4 py-2.5 text-right font-mono text-xs text-foreground">{splits.computeAvg(splits.awayGames, key)}</td>
+                                <td className={`px-4 py-2.5 text-right font-mono text-xs font-semibold ${
+                                  diff != null && diff > 0 ? "text-success" : diff != null && diff < 0 ? "text-destructive" : "text-muted-foreground"
+                                }`}>
+                                  {diff != null ? (diff > 0 ? "+" : "") + diff.toFixed(1) : "—"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {!logLoading && !splits && (
+                <p className="py-12 text-center text-sm text-muted-foreground">No game log data available to compute splits</p>
+              )}
+            </>
+          )}
+
+          <p className="mt-4 text-2xs text-muted-foreground">
+            Data sourced from ESPN · All-time career stats included · Updated {espnStats?.fetchedAt ? new Date(espnStats.fetchedAt).toLocaleTimeString() : ''}
           </p>
         </>
       )}
     </div>
   );
+}
+
+/** Abbreviate long ESPN stat labels */
+function abbreviateLabel(label: string): string {
+  const map: Record<string, string> = {
+    "Minutes": "MIN",
+    "Points": "PTS",
+    "Rebounds": "REB",
+    "Assists": "AST",
+    "Steals": "STL",
+    "Blocks": "BLK",
+    "Turnovers": "TO",
+    "Fouls": "PF",
+    "Field Goals Made-Attempted": "FG",
+    "Field Goal Percentage": "FG%",
+    "3-Point Field Goals Made-Attempted": "3PT",
+    "3-Point Field Goal Percentage": "3P%",
+    "Free Throws Made-Attempted": "FT",
+    "Free Throw Percentage": "FT%",
+    "Offensive Rebounds": "OREB",
+    "Defensive Rebounds": "DREB",
+    "Plus/Minus": "+/-",
+    "Double Doubles": "DD",
+    "Triple Doubles": "TD",
+  };
+  return map[label] || label;
 }
 
 function groupSeasonsByCategory(seasons: any[], showAll: boolean) {
@@ -198,8 +461,6 @@ function groupSeasonsByCategory(seasons: any[], showAll: boolean) {
     if (!groups[cat]) groups[cat] = [];
     groups[cat].push(s);
   }
-
-  // If not showing all, only show first 3 items per category
   return Object.entries(groups).map(([category, items]) => ({
     category,
     items: showAll ? items : items.slice(0, 3),

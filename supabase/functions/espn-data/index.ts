@@ -293,6 +293,157 @@ function parseAthleteStats(data: any) {
   return result;
 }
 
+// Parse game log from common/v3 gamelog endpoint
+function parseGameLog(data: any) {
+  const result: any = {
+    games: [],
+    labels: [],
+    seasonType: '',
+  };
+
+  // Top-level labels (stat column names) and displayNames
+  const labels: string[] = data?.labels || [];
+  const displayNames: string[] = data?.displayNames || [];
+  result.labels = displayNames.length > 0 ? displayNames : labels;
+  
+  // Events map: eventId -> { opponent, atVs, gameDate, score, gameResult, ... }
+  const eventsMap: Record<string, any> = data?.events || {};
+  
+  const seasonTypes = data?.seasonTypes || [];
+  
+  for (const st of seasonTypes) {
+    const stName = st?.displayName || st?.name || '';
+    if (!result.seasonType) result.seasonType = stName;
+    const categories = st?.categories || [];
+    
+    for (const cat of categories) {
+      const catName = cat.displayName || cat.name || '';
+      const events = cat.events || [];
+      
+      for (const event of events) {
+        const eventId = event.eventId || event.id || '';
+        const eventMeta = eventsMap[eventId] || {};
+        
+        // Map stats array to labels
+        const stats: Record<string, string> = {};
+        const values = event.stats || [];
+        result.labels.forEach((label: string, i: number) => {
+          if (values[i] !== undefined) {
+            stats[label] = String(values[i]);
+          }
+        });
+        
+        // Event metadata
+        const opponent = eventMeta.opponent?.displayName || eventMeta.opponent?.shortDisplayName || eventMeta.opponent?.abbreviation || '';
+        const opponentAbbr = eventMeta.opponent?.abbreviation || '';
+        const opponentLogo = eventMeta.opponent?.logo || '';
+        const atVs = eventMeta.atVs || '';
+        const homeAway = eventMeta.homeAway || (atVs === 'vs' ? 'home' : atVs === '@' ? 'away' : '');
+        const gameResult = eventMeta.gameResult || '';
+        const gameDate = eventMeta.gameDate || '';
+        const score = eventMeta.score || '';
+        
+        result.games.push({
+          eventId,
+          date: gameDate,
+          opponent,
+          opponentAbbr,
+          opponentLogo,
+          homeAway,
+          atVs,
+          result: gameResult,
+          score,
+          stats,
+          category: catName,
+          seasonType: stName,
+        });
+      }
+      
+      // Also capture totals if available
+      if (cat.totals && Array.isArray(cat.totals)) {
+        const totalStats: Record<string, string> = {};
+        result.labels.forEach((label: string, i: number) => {
+          if (cat.totals[i] !== undefined) {
+            totalStats[label] = String(cat.totals[i]);
+          }
+        });
+        if (Object.keys(totalStats).length > 0) {
+          result.games.push({
+            eventId: `total-${catName}`,
+            date: '',
+            opponent: 'TOTAL',
+            opponentAbbr: '',
+            opponentLogo: '',
+            homeAway: '',
+            atVs: '',
+            result: '',
+            score: '',
+            stats: totalStats,
+            category: catName,
+            seasonType: stName,
+            isTotal: true,
+          });
+        }
+      }
+    }
+  }
+  
+  return result;
+}
+
+// Parse splits from common/v3 splits endpoint
+function parseSplits(data: any) {
+  const result: any = {
+    categories: [],
+    labels: [],
+  };
+
+  // Top-level labels
+  const topLabels: string[] = data?.labels || data?.displayNames || [];
+  result.labels = topLabels;
+  
+  console.log('Splits top keys:', Object.keys(data || {}));
+  
+  const splitCategories = data?.splitCategories || data?.categories || [];
+  
+  for (const sc of splitCategories) {
+    const categoryName = sc.displayName || sc.name || '';
+    const labels: string[] = sc.labels || sc.displayNames || topLabels;
+    const splits = sc.splits || sc.stats || sc.statistics || [];
+    
+    const parsedSplits: any[] = [];
+    
+    for (const split of splits) {
+      const splitName = split.displayName || split.name || split.abbreviation || '';
+      const values: string[] = split.displayValues || split.stats?.map((s: any) => String(s)) || [];
+      
+      const stats: Record<string, string> = {};
+      labels.forEach((label: string, i: number) => {
+        if (values[i] !== undefined) {
+          stats[label] = values[i];
+        }
+      });
+      
+      if (Object.keys(stats).length > 0) {
+        parsedSplits.push({
+          name: splitName,
+          stats,
+        });
+      }
+    }
+    
+    if (parsedSplits.length > 0) {
+      result.categories.push({
+        name: categoryName,
+        labels,
+        splits: parsedSplits,
+      });
+    }
+  }
+  
+  return result;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -430,9 +581,47 @@ Deno.serve(async (req) => {
         result = { athletes, fetchedAt: now };
         break;
       }
+      case 'game-log': {
+        if (!athleteId) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'athleteId required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const url = `${ESPN_COMMON}/${map.sport}/${map.league}/athletes/${athleteId}/gamelog`;
+        console.log('Fetching game log:', url);
+        try {
+          const data = await fetchJson(url);
+          const gameLog = parseGameLog(data);
+          result = { ...gameLog, fetchedAt: now };
+        } catch (e) {
+          console.error('Game log failed:', e);
+          result = { games: [], labels: [], seasonType: '', fetchedAt: now };
+        }
+        break;
+      }
+      case 'splits': {
+        if (!athleteId) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'athleteId required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const url = `${ESPN_COMMON}/${map.sport}/${map.league}/athletes/${athleteId}/splits`;
+        console.log('Fetching splits:', url);
+        try {
+          const data = await fetchJson(url);
+          const splits = parseSplits(data);
+          result = { ...splits, fetchedAt: now };
+        } catch (e) {
+          console.error('Splits failed:', e);
+          result = { categories: [], fetchedAt: now };
+        }
+        break;
+      }
       default:
         return new Response(
-          JSON.stringify({ success: false, error: 'Invalid endpoint. Use: scoreboard, teams, standings, roster, player-stats, search' }),
+          JSON.stringify({ success: false, error: 'Invalid endpoint. Use: scoreboard, teams, standings, roster, player-stats, game-log, splits, search' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
