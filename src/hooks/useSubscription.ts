@@ -9,12 +9,26 @@ interface SubscriptionState {
   loading: boolean;
   isBasicOrAbove: boolean;
   isAdvanced: boolean;
+  previewTier: SubscriptionTier | null;
+  setPreviewTier: (tier: SubscriptionTier | null) => void;
 }
 
 export function useSubscription(): SubscriptionState {
   const { user } = useAuth();
   const [tier, setTier] = useState<SubscriptionTier>("free");
   const [loading, setLoading] = useState(true);
+  const [previewTier, setPreviewTier] = useState<SubscriptionTier | null>(() => {
+    const stored = localStorage.getItem("lvrg-preview-tier");
+    return stored ? (stored as SubscriptionTier) : null;
+  });
+
+  useEffect(() => {
+    if (previewTier) {
+      localStorage.setItem("lvrg-preview-tier", previewTier);
+    } else {
+      localStorage.removeItem("lvrg-preview-tier");
+    }
+  }, [previewTier]);
 
   useEffect(() => {
     if (!user) {
@@ -37,10 +51,14 @@ export function useSubscription(): SubscriptionState {
     fetchTier();
   }, [user]);
 
+  const effectiveTier = previewTier ?? tier;
+
   return {
-    tier,
+    tier: effectiveTier,
     loading,
-    isBasicOrAbove: tier === "basic" || tier === "advanced",
-    isAdvanced: tier === "advanced",
+    isBasicOrAbove: effectiveTier === "basic" || effectiveTier === "advanced",
+    isAdvanced: effectiveTier === "advanced",
+    previewTier,
+    setPreviewTier,
   };
 }
