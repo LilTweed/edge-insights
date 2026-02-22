@@ -32,8 +32,8 @@ const SportFilter = ({ active, onChange, sports = defaultSports }: SportFilterPr
           onClick={() => onChange(sport)}
           className={
             active === sport
-              ? "rounded-lg bg-primary px-3.5 py-1.5 text-xs font-medium text-primary-foreground transition-colors"
-              : "rounded-lg bg-secondary px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              ? "rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all duration-200"
+              : "rounded-full bg-secondary/60 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground"
           }
         >
           {sportLabels[sport]}

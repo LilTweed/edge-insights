@@ -29,18 +29,18 @@ const GamesPage = () => {
     <div className="container py-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Today's Games</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Today's Games</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
             {isEspnSport
               ? "Live scores & lines — auto-refreshes every 30s"
               : "Moneylines, spreads, and totals across all major sportsbooks"}
           </p>
         </div>
         {isEspnSport && dataUpdatedAt > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {isFetching && <RefreshCw size={12} className="animate-spin text-primary" />}
-            <span className="text-[10px] text-muted-foreground">
-              Updated {new Date(dataUpdatedAt).toLocaleTimeString()}
+            <span className="text-2xs text-muted-foreground font-mono">
+              {new Date(dataUpdatedAt).toLocaleTimeString()}
             </span>
             <span className="flex h-2 w-2 rounded-full bg-success animate-pulse" title="Live" />
           </div>
