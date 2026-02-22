@@ -6,7 +6,7 @@ import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
 import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useLiveScoreboard, type EspnSport } from "@/hooks/useEspnData";
-import { useLiveOdds } from "@/hooks/useLiveOdds";
+import { useSportsRadar } from "@/hooks/useSportsRadar";
 import { useState, useMemo } from "react";
 import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, ChevronDown, ChevronUp, Radio, Table2, Zap, AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -39,8 +39,8 @@ const PropsPage = () => {
   const scoreboard = useLiveScoreboard(isEspnSport ? (sport as EspnSport) : "NBA");
   const games = isEspnSport ? (scoreboard.data?.games || []) : [];
 
-  // Live odds from The Odds API
-  const { data: liveOddsData, isLoading: liveLoading, isFetching: liveFetching } = useLiveOdds(
+  // Live odds from SportsRadar
+  const { data: liveOddsData, isLoading: liveLoading, isFetching: liveFetching } = useSportsRadar(
     sport as EspnSport,
     liveMode && isEspnSport
   );
@@ -52,9 +52,9 @@ const PropsPage = () => {
   const sportProps = isLiveActive ? liveOddsData.props : mockProps;
 
   // Derive available filter options from the current sport's props
-  const availableTeams = useMemo(() => Array.from(new Set(sportProps.map((p) => p.teamAbbr))).sort(), [sportProps]);
-  const availablePlayers = useMemo(() => Array.from(new Set(sportProps.map((p) => p.playerName))).sort(), [sportProps]);
-  const availableStats = useMemo(() => Array.from(new Set(sportProps.map((p) => p.stat))).sort(), [sportProps]);
+  const availableTeams = useMemo(() => Array.from(new Set(sportProps.map((p) => p.teamAbbr))).sort() as string[], [sportProps]);
+  const availablePlayers = useMemo(() => Array.from(new Set(sportProps.map((p) => p.playerName))).sort() as string[], [sportProps]);
+  const availableStats = useMemo(() => Array.from(new Set(sportProps.map((p) => p.stat))).sort() as string[], [sportProps]);
 
   const filtered = useMemo(() => {
     let list = sportProps;
@@ -116,7 +116,7 @@ const PropsPage = () => {
           {liveMode && liveOddsData?.needsApiKey && (
             <p className="mt-0.5 flex items-center gap-1 text-[10px] text-destructive/70 font-medium">
               <AlertTriangle className="h-3 w-3" />
-              API key needed — add ODDS_API_KEY in backend secrets
+              API key needed — add SPORTSRADAR_API_KEY in backend secrets
             </p>
           )}
           {isLiveActive && (
