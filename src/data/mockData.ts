@@ -59,6 +59,14 @@ export interface MatchupResult {
   location: string;
 }
 
+export interface Injury {
+  player: string;
+  teamAbbr: string;
+  status: "Out" | "Doubtful" | "Questionable" | "Probable" | "Day-to-Day";
+  injury: string;
+  returnDate?: string;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -599,3 +607,26 @@ export function getMatchupHistory(team1Id: string, team2Id: string): MatchupHist
 export function formatOdds(odds: number): string {
   return odds > 0 ? `+${odds}` : `${odds}`;
 }
+
+// ===================== INJURY REPORTS =====================
+export const injuries: Injury[] = [
+  // NBA
+  { player: "Joel Embiid", teamAbbr: "PHI", status: "Out", injury: "Left knee meniscus", returnDate: "TBD" },
+  { player: "Kawhi Leonard", teamAbbr: "LAC", status: "Out", injury: "Right knee inflammation", returnDate: "Indefinite" },
+  { player: "Ja Morant", teamAbbr: "MEM", status: "Day-to-Day", injury: "Right shoulder soreness" },
+  { player: "Paolo Banchero", teamAbbr: "ORL", status: "Questionable", injury: "Torn right oblique" },
+  { player: "Chet Holmgren", teamAbbr: "OKC", status: "Out", injury: "Right hip fracture", returnDate: "Late Feb" },
+  // NFL
+  { player: "Chris Jones", teamAbbr: "KC", status: "Questionable", injury: "Knee" },
+  { player: "Tua Tagovailoa", teamAbbr: "MIA", status: "Out", injury: "Concussion", returnDate: "TBD" },
+  { player: "Nick Bosa", teamAbbr: "SF", status: "Probable", injury: "Oblique" },
+  // NCAAB
+  { player: "Mark Sears", teamAbbr: "ALA", status: "Probable", injury: "Ankle sprain" },
+  { player: "Johni Broome", teamAbbr: "AUB", status: "Day-to-Day", injury: "Left ankle" },
+  // MLB
+  { player: "Mike Trout", teamAbbr: "LAA", status: "Out", injury: "Torn meniscus", returnDate: "May" },
+  { player: "Ronald Acuña Jr.", teamAbbr: "ATL", status: "Out", injury: "Torn ACL", returnDate: "2025" },
+  // NHL
+  { player: "Gabriel Landeskog", teamAbbr: "COL", status: "Out", injury: "Knee surgery", returnDate: "Indefinite" },
+  { player: "Kaapo Kakko", teamAbbr: "NYR", status: "Day-to-Day", injury: "Upper body" },
+];

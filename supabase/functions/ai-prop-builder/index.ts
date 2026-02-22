@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are an elite sports betting analyst and prop builder AI. You specialize in player props, parlays, and value picks across all sports: NBA, NFL, NCAAB, NCAAF, MLB, NHL, and Esports (LoL, CS2, Valorant).
+const BASIC_PROMPT = `You are an elite sports betting analyst and prop builder AI. You specialize in player props, parlays, and value picks across all sports: NBA, NFL, NCAAB, NCAAF, MLB, NHL, and Esports (LoL, CS2, Valorant).
 
 When the user provides player stats, matchup data, or asks for prop analysis, you should:
 
@@ -20,9 +20,46 @@ When the user provides player stats, matchup data, or asks for prop analysis, yo
 
 3. **Custom Parlays**: Build 2-3 parlay combinations ranging from safe (2-leg) to aggressive (4+ legs), with estimated odds.
 
-Format your response with clear sections, use emojis for visual appeal, and be specific with numbers. Always mention which sportsbook has the best line.
+Format your response with clear sections, use emojis for visual appeal, and be specific with numbers. Always mention which sportsbook has the best line.`;
 
-If the user's message is vague, give general top picks for the day based on the data they've shared.`;
+const ADVANCED_PROMPT = `You are an elite sports betting analyst with access to DEEP, comprehensive data. You specialize in player props, parlays, and value picks across all sports. You have been given extensive data including:
+
+- **Full prop lines** across 4 sportsbooks with hit rates
+- **Injury reports** with player statuses (Out/Doubtful/Questionable/Probable/Day-to-Day) and return timelines
+- **Head-to-head matchup history** including all-time records, last 5/10 meetings, scoring trends, win streaks, and individual game scores
+- **Complete player stats**: season averages, last 10 games, and last 5 games with full stat breakdowns
+- **Team stats**: offensive/defensive ratings, shooting splits, pace, turnovers
+- **Conference standings** and rankings
+
+Your analysis MUST incorporate ALL of this data. Specifically:
+
+1. **Injury Impact Analysis**: 
+   - How does each injury affect the team's offense/defense?
+   - Which players see increased usage when key players are out?
+   - Prop adjustments based on missing players (e.g., "With Embiid out, Maxey averages +5.2 pts")
+
+2. **H2H Deep Dive**:
+   - Historical scoring trends in this matchup
+   - Which team has momentum (win streak)?
+   - How does the average score compare to today's O/U line?
+   - Pace and style matchup analysis
+
+3. **Trend-Based Picks**:
+   - Compare season vs L10 vs L5 — is the player trending up or down?
+   - Flag players on hot streaks or cold streaks
+   - Note significant stat jumps between periods
+
+4. **Value Identification**:
+   - Cross-reference sportsbook lines to find the best value
+   - Compare hit rates to implied odds
+   - Flag lines that seem mispriced given injury/H2H context
+
+5. **Parlay Construction**:
+   - Correlate legs (same game, related stats)
+   - Avoid injury-risk players
+   - Include confidence tiers
+
+Format with clear sections using headers, emojis (🔥🚨⚡🧊📊💰🏥), bullet points, and specific numbers. Reference the actual data provided. Be bold with your picks and explain your reasoning in detail.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -30,21 +67,26 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, propsData } = await req.json();
+    const { messages, propsData, advanced } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Build context message with props data if provided
+    const systemPrompt = advanced ? ADVANCED_PROMPT : BASIC_PROMPT;
+
     const contextMessages = [];
     if (propsData) {
       contextMessages.push({
         role: "user",
-        content: `Here is the current props data I'm looking at:\n\n${propsData}\n\nUse this data to inform your analysis.`,
+        content: advanced
+          ? `Here is the COMPLETE dataset for my analysis. This includes prop lines, today's games with team stats, head-to-head matchup histories, full player stats (season/L10/L5), injury reports, and standings:\n\n${propsData}\n\nUse ALL of this data in your analysis. Cross-reference injuries with player props, use H2H history to inform game totals, and compare recent trends to season averages.`
+          : `Here is the current props data I'm looking at:\n\n${propsData}\n\nUse this data to inform your analysis.`,
       });
       contextMessages.push({
         role: "assistant",
-        content: "Got it! I've reviewed all the prop lines and player data. What would you like me to analyze?",
+        content: advanced
+          ? "Got it! I've ingested all the data — prop lines, injuries, H2H matchup histories, full player stat breakdowns, team stats, and standings. I'm ready to give you deep, data-driven analysis. What would you like me to break down?"
+          : "Got it! I've reviewed all the prop lines and player data. What would you like me to analyze?",
       });
     }
 
@@ -59,7 +101,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: systemPrompt },
             ...contextMessages,
             ...messages,
           ],
