@@ -36,7 +36,7 @@ const plans = [
     popular: true,
   },
   {
-    name: "Advanced",
+    name: "Premium",
     tier: "advanced" as const,
     price: "$9.99",
     period: "/month",
@@ -50,7 +50,7 @@ const plans = [
       "H2H matchup deep dives",
       "Priority support",
     ],
-    cta: "Go Advanced",
+    cta: "Go Premium",
   },
 ];
 

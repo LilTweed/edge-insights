@@ -31,9 +31,9 @@
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
-    --pro: 265 70% 55%;
+    --pro: 222 60% 45%;
     --pro-foreground: 0 0% 100%;
-    --pro-glow: 265 80% 65%;
+    --pro-glow: 215 70% 55%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
@@ -86,9 +86,9 @@
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
-    --pro: 265 70% 55%;
+    --pro: 215 70% 50%;
     --pro-foreground: 0 0% 100%;
-    --pro-glow: 265 80% 70%;
+    --pro-glow: 210 80% 60%;
 
     --border: 222 20% 16%;
     --input: 222 20% 16%;
