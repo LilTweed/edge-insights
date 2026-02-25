@@ -3,14 +3,25 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Bot, Wrench, Zap } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSearchParams } from "react-router-dom";
+import UpgradeGate from "@/components/UpgradeGate";
 import AIChatPage from "./AIChatPage";
 import PropBuilderPage from "./PropBuilderPage";
 
 export default function EdgePage() {
   const [searchParams] = useSearchParams();
-  const { isAdvanced } = useSubscription();
+  const { tier, isAdvanced } = useSubscription();
   const defaultTab = searchParams.get("tab") === "builder" ? "builder" : "chat";
   const [tab, setTab] = useState(defaultTab);
+
+  if (!isAdvanced) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Edge Tools">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className="container flex flex-col py-4 h-[calc(100vh-3.5rem)]">
@@ -29,21 +40,17 @@ export default function EdgePage() {
           <TabsTrigger value="chat" className="gap-1.5">
             <Bot size={14} /> AI Chat
           </TabsTrigger>
-          {isAdvanced && (
-            <TabsTrigger value="builder" className="gap-1.5">
-              <Wrench size={14} /> Prop Builder
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="builder" className="gap-1.5">
+            <Wrench size={14} /> Prop Builder
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
           <AIChatPage embedded />
         </TabsContent>
-        {isAdvanced && (
-          <TabsContent value="builder" className="flex-1 overflow-hidden mt-0">
-            <PropBuilderPage embedded />
-          </TabsContent>
-        )}
+        <TabsContent value="builder" className="flex-1 overflow-hidden mt-0">
+          <PropBuilderPage embedded />
+        </TabsContent>
       </Tabs>
     </div>
   );
