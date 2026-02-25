@@ -5,6 +5,7 @@ import { getPlayerProfile, getInitials } from "@/data/playerProfiles";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, BarChart3, User, Ruler, Weight, Calendar, GraduationCap, Globe } from "lucide-react";
 import PropStatsPanel from "./PropStatsPanel";
+import PlayerAvatar from "./PlayerAvatar";
 
 interface PropCardProps {
   prop: PropLine;
@@ -40,13 +41,7 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
       {showPlayer && (
         <div className="mb-3 flex items-center gap-3">
           {/* Player avatar */}
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-lg">
-            {profile ? (
-              <span title={profile.name}>{profile.avatarEmoji}</span>
-            ) : (
-              <span className="text-[11px] font-bold text-primary">{getInitials(prop.playerName)}</span>
-            )}
-          </div>
+          <PlayerAvatar playerId={prop.playerId} playerName={prop.playerName} size="md" />
           <div className="flex-1 min-w-0">
             <Link
               to={`/player/${prop.playerId}`}
