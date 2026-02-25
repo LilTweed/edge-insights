@@ -16,6 +16,7 @@ import SportFilter from "@/components/SportFilter";
 import { EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
 import { useFavoriteTeams } from "@/hooks/useFavoriteTeams";
 import PlayerCard from "@/components/PlayerCard";
+import HistoricalSearch from "@/components/HistoricalSearch";
 import {
   Search,
   TrendingUp,
@@ -44,7 +45,7 @@ import {
   ReferenceLine,
 } from "recharts";
 
-type Tab = "stats" | "trends" | "matchups" | "teams";
+type Tab = "stats" | "trends" | "matchups" | "teams" | "history";
 
 const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "Soccer"] as const;
 
@@ -200,6 +201,7 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   const allTabs: { key: Tab; label: string; icon: React.ElementType; advancedOnly?: boolean }[] = [
     { key: "stats", label: "Player Stats", icon: BarChart3 },
     { key: "teams", label: "Teams", icon: Shield },
+    { key: "history", label: "History", icon: RefreshCw },
     { key: "trends", label: "Trends", icon: Activity, advancedOnly: true },
     { key: "matchups", label: "Matchups", icon: Swords, advancedOnly: true },
   ];
@@ -597,6 +599,10 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
         </div>
       )}
 
+      {/* ─── HISTORY TAB ─── */}
+      {tab === "history" && (
+        <HistoricalSearch />
+      )}
 
 
       {/* ─── TEAMS TAB ─── */}
