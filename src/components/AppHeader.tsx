@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Crown, HelpCircle, Lock, LogIn, LogOut, User, Zap, Wrench, FileText } from "lucide-react";
+import { Crown, HelpCircle, Lock, LogIn, LogOut, User, Zap } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,9 +10,9 @@ type NavItem = { label: string; path: string; minTier: "free" | "basic" | "advan
 
 const navItems: NavItem[] = [
   { label: "Games", path: "/", minTier: "free" },
-  { label: "Props", path: "/props", minTier: "basic" },
-  { label: "Insights", path: "/insights", minTier: "basic" },
-  { label: "Edge", path: "/edge", minTier: "basic" },
+  { label: "Props", path: "/props", minTier: "advanced" },
+  { label: "Insights", path: "/insights", minTier: "advanced" },
+  { label: "Edge", path: "/edge", minTier: "advanced" },
   { label: "Notes", path: "/notes", minTier: "advanced", proOnly: true },
 ];
 
@@ -33,10 +33,8 @@ const AppHeader = () => {
     { label: "Off", value: null },
     { label: "Free", value: "free" },
     { label: "Basic", value: "basic" },
-    { label: "Adv", value: "advanced" },
+    { label: "Prem", value: "advanced" },
   ];
-
-  const visibleNavItems = navItems.filter((item) => !item.proOnly || isAdvanced);
 
   return (
     <header
@@ -67,25 +65,26 @@ const AppHeader = () => {
         </Link>
 
         <nav className="flex items-center gap-0.5">
-          {visibleNavItems.map((item) => {
+          {navItems.map((item) => {
             const locked = !hasAccess(item.minTier);
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
-                to={item.path}
+                to={locked ? "/pricing" : item.path}
                 className={cn(
                   "relative rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200",
-                  isActive && item.proOnly
+                  isActive && !locked && item.proOnly
                     ? "pro-gradient text-pro-foreground shadow-sm"
-                    : isActive
+                    : isActive && !locked
                     ? "bg-primary text-primary-foreground shadow-sm"
+                    : locked
+                    ? "text-muted-foreground/40 cursor-default"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/80",
-                  locked && "opacity-60"
                 )}
               >
                 <span className="flex items-center gap-1">
-                  {item.proOnly && <Zap className="h-3 w-3" />}
+                  {item.proOnly && !locked && <Zap className="h-3 w-3" />}
                   {item.label}
                   {locked && <Lock className="h-3 w-3" />}
                 </span>

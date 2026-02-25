@@ -125,10 +125,10 @@ const PropExplorerPage = ({ embedded }: { embedded?: boolean }) => {
 
   const hasFilters = selectedStat || minHitRate > 0 || search;
 
-  if (!isBasicOrAbove) {
+  if (!hasAdvanced) {
     return (
       <div className="container py-10">
-        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Prop Explorer">
+        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Prop Explorer">
           <div />
         </UpgradeGate>
       </div>

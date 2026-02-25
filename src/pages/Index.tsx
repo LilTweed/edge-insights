@@ -4,7 +4,7 @@ import { type Sport, type Game } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import GameCard from "@/components/GameCard";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Zap, TrendingUp, SearchIcon, ArrowRight } from "lucide-react";
+import { Zap, TrendingUp, Lock, ArrowRight, Lightbulb, Search as SearchIcon } from "lucide-react";
 
 // ── ESPN-style mock games for all sports ────────────────────────────
 
@@ -165,7 +165,7 @@ const mockGames: Game[] = [
 
 const GamesPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");
-  const { isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
 
   const games = useMemo(() => mockGames.filter((g) => g.sport === sport), [sport]);
 
@@ -177,7 +177,11 @@ const GamesPage = () => {
           Today's Games
         </h1>
         <p className="mt-2 text-sm text-muted-foreground max-w-md">
-          Live scores, lines & odds across every sport. Your starting point for smarter bets.
+          {hasAdvanced
+            ? "Live scores, betting lines & odds across every sport."
+            : isBasicOrAbove
+            ? "Live scores, stats & news across every sport."
+            : "Live games and basic stats across every sport."}
         </p>
       </div>
 
@@ -189,11 +193,14 @@ const GamesPage = () => {
       {games.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {games.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <GameCard key={game.id} game={game} tier={tier} />
           ))}
         </div>
       ) : (
         <div className="rounded-2xl border border-border bg-card p-8 text-center mb-8">
+          <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-xl bg-secondary mb-4">
+            <SearchIcon className="h-5 w-5 text-muted-foreground" />
+          </div>
           <p className="text-lg font-semibold text-foreground mb-1">
             No {sport} games scheduled today
           </p>
@@ -203,9 +210,34 @@ const GamesPage = () => {
         </div>
       )}
 
-      {/* Quick action cards — adapt to tier */}
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {isBasicOrAbove && (
+      {/* Upgrade prompt for Free/Basic */}
+      {!hasAdvanced && (
+        <div className="mt-8">
+          <Link
+            to="/pricing"
+            className="group flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-5 transition-all hover:border-primary/40 hover:shadow-md"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+              <Zap className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-foreground mb-0.5">
+                {isBasicOrAbove ? "Upgrade to Premium" : "Upgrade your plan"}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {isBasicOrAbove
+                  ? "Unlock betting lines, player props, AI tools, and full platform access"
+                  : "Get in-depth stats, injury reports, news, and more with Basic — or go Premium for full access"}
+              </p>
+            </div>
+            <ArrowRight className="h-5 w-5 text-primary" />
+          </Link>
+        </div>
+      )}
+
+      {/* Quick action cards — Premium only */}
+      {hasAdvanced && (
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link to="/props" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:shadow-md">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -214,9 +246,16 @@ const GamesPage = () => {
             <p className="text-xs text-muted-foreground">View player props and hit rates</p>
             <ArrowRight className="h-4 w-4 text-muted-foreground mt-2 group-hover:text-primary transition-colors" />
           </Link>
-        )}
 
-        {isBasicOrAbove && (
+          <Link to="/insights" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
+              <Lightbulb className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground mb-1">Insights</h3>
+            <p className="text-xs text-muted-foreground">Explore props & research dashboard</p>
+            <ArrowRight className="h-4 w-4 text-muted-foreground mt-2 group-hover:text-primary transition-colors" />
+          </Link>
+
           <Link to="/edge" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:shadow-md">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
               <Zap className="h-5 w-5 text-primary" />
@@ -225,19 +264,8 @@ const GamesPage = () => {
             <p className="text-xs text-muted-foreground">AI Chat, Prop Builder & edge detection</p>
             <ArrowRight className="h-4 w-4 text-muted-foreground mt-2 group-hover:text-primary transition-colors" />
           </Link>
-        )}
-
-        {!isBasicOrAbove && (
-          <Link to="/pricing" className="group rounded-xl border border-primary/20 bg-primary/5 p-5 transition-all hover:border-primary/40 hover:shadow-md">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3">
-              <Zap className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-sm font-semibold text-primary mb-1">Unlock More</h3>
-            <p className="text-xs text-muted-foreground">Get props, AI chat & research tools</p>
-            <ArrowRight className="h-4 w-4 text-primary mt-2" />
-          </Link>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

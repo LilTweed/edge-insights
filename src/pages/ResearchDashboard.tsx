@@ -205,10 +205,10 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   ];
   const tabs = allTabs.filter((t) => !t.advancedOnly || hasAdvanced);
 
-  if (!isBasicOrAbove) {
+  if (!hasAdvanced) {
     return (
       <div className="container py-10">
-        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Research Dashboard">
+        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Research Dashboard">
           <div />
         </UpgradeGate>
       </div>
