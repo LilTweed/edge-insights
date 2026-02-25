@@ -114,23 +114,7 @@ const AppHeader = () => {
             ))}
           </div>
 
-          {/* Mobile tier toggle — compact */}
-          <div className="flex md:hidden items-center gap-0.5 rounded-lg border border-border/60 px-0.5 py-0.5">
-            {tierOptions.map((opt) => (
-              <button
-                key={opt.label}
-                onClick={() => setPreviewTier(opt.value)}
-                className={cn(
-                  "rounded-md px-1.5 py-1 text-[9px] font-medium transition-colors",
-                  (previewTier === opt.value || (opt.value === null && previewTier === null))
-                    ? opt.value === "advanced" ? "pro-gradient text-pro-foreground" : "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          {/* Mobile tier toggle — hidden for clean mobile header */}
 
           {/* Profile / Auth */}
           {user ? (

@@ -130,7 +130,7 @@ const PropsPage = () => {
   }
 
   return (
-    <div className={`container py-6 max-w-5xl ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
+    <div className={`container py-4 md:py-6 md:max-w-5xl ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
