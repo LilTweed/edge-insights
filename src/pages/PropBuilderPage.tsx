@@ -142,7 +142,7 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Prop Builder</h1>
-              <p className="text-xs text-muted-foreground">Build your slip with best odds & edge detection</p>
+              <p className="text-xs text-muted-foreground">Build your slip with odds comparison & data analysis</p>
             </div>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
                   <Star size={12} className="text-primary" />
-                  <span className="text-[10px] font-bold text-primary">Auto-Suggested Best Value</span>
+                  <span className="text-[10px] font-bold text-primary">Auto-Suggested High Activity</span>
                 </div>
                 <button onClick={() => setShowSuggestions(false)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
               </div>
@@ -362,7 +362,7 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
                     className="mt-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-[10px] font-semibold text-primary hover:bg-primary/10 transition-colors"
                   >
                     <Star size={12} className="inline mr-1" />
-                    Auto-fill top 3 value picks
+                    Auto-fill top 3 value props
                   </button>
                 )}
               </div>

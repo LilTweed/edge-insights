@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import PageDisclaimer from "@/components/PageDisclaimer";
 import { type Sport, type Game } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import GameCard from "@/components/GameCard";
@@ -189,6 +190,8 @@ const GamesPage = () => {
         <SportFilter active={sport} onChange={setSport} />
       </div>
 
+      <PageDisclaimer />
+
       {/* Games list */}
       {games.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -261,7 +264,7 @@ const GamesPage = () => {
               <Zap className="h-5 w-5 text-primary" />
             </div>
             <h3 className="text-sm font-semibold text-foreground mb-1">Edge</h3>
-            <p className="text-xs text-muted-foreground">AI Chat, Prop Builder & edge detection</p>
+            <p className="text-xs text-muted-foreground">AI Chat, Prop Builder & data analysis</p>
             <ArrowRight className="h-4 w-4 text-muted-foreground mt-2 group-hover:text-primary transition-colors" />
           </Link>
         </div>

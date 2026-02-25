@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Bot, Wrench, Zap } from "lucide-react";
+import PageDisclaimer from "@/components/PageDisclaimer";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSearchParams } from "react-router-dom";
 import UpgradeGate from "@/components/UpgradeGate";
@@ -31,9 +32,11 @@ export default function EdgePage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-foreground">Edge</h1>
-          <p className="text-xs text-muted-foreground">AI-powered tools to find your betting edge</p>
+          <p className="text-xs text-muted-foreground">AI-powered research & analytics tools</p>
         </div>
       </div>
+
+      <PageDisclaimer />
 
       <Tabs value={tab} onValueChange={setTab} className="flex flex-1 flex-col overflow-hidden">
         <TabsList className="w-fit">
