@@ -114,7 +114,7 @@ function buildAdvancedContext(sport: Sport): string {
   return sections.join("\n\n");
 }
 
-export default function AIChatPage() {
+export default function AIChatPage({ embedded }: { embedded?: boolean } = {}) {
   const [searchParams] = useSearchParams();
   const [sport, setSport] = useState<Sport>("NBA");
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -190,39 +190,41 @@ export default function AIChatPage() {
   const prompts = advanced ? advancedQuickPrompts : simpleQuickPrompts;
 
   return (
-    <div className={`container flex h-[calc(100vh-3.5rem)] flex-col py-4 ${advanced ? "animate-pro-shimmer" : ""}`}>
+    <div className={`${embedded ? "" : "container py-4"} flex h-full flex-col ${advanced ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${advanced ? "pro-gradient shadow-[0_0_12px_hsl(var(--pro)/0.3)] animate-pro-glow" : "bg-primary"}`}>
-            {advanced ? <BarChart3 size={20} className="text-pro-foreground" /> : <Sparkles size={20} className="text-primary-foreground" />}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-foreground">
-                {advanced ? "Pro Analyst" : "Quick Picks"}
-              </h1>
-              {advanced && (
-                <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
-                  PRO
-                </span>
-              )}
+      {!embedded && (
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${advanced ? "pro-gradient shadow-[0_0_12px_hsl(var(--pro)/0.3)] animate-pro-glow" : "bg-primary"}`}>
+              {advanced ? <BarChart3 size={20} className="text-pro-foreground" /> : <Sparkles size={20} className="text-primary-foreground" />}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {advanced ? "Quantitative edge detection · Statistical modeling · Correlation analysis" : "Tap a button, get winning bets 🎉"}
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground">
+                  {advanced ? "Pro Analyst" : "Quick Picks"}
+                </h1>
+                {advanced && (
+                  <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
+                    PRO
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {advanced ? "Quantitative edge detection · Statistical modeling · Correlation analysis" : "Tap a button, get winning bets 🎉"}
+              </p>
+            </div>
+          </div>
+
+          <div className={`flex items-center rounded-xl border p-0.5 ${advanced ? "border-pro/30 bg-pro/5" : "border-border bg-card"}`}>
+            <button onClick={() => setAdvanced(false)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${!advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              😎 Easy
+            </button>
+            <button onClick={() => { if (hasAdvanced) setAdvanced(true); else alert("Pro mode requires the Advanced plan ($9.99/mo). Visit the Pricing page to upgrade."); }} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${advanced ? "pro-gradient text-pro-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <span className="flex items-center gap-1"><Zap size={12} /> Pro {!hasAdvanced && "🔒"}</span>
+            </button>
           </div>
         </div>
-
-        <div className={`flex items-center rounded-xl border p-0.5 ${advanced ? "border-pro/30 bg-pro/5" : "border-border bg-card"}`}>
-          <button onClick={() => setAdvanced(false)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${!advanced ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            😎 Easy
-          </button>
-          <button onClick={() => { if (hasAdvanced) setAdvanced(true); else alert("Pro mode requires the Advanced plan ($9.99/mo). Visit the Pricing page to upgrade."); }} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${advanced ? "pro-gradient text-pro-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            <span className="flex items-center gap-1"><Zap size={12} /> Pro {!hasAdvanced && "🔒"}</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       <div className="mb-3">
         <SportFilter active={sport} onChange={setSport} />

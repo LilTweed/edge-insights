@@ -52,23 +52,12 @@ const GamesPage = () => {
         )}
 
         {isBasicOrAbove && (
-          <Link to="/ai-chat" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:shadow-md">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
-              <MessageCircle className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-sm font-semibold text-foreground mb-1">AI Chat</h3>
-            <p className="text-xs text-muted-foreground">Get quick picks and betting advice</p>
-            <ArrowRight className="h-4 w-4 text-muted-foreground mt-2 group-hover:text-primary transition-colors" />
-          </Link>
-        )}
-
-        {hasAdvanced && (
-          <Link to="/builder" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:shadow-md">
+          <Link to="/edge" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:shadow-md">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
               <Zap className="h-5 w-5 text-primary" />
             </div>
-            <h3 className="text-sm font-semibold text-foreground mb-1">Prop Builder</h3>
-            <p className="text-xs text-muted-foreground">Build slips with edge detection</p>
+            <h3 className="text-sm font-semibold text-foreground mb-1">Edge</h3>
+            <p className="text-xs text-muted-foreground">AI Chat, Prop Builder & edge detection</p>
             <ArrowRight className="h-4 w-4 text-muted-foreground mt-2 group-hover:text-primary transition-colors" />
           </Link>
         )}

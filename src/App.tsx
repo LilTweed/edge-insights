@@ -16,6 +16,7 @@ import TeamsPage from "./pages/TeamsPage";
 import TeamDetailPage from "./pages/TeamDetailPage";
 import AIChatPage from "./pages/AIChatPage";
 import PropBuilderPage from "./pages/PropBuilderPage";
+import EdgePage from "./pages/EdgePage";
 import StatNotesPage from "./pages/StatNotesPage";
 import TermsPage from "./pages/TermsPage";
 import DisclaimerModal from "./components/DisclaimerModal";
@@ -54,6 +55,7 @@ const App = () => (
           <Route path="/team/:id" element={<TeamDetailPage />} />
           <Route path="/ai-chat" element={<AIChatPage />} />
           <Route path="/builder" element={<PropBuilderPage />} />
+          <Route path="/edge" element={<EdgePage />} />
           <Route path="/notes" element={<StatNotesPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/pricing" element={<PricingPage />} />

@@ -13,8 +13,7 @@ const navItems: NavItem[] = [
   { label: "Props", path: "/props", minTier: "basic" },
   { label: "Explore", path: "/explore", minTier: "basic" },
   { label: "Research", path: "/research", minTier: "basic" },
-  { label: "AI Chat", path: "/ai-chat", minTier: "basic" },
-  { label: "Builder", path: "/builder", minTier: "advanced", proOnly: true },
+  { label: "Edge", path: "/edge", minTier: "basic" },
   { label: "Notes", path: "/notes", minTier: "advanced", proOnly: true },
 ];
 
