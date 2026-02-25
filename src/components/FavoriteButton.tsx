@@ -31,9 +31,11 @@ const FavoriteButton = ({ itemType, itemId, itemName, sport, size = "sm", classN
     >
       <Heart
         className={cn(
-          "transition-all",
+          "transition-all duration-300",
           size === "sm" ? "h-4 w-4" : "h-5 w-5",
-          favorited ? "fill-destructive text-destructive scale-110" : "text-muted-foreground hover:text-destructive"
+          favorited
+            ? "fill-[hsl(var(--pro))] text-[hsl(var(--pro))] scale-110 drop-shadow-[0_0_6px_hsl(var(--pro-glow)/0.7)]"
+            : "text-muted-foreground hover:text-[hsl(var(--pro-glow))]"
         )}
       />
     </button>
