@@ -1,8 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Crown, HelpCircle, Lock, LogIn, LogOut, User, Zap } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
-import NotificationBell from "@/components/NotificationBell";
+import { Crown, LogIn, LogOut, User, Zap, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription, type SubscriptionTier } from "@/hooks/useSubscription";
 
@@ -20,7 +18,7 @@ const AppHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { previewTier, setPreviewTier, tier, isBasicOrAbove, isAdvanced } = useSubscription();
+  const { previewTier, setPreviewTier, tier, isAdvanced } = useSubscription();
 
   const hasAccess = (minTier: "free" | "basic" | "advanced") => {
     const effectiveTier = previewTier ?? tier;
@@ -45,18 +43,19 @@ const AppHeader = () => {
           : "border-border/60"
       )}
     >
-      <div className="container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 group">
+      <div className="mx-auto flex h-12 max-w-[390px] items-center justify-between px-4 md:max-w-none md:px-6">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 group">
           <div className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg transition-transform group-hover:scale-105",
+            "flex h-7 w-7 items-center justify-center rounded-lg transition-transform group-hover:scale-105",
             isAdvanced ? "pro-gradient shadow-[0_0_10px_hsl(var(--pro)/0.3)]" : "bg-primary"
           )}>
             <span className={cn(
-              "font-display text-sm font-bold tracking-tight",
+              "font-display text-xs font-bold tracking-tight",
               isAdvanced ? "text-pro-foreground" : "text-primary-foreground"
             )}>LV</span>
           </div>
-          <span className="font-display text-lg font-bold tracking-tight text-foreground">LVRG</span>
+          <span className="font-display text-base font-bold tracking-tight text-foreground">LVRG</span>
           {isAdvanced && (
             <span className="ml-0.5 rounded-md pro-gradient px-1.5 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider animate-pro-glow">
               PRO
@@ -64,7 +63,8 @@ const AppHeader = () => {
           )}
         </Link>
 
-        <nav className="flex items-center gap-0.5">
+        {/* Desktop nav — hidden on mobile */}
+        <nav className="hidden md:flex items-center gap-0.5">
           {navItems.map((item) => {
             const locked = !hasAccess(item.minTier);
             const isActive = location.pathname === item.path;
@@ -93,9 +93,10 @@ const AppHeader = () => {
           })}
         </nav>
 
-        <div className="flex items-center gap-0.5">
-          {/* Tier Preview Toggle */}
-          <div className="flex items-center gap-0.5 rounded-lg border border-border/60 px-1 py-0.5">
+        {/* Right side */}
+        <div className="flex items-center gap-1">
+          {/* Tier Preview — desktop only */}
+          <div className="hidden md:flex items-center gap-0.5 rounded-lg border border-border/60 px-1 py-0.5">
             <Crown className="h-3 w-3 text-muted-foreground ml-1" />
             {tierOptions.map((opt) => (
               <button
@@ -112,39 +113,40 @@ const AppHeader = () => {
               </button>
             ))}
           </div>
-          <NotificationBell />
-          <button
-            onClick={() => window.dispatchEvent(new Event("lvrg-restart-tour"))}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"
-            aria-label="Restart onboarding tour"
-          >
-            <HelpCircle className="h-4 w-4" />
-          </button>
-          <ThemeToggle />
-          {user ? (
-            <div className="flex items-center gap-0.5">
-              <Link
-                to="/profile"
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
-              >
-                <User className="h-3.5 w-3.5" />
-                Profile
-              </Link>
+
+          {/* Mobile tier toggle — compact */}
+          <div className="flex md:hidden items-center gap-0.5 rounded-lg border border-border/60 px-0.5 py-0.5">
+            {tierOptions.map((opt) => (
               <button
-                onClick={async () => { await signOut(); navigate("/"); }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
+                key={opt.label}
+                onClick={() => setPreviewTier(opt.value)}
+                className={cn(
+                  "rounded-md px-1.5 py-1 text-[9px] font-medium transition-colors",
+                  (previewTier === opt.value || (opt.value === null && previewTier === null))
+                    ? opt.value === "advanced" ? "pro-gradient text-pro-foreground" : "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
               >
-                <LogOut className="h-3.5 w-3.5" />
-                Sign out
+                {opt.label}
               </button>
-            </div>
+            ))}
+          </div>
+
+          {/* Profile / Auth */}
+          {user ? (
+            <Link
+              to="/profile"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"
+            >
+              <User className="h-4 w-4" />
+            </Link>
           ) : (
             <Link
               to="/login"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <LogIn className="h-3.5 w-3.5" />
-              Sign in
+              <span className="hidden md:inline">Sign in</span>
             </Link>
           )}
         </div>

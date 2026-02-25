@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/hooks/useAuth";
 import AppHeader from "@/components/AppHeader";
+import BottomTabBar from "@/components/BottomTabBar";
 import ResponsibleGamblingFooter from "@/components/ResponsibleGamblingFooter";
 import OnboardingTour from "@/components/OnboardingTour";
 import Index from "./pages/Index";
@@ -45,7 +46,7 @@ const App = () => (
         <OnboardingTour />
         <div className="flex min-h-screen flex-col">
           <AppHeader />
-          <main className="flex-1">
+          <main className="flex-1 pb-16 md:pb-0">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<AuthPage />} />
@@ -69,11 +70,13 @@ const App = () => (
               {/* Legacy redirect */}
               <Route path="/ai-props" element={<AIChatPage />} />
               <Route path="/install" element={<InstallPage />} />
-              <Route path="/install" element={<InstallPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
-          <ResponsibleGamblingFooter />
+          <div className="hidden md:block">
+            <ResponsibleGamblingFooter />
+          </div>
+          <BottomTabBar />
         </div>
       </BrowserRouter>
     </TooltipProvider>
