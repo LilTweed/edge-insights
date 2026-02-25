@@ -18,7 +18,7 @@ interface SlipLeg {
 
 const impliedProb = (odds: number) => odds < 0 ? (-odds / (-odds + 100)) * 100 : (100 / (odds + 100)) * 100;
 
-export default function PropBuilderPage() {
+export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {}) {
   const { tier, isAdvanced: hasAdvanced } = useSubscription();
   const navigate = useNavigate();
   const [sport, setSport] = useState<Sport>("NBA");
@@ -75,19 +75,21 @@ export default function PropBuilderPage() {
   }
 
   return (
-    <div className="container flex h-[calc(100vh-3.5rem)] flex-col py-4">
+    <div className={`${embedded ? "" : "container py-4"} flex h-full flex-col`}>
       {/* Header */}
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-            <Wrench size={20} className="text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Prop Builder</h1>
-            <p className="text-xs text-muted-foreground">Build your slip with best odds & edge detection</p>
+      {!embedded && (
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
+              <Wrench size={20} className="text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Prop Builder</h1>
+              <p className="text-xs text-muted-foreground">Build your slip with best odds & edge detection</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="mb-3">
         <SportFilter active={sport} onChange={setSport} />
@@ -348,7 +350,7 @@ export default function PropBuilderPage() {
                       : l.prop.sportsbooks.reduce((a, b) => (b.under > a.under ? b : a));
                     return `${l.prop.playerName} ${l.prop.stat} ${l.side === "over" ? "Over" : "Under"} ${l.prop.line} (Best: ${formatOdds(l.side === "over" ? best.over : best.under)} @ ${best.sportsbook}, Edge: ${getEdge(l.prop, l.side).toFixed(1)}%)`;
                   }).join("\n");
-                  navigate(`/ai-chat?slip=${encodeURIComponent(slipText)}`);
+                  navigate(`/edge?slip=${encodeURIComponent(slipText)}`);
                 }}
                 className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
