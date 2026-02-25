@@ -1,11 +1,14 @@
 import { useState } from "react";
 import type { PropLine } from "@/data/mockData";
+import { Star } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavoritesCloud";
 import { formatOdds } from "@/data/mockData";
 import { getPlayerProfile, getInitials } from "@/data/playerProfiles";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp, BarChart3, User, Ruler, Weight, Calendar, GraduationCap, Globe } from "lucide-react";
 import PropStatsPanel from "./PropStatsPanel";
 import PlayerAvatar from "./PlayerAvatar";
+import FavoriteButton from "./FavoriteButton";
 
 interface PropCardProps {
   prop: PropLine;
@@ -23,6 +26,8 @@ const impliedProb = (odds: number): number => {
 const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" }: PropCardProps) => {
   const [statsOpen, setStatsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const { isFavorited: checkFav } = useFavorites();
+  const isFavPlayer = checkFav("player", prop.playerId);
   const profile = getPlayerProfile(prop.playerId);
 
   // Compute consensus implied probability from all sportsbooks (average of over odds)
@@ -36,7 +41,7 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
   const gamesUnderL10 = Math.min(10, prop.gamesPlayed) - gamesOverL10;
 
   return (
-    <div className="animate-fade-in rounded-xl border border-border bg-card p-4">
+    <div className={`animate-fade-in rounded-xl border bg-card p-4 ${isFavPlayer ? "border-primary/30" : "border-border"}`}>
       {/* Header with player icon */}
       {showPlayer && (
         <div className="mb-3 flex items-center gap-3">
@@ -60,6 +65,7 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
               )}
             </div>
           </div>
+          <FavoriteButton itemType="player" itemId={prop.playerId} itemName={prop.playerName} sport={prop.sport} />
         </div>
       )}
 

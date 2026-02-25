@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Camera, Loader2, Save, User } from "lucide-react";
+import { Camera, Loader2, Save, User, Heart, Bell } from "lucide-react";
 import { toast } from "sonner";
+import FavoritesSection from "@/components/FavoritesSection";
+import NotificationPreferences from "@/components/NotificationPreferences";
 import type { Sport } from "@/data/mockData";
 
 interface Preferences {
@@ -191,10 +193,24 @@ export default function ProfilePage() {
         <p className="text-[10px] text-muted-foreground">Contact support to change your email</p>
       </div>
 
-      <Button onClick={saveProfile} disabled={saving} className="w-full">
+      <Button onClick={saveProfile} disabled={saving} className="w-full min-h-[44px]">
         {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
         Save Changes
       </Button>
+
+      {/* Notification Preferences */}
+      <div className="mt-8 pt-8 border-t border-border">
+        <NotificationPreferences />
+      </div>
+
+      {/* Favorites */}
+      <div className="mt-8 pt-8 border-t border-border">
+        <div className="flex items-center gap-2 mb-4">
+          <Heart className="h-4 w-4 text-destructive" />
+          <h2 className="text-sm font-bold text-foreground">My Favorites</h2>
+        </div>
+        <FavoritesSection />
+      </div>
     </div>
   );
 }

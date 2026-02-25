@@ -10,8 +10,9 @@ import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useState, useMemo } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import UpgradeGate from "@/components/UpgradeGate";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, Table2, DollarSign, TrendingUp, Users } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, Table2, DollarSign, TrendingUp, Users, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useFavorites } from "@/hooks/useFavoritesCloud";
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 type ViewMode = "basic" | "advanced" | "compare";
@@ -28,6 +29,7 @@ const defaultAdvanced: AdvancedFilters = {
 
 const PropsPage = () => {
   const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { favoritedPlayerIds } = useFavorites();
   const [sport, setSport] = useState<Sport>("NBA");
   const [exportOpen, setExportOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -74,6 +76,11 @@ const PropsPage = () => {
       );
     }
     list.sort((a, b) => {
+      // Favorited players always first
+      const aFav = favoritedPlayerIds.has(a.playerId) ? 1 : 0;
+      const bFav = favoritedPlayerIds.has(b.playerId) ? 1 : 0;
+      if (aFav !== bFav) return bFav - aFav;
+
       let diff = 0;
       if (sortBy === "player") diff = a.playerName.localeCompare(b.playerName);
       else if (sortBy === "line") diff = a.line - b.line;
@@ -86,7 +93,7 @@ const PropsPage = () => {
       return sortAsc ? diff : -diff;
     });
     return list;
-  }, [sportProps, advanced, search, sortBy, sortAsc, hasAdvanced]);
+  }, [sportProps, advanced, search, sortBy, sortAsc, hasAdvanced, favoritedPlayerIds]);
 
   const hitRateByStat = useMemo(() => {
     const stats = new Map<string, { total: number; sumHR: number; sumHRL10: number; count: number }>();
