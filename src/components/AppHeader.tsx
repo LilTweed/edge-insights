@@ -11,8 +11,7 @@ type NavItem = { label: string; path: string; minTier: "free" | "basic" | "advan
 const navItems: NavItem[] = [
   { label: "Games", path: "/", minTier: "free" },
   { label: "Props", path: "/props", minTier: "basic" },
-  { label: "Explore", path: "/explore", minTier: "basic" },
-  { label: "Research", path: "/research", minTier: "basic" },
+  { label: "Insights", path: "/insights", minTier: "basic" },
   { label: "Edge", path: "/edge", minTier: "basic" },
   { label: "Notes", path: "/notes", minTier: "advanced", proOnly: true },
 ];

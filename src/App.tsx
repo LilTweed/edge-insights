@@ -22,6 +22,7 @@ import TermsPage from "./pages/TermsPage";
 import DisclaimerModal from "./components/DisclaimerModal";
 import InstallPage from "./pages/InstallPage";
 import ResearchDashboard from "./pages/ResearchDashboard";
+import InsightsPage from "./pages/InsightsPage";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PricingPage from "./pages/PricingPage";
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/props" element={<PropsPage />} />
           <Route path="/explore" element={<PropExplorerPage />} />
+          <Route path="/insights" element={<InsightsPage />} />
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/player/:id" element={<PlayerDetailPage />} />
           <Route path="/game/:id" element={<GameDetailPage />} />

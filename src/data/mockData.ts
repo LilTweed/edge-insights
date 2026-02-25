@@ -1,6 +1,6 @@
 // Data layer — types, interfaces, and helper functions only
 
-export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL" | "MLB" | "NHL" | "UFC" | "PGA";
+export type Sport = "NBA" | "NCAAB" | "NCAAF" | "NFL" | "MLB" | "NHL" | "UFC" | "PGA" | "Soccer";
 export type Sportsbook = "FanDuel" | "DraftKings" | "Fanatics" | "BetMGM" | "Bovada";
 
 export interface Team {
@@ -132,6 +132,12 @@ export interface SportsbookLine {
   line: number;
 }
 
+export interface GamePlayerProp {
+  playerName: string;
+  stat: string;
+  line: number;
+}
+
 export interface Game {
   id: string;
   homeTeam: Team;
@@ -160,6 +166,9 @@ export interface Game {
   }[];
   homeScore?: number;
   awayScore?: number;
+  quarterScores?: { period: string; home: number; away: number }[];
+  keyInjuries?: { player: string; status: string; injury: string }[];
+  playerProps?: GamePlayerProp[];
 }
 
 // ===================== EMPTY DATA ARRAYS =====================

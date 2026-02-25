@@ -46,7 +46,7 @@ import {
 
 type Tab = "stats" | "trends" | "matchups" | "teams";
 
-const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA"] as const;
+const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "Soccer"] as const;
 
 /** Deterministic pseudo-random seeded by string */
 function seededRandom(seed: string) {
@@ -81,7 +81,7 @@ function generateSparkline(player: Player, stat: "points" | "rebounds" | "assist
   return data;
 }
 
-const ResearchDashboard = () => {
+const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   const [sport, setSport] = useState<Sport>("NBA");
   const [tab, setTab] = useState<Tab>("stats");
   const [search, setSearch] = useState("");
@@ -216,21 +216,23 @@ const ResearchDashboard = () => {
   }
 
   return (
-    <div className={`container py-6 ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
+    <div className={`${embedded ? "" : "container py-6"} ${hasAdvanced && !embedded ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Research Dashboard</h1>
-          {hasAdvanced && (
-            <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
-              PRO
-            </span>
-          )}
+      {!embedded && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Research Dashboard</h1>
+            {hasAdvanced && (
+              <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
+                PRO
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {hasAdvanced ? "Player stats · Trend analysis · H2H matchups · Injury modeling" : "Browse player and team stats at a glance"}
+          </p>
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {hasAdvanced ? "Player stats · Trend analysis · H2H matchups · Injury modeling" : "Browse player and team stats at a glance"}
-        </p>
-      </div>
+      )}
 
       <div className="mb-4">
         <SportFilter active={sport} onChange={(s) => { setSport(s); setSearch(""); setPosFilter("All"); setTeamFilter("All"); }} />

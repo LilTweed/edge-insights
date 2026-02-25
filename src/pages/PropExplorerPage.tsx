@@ -97,7 +97,7 @@ function TrendIndicator({ hitRate, hitRateLast10 }: { hitRate: number; hitRateLa
 
 // ─── Page ──────────────────────────────────────────────────────────
 
-const PropExplorerPage = () => {
+const PropExplorerPage = ({ embedded }: { embedded?: boolean }) => {
   const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
   const [sport, setSport] = useState<Sport>("NBA");
   const [search, setSearch] = useState("");
@@ -136,23 +136,25 @@ const PropExplorerPage = () => {
   }
 
   return (
-    <div className={`container py-6 max-w-4xl ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
+    <div className={`${embedded ? "" : "container py-6"} max-w-4xl ${hasAdvanced && !embedded ? "animate-pro-shimmer" : ""}`}>
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Prop Explorer</h1>
-          {hasAdvanced && (
-            <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
-              PRO
-            </span>
-          )}
+      {!embedded && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Prop Explorer</h1>
+            {hasAdvanced && (
+              <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
+                PRO
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {hasAdvanced
+              ? <>Deep-dive analysis with confidence scoring & odds comparison. <TermTooltip term="Prop"><span className="text-pro">What's a prop?</span></TermTooltip></>
+              : "Discover player props with simple hit rates"}
+          </p>
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {hasAdvanced
-            ? <>Deep-dive analysis with confidence scoring & odds comparison. <TermTooltip term="Prop"><span className="text-pro">What's a prop?</span></TermTooltip></>
-            : "Discover player props with simple hit rates"}
-        </p>
-      </div>
+      )}
 
       {/* Sport filter */}
       <div className="mb-4">
