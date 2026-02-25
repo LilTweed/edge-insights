@@ -93,12 +93,6 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
             {isLive && game.awayScore !== undefined && (
               <span className="font-mono text-lg font-bold text-foreground">{game.awayScore}</span>
             )}
-            {/* Moneyline odds — Premium only */}
-            {isPremium && bestML && (
-              <span className="font-mono text-xs font-semibold text-muted-foreground">
-                {formatOdds(bestML.away)}
-              </span>
-            )}
           </div>
         </div>
 
@@ -120,11 +114,6 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
             {isLive && game.homeScore !== undefined && (
               <span className="font-mono text-lg font-bold text-foreground">{game.homeScore}</span>
             )}
-            {isPremium && bestML && (
-              <span className="font-mono text-xs font-semibold text-muted-foreground">
-                {formatOdds(bestML.home)}
-              </span>
-            )}
           </div>
         </div>
       </div>
@@ -141,7 +130,7 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
       )}
 
-      {/* Betting Lines: Spread + O/U — Premium only */}
+      {/* Betting Lines: Spread + ML + O/U — Premium only */}
       {isPremium && (
         <div className="mt-3 flex gap-2">
           {bestSpread && (
@@ -150,6 +139,15 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
               <p className="font-mono text-xs font-semibold text-foreground mt-0.5">
                 {game.homeTeam.abbreviation} {bestSpread.home > 0 ? "+" : ""}{bestSpread.home}
               </p>
+            </div>
+          )}
+          {bestML && (
+            <div className="flex-1 rounded-lg bg-secondary/60 px-3 py-2">
+              <span className="text-[10px] font-medium text-muted-foreground">Moneyline</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="font-mono text-xs font-semibold text-foreground">{game.awayTeam.abbreviation} {formatOdds(bestML.away)}</span>
+                <span className="font-mono text-xs font-semibold text-foreground">{game.homeTeam.abbreviation} {formatOdds(bestML.home)}</span>
+              </div>
             </div>
           )}
           {bestOU && (
@@ -182,6 +180,20 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
       )}
 
+      {/* Recent News — Basic + Premium (moved above injuries) */}
+      {!isFree && news.length > 0 && (
+        <div className="mt-2.5 border-t border-border/50 pt-2">
+          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Recent News</span>
+          <div className="space-y-1">
+            {news.map((headline, i) => (
+              <p key={i} className="text-[10px] text-muted-foreground leading-relaxed">
+                • {headline}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Key Injuries — Basic + Premium */}
       {!isFree && game.keyInjuries && game.keyInjuries.length > 0 && (
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
@@ -198,20 +210,6 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
               <span className="mx-0.5 text-muted-foreground/60">({inj.injury})</span>
             </span>
           ))}
-        </div>
-      )}
-
-      {/* Recent News — Basic + Premium */}
-      {!isFree && news.length > 0 && (
-        <div className="mt-2.5 border-t border-border/50 pt-2">
-          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Recent News</span>
-          <div className="space-y-1">
-            {news.map((headline, i) => (
-              <p key={i} className="text-[10px] text-muted-foreground leading-relaxed">
-                • {headline}
-              </p>
-            ))}
-          </div>
         </div>
       )}
 
