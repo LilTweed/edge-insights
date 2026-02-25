@@ -224,3 +224,17 @@
 .pro-border {
   border-image: linear-gradient(135deg, hsl(var(--pro) / 0.4), hsl(var(--pro-glow) / 0.2)) 1;
 }
+
+/* Hide scrollbar for horizontal scroll areas */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area for bottom tab bar on iOS */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
