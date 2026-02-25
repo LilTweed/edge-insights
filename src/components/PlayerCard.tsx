@@ -1,6 +1,7 @@
 import type { Player, Sport } from "@/data/mockData";
 import { Link } from "react-router-dom";
 import PlayerAvatar from "./PlayerAvatar";
+import FavoriteButton from "./FavoriteButton";
 
 interface PlayerCardProps {
   player: Player;
@@ -157,7 +158,10 @@ const PlayerCard = ({ player }: PlayerCardProps) => {
             </p>
           </div>
         </div>
-        <span className="text-xs text-muted-foreground">{player.stats.gamesPlayed} GP</span>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-muted-foreground">{player.stats.gamesPlayed} GP</span>
+          <FavoriteButton itemType="player" itemId={player.id} itemName={player.name} sport={player.sport} />
+        </div>
       </div>
 
       <div className="grid grid-cols-4 gap-2">

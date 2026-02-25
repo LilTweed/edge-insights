@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_name: string
+          item_type: string
+          sport: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_name: string
+          item_type: string
+          sport?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_name?: string
+          item_type?: string
+          sport?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          final_scores: boolean
+          game_alerts: boolean
+          id: string
+          injuries: boolean
+          lineup_changes: boolean
+          news: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          stat_alerts: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          final_scores?: boolean
+          game_alerts?: boolean
+          id?: string
+          injuries?: boolean
+          lineup_changes?: boolean
+          news?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          stat_alerts?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          final_scores?: boolean
+          game_alerts?: boolean
+          id?: string
+          injuries?: boolean
+          lineup_changes?: boolean
+          news?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          stat_alerts?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

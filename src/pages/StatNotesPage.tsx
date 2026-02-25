@@ -3,7 +3,9 @@ import { useSubscription } from "@/hooks/useSubscription";
 import UpgradeGate from "@/components/UpgradeGate";
 import { type Sport } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
-import { Search, Plus, Trash2, StickyNote, X } from "lucide-react";
+import { Search, Plus, Trash2, StickyNote, X, Heart } from "lucide-react";
+import FavoritesSection from "@/components/FavoritesSection";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface StatNote {
   id: string;
@@ -77,11 +79,27 @@ export default function StatNotesPage() {
             <StickyNote size={20} className="text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Stat Notes</h1>
-            <p className="text-xs text-muted-foreground">Save observations, trends & player insights</p>
+            <h1 className="text-xl font-bold text-foreground">Notes & Favorites</h1>
+            <p className="text-xs text-muted-foreground">Save observations & track your favorites</p>
           </div>
         </div>
       </div>
+
+      <Tabs defaultValue="favorites" className="flex flex-1 flex-col overflow-hidden">
+        <TabsList className="w-fit mb-3">
+          <TabsTrigger value="favorites" className="gap-1.5 min-h-[44px]">
+            <Heart size={14} /> Favorites
+          </TabsTrigger>
+          <TabsTrigger value="notes" className="gap-1.5 min-h-[44px]">
+            <StickyNote size={14} /> Notes
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="favorites" className="flex-1 overflow-auto mt-0">
+          <FavoritesSection />
+        </TabsContent>
+
+        <TabsContent value="notes" className="flex-1 flex flex-col overflow-hidden mt-0">
 
       <div className="mb-3">
         <SportFilter active={sport} onChange={setSport} />
@@ -222,6 +240,8 @@ export default function StatNotesPage() {
           ))}
         </div>
       </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

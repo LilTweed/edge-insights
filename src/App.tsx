@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/hooks/useAuth";
+import { FavoritesProvider } from "@/hooks/useFavoritesCloud";
 import AppHeader from "@/components/AppHeader";
 import BottomTabBar from "@/components/BottomTabBar";
 import ResponsibleGamblingFooter from "@/components/ResponsibleGamblingFooter";
@@ -38,6 +39,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
     <AuthProvider>
+    <FavoritesProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -80,6 +82,7 @@ const App = () => (
         </div>
       </BrowserRouter>
     </TooltipProvider>
+    </FavoritesProvider>
     </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>

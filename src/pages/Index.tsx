@@ -5,7 +5,9 @@ import { type Sport, type Game } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import GameCard from "@/components/GameCard";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Zap, TrendingUp, Lock, ArrowRight, Lightbulb, Search as SearchIcon } from "lucide-react";
+import { Zap, TrendingUp, Lock, ArrowRight, Lightbulb, Search as SearchIcon, Star } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavoritesCloud";
+import FavoriteButton from "@/components/FavoriteButton";
 
 // ── ESPN-style mock games for all sports ────────────────────────────
 
@@ -167,8 +169,17 @@ const mockGames: Game[] = [
 const GamesPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");
   const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { favoritedTeamIds } = useFavorites();
 
-  const games = useMemo(() => mockGames.filter((g) => g.sport === sport), [sport]);
+  // Sort favorited teams to top
+  const games = useMemo(() => {
+    const filtered = mockGames.filter((g) => g.sport === sport);
+    return filtered.sort((a, b) => {
+      const aFav = favoritedTeamIds.has(a.homeTeam.id) || favoritedTeamIds.has(a.awayTeam.id) ? 1 : 0;
+      const bFav = favoritedTeamIds.has(b.homeTeam.id) || favoritedTeamIds.has(b.awayTeam.id) ? 1 : 0;
+      return bFav - aFav;
+    });
+  }, [sport, favoritedTeamIds]);
 
   return (
     <div className="container py-6 max-w-4xl">
@@ -194,10 +205,20 @@ const GamesPage = () => {
 
       {/* Games list */}
       {games.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {games.map((game) => (
-            <GameCard key={game.id} game={game} tier={tier} />
-          ))}
+        <div className="grid gap-4 md:grid-cols-2">
+          {games.map((game) => {
+            const isFavGame = favoritedTeamIds.has(game.homeTeam.id) || favoritedTeamIds.has(game.awayTeam.id);
+            return (
+              <div key={game.id} className="relative">
+                {isFavGame && (
+                  <div className="absolute -top-1.5 -right-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary shadow-sm">
+                    <Star className="h-3 w-3 fill-primary-foreground text-primary-foreground" />
+                  </div>
+                )}
+                <GameCard game={game} tier={tier} />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-2xl border border-border bg-card p-8 text-center mb-8">
