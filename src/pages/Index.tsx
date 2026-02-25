@@ -240,7 +240,7 @@ const GamesPage = () => {
 
       {/* Quick action cards — Premium only */}
       {hasAdvanced && (
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           <Link to="/props" className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/20 hover:shadow-md">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
               <TrendingUp className="h-5 w-5 text-primary" />

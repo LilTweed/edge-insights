@@ -68,8 +68,8 @@ export default function PricingPage() {
 
   return (
     <div className="container py-10">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Choose Your Plan</h1>
+      <div className="mb-6 md:mb-8 text-center">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Choose Your Plan</h1>
         <p className="mt-2 text-muted-foreground">Pick the plan that fits your research needs</p>
       </div>
 
@@ -148,19 +148,19 @@ export default function PricingPage() {
 
               <div className="mt-6">
                 {isCurrent ? (
-                  <div className="w-full rounded-xl border border-border bg-secondary py-2.5 text-center text-sm font-semibold text-muted-foreground">
+                  <div className="w-full min-h-[44px] flex items-center justify-center rounded-xl border border-border bg-secondary text-sm font-semibold text-muted-foreground">
                     Current Plan
                   </div>
                 ) : !user ? (
                   <Link
                     to="/login"
-                    className="block w-full rounded-xl bg-primary py-2.5 text-center text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                    className="flex w-full min-h-[44px] items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     Sign in to subscribe
                   </Link>
                 ) : (
                   <button
-                    className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                    className="w-full min-h-[44px] rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
                     onClick={() => {
                       alert("Payment integration coming soon! Contact support to upgrade.");
                     }}
