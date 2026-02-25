@@ -130,58 +130,39 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
       )}
 
-      {/* Betting Lines: Spread + ML + O/U — Premium only */}
-      {isPremium && (
-        <div className="mt-3 flex gap-2">
-          {bestSpread && (
-            <div className="flex-1 rounded-lg bg-secondary/60 px-3 py-2">
-              <span className="text-[10px] font-medium text-muted-foreground">Spread</span>
-              <p className="font-mono text-xs font-semibold text-foreground mt-0.5">
-                {game.homeTeam.abbreviation} {bestSpread.home > 0 ? "+" : ""}{bestSpread.home}
-              </p>
+      {/* Betting Lines: Spread + ML + O/U — All tiers */}
+      <div className="mt-3 flex gap-2">
+        {bestSpread && (
+          <div className="flex-1 rounded-lg bg-secondary/60 px-3 py-2">
+            <span className="text-[10px] font-medium text-muted-foreground">Spread</span>
+            <p className="font-mono text-xs font-semibold text-foreground mt-0.5">
+              {game.homeTeam.abbreviation} {bestSpread.home > 0 ? "+" : ""}{bestSpread.home}
+            </p>
+          </div>
+        )}
+        {bestML && (
+          <div className="flex-1 rounded-lg bg-secondary/60 px-3 py-2">
+            <span className="text-[10px] font-medium text-muted-foreground">Moneyline</span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="font-mono text-xs font-semibold text-foreground">{game.awayTeam.abbreviation} {formatOdds(bestML.away)}</span>
+              <span className="font-mono text-xs font-semibold text-foreground">{game.homeTeam.abbreviation} {formatOdds(bestML.home)}</span>
             </div>
-          )}
-          {bestML && (
-            <div className="flex-1 rounded-lg bg-secondary/60 px-3 py-2">
-              <span className="text-[10px] font-medium text-muted-foreground">Moneyline</span>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="font-mono text-xs font-semibold text-foreground">{game.awayTeam.abbreviation} {formatOdds(bestML.away)}</span>
-                <span className="font-mono text-xs font-semibold text-foreground">{game.homeTeam.abbreviation} {formatOdds(bestML.home)}</span>
-              </div>
+          </div>
+        )}
+        {bestOU && (
+          <div className="flex-1 rounded-lg bg-secondary/60 px-3 py-2">
+            <span className="text-[10px] font-medium text-muted-foreground">O/U</span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="font-mono text-xs font-semibold text-foreground">{bestOU.total}</span>
+              <span className="rounded bg-success/10 px-1 py-0.5 text-[9px] font-bold text-success">O {formatOdds(bestOU.over)}</span>
+              <span className="rounded bg-destructive/10 px-1 py-0.5 text-[9px] font-bold text-destructive">U {formatOdds(bestOU.under)}</span>
             </div>
-          )}
-          {bestOU && (
-            <div className="flex-1 rounded-lg bg-secondary/60 px-3 py-2">
-              <span className="text-[10px] font-medium text-muted-foreground">O/U</span>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="font-mono text-xs font-semibold text-foreground">{bestOU.total}</span>
-                <span className="rounded bg-success/10 px-1 py-0.5 text-[9px] font-bold text-success">O {formatOdds(bestOU.over)}</span>
-                <span className="rounded bg-destructive/10 px-1 py-0.5 text-[9px] font-bold text-destructive">U {formatOdds(bestOU.under)}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
-      {/* Locked betting lines hint — Free & Basic */}
-      {!isPremium && (
-        <div className="mt-3 flex items-center gap-2 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2">
-          <Lock className="h-3.5 w-3.5 text-muted-foreground/60 flex-shrink-0" />
-          <span className="text-[10px] text-muted-foreground">
-            Spread, Moneyline & O/U lines
-          </span>
-          <Link
-            to="/pricing"
-            onClick={(e) => e.stopPropagation()}
-            className="ml-auto rounded-md bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary hover:bg-primary/20 transition-colors"
-          >
-            Upgrade
-          </Link>
-        </div>
-      )}
-
-      {/* Recent News — Basic + Premium (moved above injuries) */}
-      {!isFree && news.length > 0 && (
+      {/* Recent News — All tiers */}
+      {news.length > 0 && (
         <div className="mt-2.5 border-t border-border/50 pt-2">
           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Recent News</span>
           <div className="space-y-1">
@@ -194,8 +175,8 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
       )}
 
-      {/* Key Injuries — Basic + Premium */}
-      {!isFree && game.keyInjuries && game.keyInjuries.length > 0 && (
+      {/* Key Injuries — All tiers */}
+      {game.keyInjuries && game.keyInjuries.length > 0 && (
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
           <AlertTriangle className="h-3 w-3 text-yellow-500 flex-shrink-0" />
           {game.keyInjuries.map((inj, i) => (
