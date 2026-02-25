@@ -1,5 +1,6 @@
 import type { Player, Sport } from "@/data/mockData";
 import { Link } from "react-router-dom";
+import PlayerAvatar from "./PlayerAvatar";
 
 interface PlayerCardProps {
   player: Player;
@@ -148,9 +149,7 @@ const PlayerCard = ({ player }: PlayerCardProps) => {
     >
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
-            #{player.number}
-          </div>
+          <PlayerAvatar playerId={player.id} playerName={player.name} size="md" />
           <div>
             <p className="text-sm font-semibold text-foreground">{player.name}</p>
             <p className="text-xs text-muted-foreground">

@@ -4,6 +4,7 @@ import { getPropsForPlayer, propLines, formatOdds } from "@/data/mockData";
 import type { PropLine } from "@/data/mockData";
 import { getPlayerProfile, getInitials } from "@/data/playerProfiles";
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from "lucide-react";
+import PlayerAvatar from "@/components/PlayerAvatar";
 import {
   BarChart,
   Bar,
@@ -186,9 +187,7 @@ const PlayerDetailPage = () => {
 
         <div className="flex items-center gap-3">
           {/* Avatar */}
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-primary/20 border-2 border-primary/30 text-2xl">
-            {profile ? profile.avatarEmoji : <span className="text-sm font-bold text-primary">{getInitials(playerName)}</span>}
-          </div>
+          <PlayerAvatar playerId={id} playerName={playerName} size="lg" className="border-2 border-primary/30" />
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-foreground truncate">{playerName}</h1>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
