@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { PropLine } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
+import { getPlayerProfile, getInitials } from "@/data/playerProfiles";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
+import { ChevronDown, ChevronUp, BarChart3, User, Ruler, Weight, Calendar, GraduationCap, Globe } from "lucide-react";
 import PropStatsPanel from "./PropStatsPanel";
 
 interface PropCardProps {
@@ -20,6 +21,9 @@ const impliedProb = (odds: number): number => {
 
 const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" }: PropCardProps) => {
   const [statsOpen, setStatsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profile = getPlayerProfile(prop.playerId);
+
   // Compute consensus implied probability from all sportsbooks (average of over odds)
   const avgImpliedOver = prop.sportsbooks.reduce((sum, sb) => sum + impliedProb(sb.over), 0) / prop.sportsbooks.length;
   const avgImpliedUnder = prop.sportsbooks.reduce((sum, sb) => sum + impliedProb(sb.under), 0) / prop.sportsbooks.length;
@@ -30,24 +34,97 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
   const gamesOverL10 = Math.round((prop.hitRateLast10 / 100) * Math.min(10, prop.gamesPlayed));
   const gamesUnderL10 = Math.min(10, prop.gamesPlayed) - gamesOverL10;
 
-  // Edge: actual hit rate vs implied probability (positive = value on over)
-  const edgeOver = prop.hitRate - avgImpliedOver;
-  const edgeUnder = (100 - prop.hitRate) - avgImpliedUnder;
-
   return (
     <div className="animate-fade-in rounded-xl border border-border bg-card p-4">
-      {/* Header */}
+      {/* Header with player icon */}
       {showPlayer && (
-        <div className="mb-3 flex items-center justify-between">
-          <Link
-            to={`/player/${prop.playerId}`}
-            className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
-          >
-            {prop.playerName}
-          </Link>
-          <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-            {prop.teamAbbr}
-          </span>
+        <div className="mb-3 flex items-center gap-3">
+          {/* Player avatar */}
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-lg">
+            {profile ? (
+              <span title={profile.name}>{profile.avatarEmoji}</span>
+            ) : (
+              <span className="text-[11px] font-bold text-primary">{getInitials(prop.playerName)}</span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <Link
+              to={`/player/${prop.playerId}`}
+              className="text-sm font-semibold text-foreground hover:text-primary transition-colors truncate block"
+            >
+              {prop.playerName}
+            </Link>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="rounded-md bg-secondary px-1.5 py-0.5 font-semibold">{prop.teamAbbr}</span>
+              {profile && (
+                <>
+                  <span>#{profile.number}</span>
+                  <span>·</span>
+                  <span>{profile.position}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Physical attributes toggle */}
+      {profile && (
+        <button
+          onClick={() => setProfileOpen(!profileOpen)}
+          className="mb-3 flex w-full items-center justify-center gap-1 rounded-lg border border-border/50 bg-secondary/30 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+        >
+          <User className="h-3 w-3" />
+          {profileOpen ? "Hide Profile" : "Physical Attributes"}
+          {profileOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        </button>
+      )}
+
+      {profileOpen && profile && (
+        <div className="mb-3 rounded-lg border border-border/50 bg-secondary/20 p-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <Ruler className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">Height:</span>
+              <span className="font-semibold text-foreground">{profile.height}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <Weight className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">Weight:</span>
+              <span className="font-semibold text-foreground">{profile.weight} lbs</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <Calendar className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">Age:</span>
+              <span className="font-semibold text-foreground">{profile.age}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <Calendar className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">Exp:</span>
+              <span className="font-semibold text-foreground">{profile.experience} yrs</span>
+            </div>
+            {profile.draftYear > 0 && (
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">Draft:</span>
+                <span className="font-semibold text-foreground">{profile.draftYear}</span>
+              </div>
+            )}
+            {profile.nationality && (
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <Globe className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">From:</span>
+                <span className="font-semibold text-foreground">{profile.nationality}</span>
+              </div>
+            )}
+            {profile.college && (
+              <div className="col-span-2 flex items-center gap-1.5 text-[11px]">
+                <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">College:</span>
+                <span className="font-semibold text-foreground">{profile.college}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
