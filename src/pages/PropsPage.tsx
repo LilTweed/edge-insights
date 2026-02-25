@@ -5,6 +5,7 @@ import SportsbookComparisonWidget from "@/components/SportsbookComparisonWidget"
 import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
 import AdvancedSearch, { type AdvancedFilters } from "@/components/AdvancedSearch";
+import PageDisclaimer from "@/components/PageDisclaimer";
 import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useState, useMemo } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -143,7 +144,7 @@ const PropsPage = () => {
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {hasAdvanced
-              ? "Full sportsbook comparison · Edge detection · Multi-book line shopping"
+              ? "Full sportsbook comparison · Data analysis · Multi-book line shopping"
               : "Browse today's player props at a glance"}
           </p>
         </div>
@@ -187,6 +188,7 @@ const PropsPage = () => {
         </div>
       </div>
 
+      <PageDisclaimer />
       <div className="mb-4">
         <SportFilter active={sport} onChange={setSport} />
       </div>

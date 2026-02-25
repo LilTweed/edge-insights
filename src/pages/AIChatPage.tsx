@@ -18,10 +18,10 @@ const FUNC_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-prop-buil
 
 // ── Simple mode: big friendly buttons, zero jargon ──
 const simpleQuickPrompts = [
-  { icon: Flame, label: "🔥 What should I bet on?", description: "Just tell me the best bets right now", prompt: "Give me the absolute best bets for today. Keep it super simple — just tell me who to pick, over or under, and why in plain English. No jargon. Rate each pick with fire emojis (🔥🔥🔥 = lock, 🔥🔥 = solid, 🔥 = risky but fun)." },
-  { icon: DollarSign, label: "💰 Make me money", description: "Build a parlay that could actually hit", prompt: "Build me a parlay that has a real shot at hitting. I want one safe option and one that pays big. Keep the explanation simple — I just want to know what to pick and roughly how much I could win on a $10 bet." },
-  { icon: ThumbsUp, label: "👍 Easiest wins today", description: "The safest bets with the best chances", prompt: "What are the safest, most likely bets to win today? I don't need huge payouts, I just want to WIN. Give me the bets that hit most often. Explain it like I'm brand new to sports betting." },
-  { icon: Target, label: "🎯 Pick a player for me", description: "One player, one bet, keep it simple", prompt: "Pick ONE player bet for me — the single best player prop right now. Tell me the player, what the bet is, over or under, and which app to use. Explain it like I've never placed a bet before." },
+  { icon: Flame, label: "🔥 Explore today's matchups", description: "Show me the most interesting stats today", prompt: "Show me the most interesting player props and matchup data for today. Keep it super simple — break down what the numbers say for each one in plain English. No jargon. Rate the data strength with fire emojis (🔥🔥🔥 = strong trend, 🔥🔥 = solid data, 🔥 = small sample)." },
+  { icon: DollarSign, label: "📊 Analyze a parlay", description: "Break down a multi-leg parlay with data", prompt: "Build a sample multi-leg parlay and analyze it with data. Show one conservative combination and one aggressive one. Keep the explanation simple — break down what the historical data shows for each leg and what a $10 example payout would look like." },
+  { icon: ThumbsUp, label: "👍 High hit-rate props", description: "Props with the strongest historical trends", prompt: "What are the props with the highest historical hit rates today? I want to see the ones with the most consistent data trends. Show me the stats behind each one. Explain it like I'm brand new to sports analytics." },
+  { icon: Target, label: "🎯 Spotlight a player", description: "Deep dive on one player's data", prompt: "Spotlight ONE player prop for me — the most statistically interesting player prop right now. Tell me the player, the stat, and what the historical data shows. Present the trends and let me decide what to do with it." },
 ];
 
 const advancedQuickPrompts = [
@@ -201,7 +201,7 @@ export default function AIChatPage({ embedded }: { embedded?: boolean } = {}) {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold text-foreground">
-                  {advanced ? "Pro Analyst" : "Quick Picks"}
+                  {advanced ? "Pro Analyst" : "Research Assistant"}
                 </h1>
                 {advanced && (
                   <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
@@ -210,7 +210,7 @@ export default function AIChatPage({ embedded }: { embedded?: boolean } = {}) {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {advanced ? "Quantitative edge detection · Statistical modeling · Correlation analysis" : "Tap a button, get winning bets 🎉"}
+                {advanced ? "Quantitative analysis · Statistical modeling · Correlation analysis" : "Tap a button, explore the data 📊"}
               </p>
             </div>
           </div>
@@ -254,8 +254,8 @@ export default function AIChatPage({ embedded }: { embedded?: boolean } = {}) {
               <>
                 <div className="text-center">
                   <p className="text-4xl">🎰</p>
-                  <h2 className="mt-3 text-xl font-bold text-foreground">What do you wanna bet on?</h2>
-                  <p className="mt-1.5 text-sm text-muted-foreground">Just tap a button — I'll do the rest 👇</p>
+                   <h2 className="mt-3 text-xl font-bold text-foreground">What do you want to research?</h2>
+                   <p className="mt-1.5 text-sm text-muted-foreground">Tap a button to explore the data 👇</p>
                 </div>
                 <div className="grid w-full max-w-md gap-2.5">
                   {prompts.map((qp) => (

@@ -24,10 +24,10 @@ const plans = [
     price: "$4.99",
     period: "/month",
     icon: Zap,
-    description: "For the everyday bettor",
+    description: "For the everyday researcher",
     features: [
       "Everything in Free",
-      "AI Quick Picks chat",
+      "AI Research Assistant chat",
       "Research dashboard",
       "Player & team stats",
       "Injury reports",
@@ -45,7 +45,7 @@ const plans = [
     features: [
       "Everything in Basic",
       "AI Pro Analyst mode",
-      "Advanced statistical edge detection",
+      "Advanced statistical analysis",
       "Correlated parlay builder",
       "H2H matchup deep dives",
       "Priority support",
@@ -61,8 +61,8 @@ export default function PricingPage() {
   return (
     <div className="container py-10">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Choose Your Edge</h1>
-        <p className="mt-2 text-muted-foreground">Pick the plan that fits your game</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Choose Your Plan</h1>
+        <p className="mt-2 text-muted-foreground">Pick the plan that fits your research needs</p>
       </div>
 
       <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
