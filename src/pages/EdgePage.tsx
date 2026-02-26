@@ -40,7 +40,7 @@ export default function EdgePage() {
       <PageDisclaimer />
 
       <Tabs value={tab} onValueChange={setTab} className="flex flex-1 flex-col overflow-hidden">
-        <TabsList className="w-fit">
+        <TabsList className="w-fit mb-4">
           <TabsTrigger value="builder" className="gap-1.5">
             <Wrench size={14} /> Prop Builder
             {legCount > 0 && <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">{legCount}</span>}
