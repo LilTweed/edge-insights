@@ -12,10 +12,10 @@ const plans = [
     annual: 0,
     annualSavings: 0,
     icon: Sparkles,
-    description: "Get started with the basics",
+    description: "Live games and news across every sport",
     features: [
-      "Live games & scores on Games tab",
-      "Basic live game stats",
+      "Live games & scores",
+      "News across every sport",
       "Basic player stats",
     ],
     cta: "Current Plan",
