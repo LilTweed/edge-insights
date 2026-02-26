@@ -13,6 +13,7 @@ export default function EdgePage() {
   const { tier, isAdvanced } = useSubscription();
   const defaultTab = searchParams.get("tab") === "builder" ? "builder" : "notes";
   const [tab, setTab] = useState(defaultTab);
+  const [legCount, setLegCount] = useState(0);
 
   if (!isAdvanced) {
     return (
@@ -45,14 +46,16 @@ export default function EdgePage() {
           </TabsTrigger>
           <TabsTrigger value="builder" className="gap-1.5">
             <Wrench size={14} /> Prop Builder
+            {legCount > 0 && <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">{legCount}</span>}
           </TabsTrigger>
+
         </TabsList>
 
         <TabsContent value="notes" className="flex-1 overflow-hidden mt-0">
           <StatNotesPage embedded />
         </TabsContent>
         <TabsContent value="builder" className="flex-1 overflow-hidden mt-0">
-          <PropBuilderPage embedded />
+          <PropBuilderPage embedded onLegCountChange={setLegCount} />
         </TabsContent>
       </Tabs>
     </div>

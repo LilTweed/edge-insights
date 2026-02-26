@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import UpgradeGate from "@/components/UpgradeGate";
 import {
@@ -7,9 +7,10 @@ import {
 import { getPlayerProfile } from "@/data/playerProfiles";
 import SportFilter from "@/components/SportFilter";
 import {
-  Search, Star, X, ChevronDown, ChevronUp, BookOpen, Wrench, Trophy, DollarSign, CheckCircle,
+  Search, X, ChevronDown, ChevronUp, BookOpen, Wrench, Trophy, DollarSign, CheckCircle, Copy, Share2, Filter,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { toPng } from "html-to-image";
 
 interface SlipLeg {
   id: string;
@@ -17,18 +18,17 @@ interface SlipLeg {
   side: "over" | "under";
 }
 
-// All 5 sportsbooks we compare across
 const ALL_BOOKS: Sportsbook[] = ["FanDuel", "DraftKings", "BetMGM", "Bovada", "Fanatics"];
 const BOOK_SHORT: Record<Sportsbook, string> = {
   FanDuel: "FD", DraftKings: "DK", BetMGM: "MGM", Bovada: "BOV", Fanatics: "FAN",
 };
 
-// Generate mock odds for books not already in the prop's sportsbooks
+const STAT_FILTERS = ["All", "Points", "Rebounds", "Assists", "3-Pointers", "Strikeouts", "Passing Yards", "Rushing Yards"] as const;
+
 function getAllBookOdds(prop: PropLine): { sportsbook: Sportsbook; line: number; over: number; under: number }[] {
   const existing = new Map(prop.sportsbooks.map((sb) => [sb.sportsbook, sb]));
   return ALL_BOOKS.map((book, i) => {
     if (existing.has(book)) return existing.get(book)!;
-    // Generate realistic variation from first sportsbook
     const base = prop.sportsbooks[0];
     const seed = (prop.id.charCodeAt(0) + i * 7) % 20;
     const lineVariation = i % 3 === 0 ? 0.5 : 0;
@@ -44,13 +44,11 @@ function getAllBookOdds(prop: PropLine): { sportsbook: Sportsbook; line: number;
 
 const impliedProb = (odds: number) => odds < 0 ? (-odds / (-odds + 100)) * 100 : (100 / (odds + 100)) * 100;
 
-/** Convert decimal multiplier back to American odds */
 function decimalToAmerican(decimal: number): number {
   if (decimal >= 2) return Math.round((decimal - 1) * 100);
   return Math.round(-100 / (decimal - 1));
 }
 
-/** Convert American odds to decimal multiplier */
 function americanToDecimal(odds: number): number {
   if (odds > 0) return 1 + odds / 100;
   return 1 + 100 / Math.abs(odds);
@@ -72,54 +70,92 @@ const getEdge = (prop: PropLine, side: "over" | "under") => {
   return side === "over" ? prop.hitRate - ip : (100 - prop.hitRate) - ip;
 };
 
-export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {}) {
+export default function PropBuilderPage({ embedded, onLegCountChange }: { embedded?: boolean; onLegCountChange?: (count: number) => void } = {}) {
   const { tier, isAdvanced: hasAdvanced } = useSubscription();
-  const navigate = useNavigate();
   const [sport, setSport] = useState<Sport>("NBA");
   const [slip, setSlip] = useState<SlipLeg[]>([]);
   const [builderSearch, setBuilderSearch] = useState("");
   const [builderSort, setBuilderSort] = useState<"edge" | "hitRate" | "line">("edge");
   const [expandedProp, setExpandedProp] = useState<string | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [betAmount, setBetAmount] = useState(100);
+  const [myBooks, setMyBooks] = useState<Set<Sportsbook>>(new Set(ALL_BOOKS));
+  const [statFilter, setStatFilter] = useState<string>("All");
+  const [animatingLeg, setAnimatingLeg] = useState<string | null>(null);
+  const slipRef = useRef<HTMLDivElement>(null);
+
+  const visibleBooks = ALL_BOOKS.filter((b) => myBooks.has(b));
+
+  useEffect(() => {
+    onLegCountChange?.(slip.length);
+  }, [slip.length, onLegCountChange]);
 
   const availableProps = propLines
-    .filter((p) => p.sport === sport && (builderSearch === "" || p.playerName.toLowerCase().includes(builderSearch.toLowerCase()) || p.stat.toLowerCase().includes(builderSearch.toLowerCase()) || p.teamAbbr.toLowerCase().includes(builderSearch.toLowerCase())))
+    .filter((p) => {
+      if (p.sport !== sport) return false;
+      if (statFilter !== "All" && !p.stat.toLowerCase().includes(statFilter.toLowerCase())) return false;
+      if (builderSearch && !p.playerName.toLowerCase().includes(builderSearch.toLowerCase()) && !p.stat.toLowerCase().includes(builderSearch.toLowerCase()) && !p.teamAbbr.toLowerCase().includes(builderSearch.toLowerCase())) return false;
+      return true;
+    })
     .sort((a, b) => {
       if (builderSort === "edge") return Math.max(getEdge(b, "over"), getEdge(b, "under")) - Math.max(getEdge(a, "over"), getEdge(a, "under"));
       if (builderSort === "hitRate") return Math.max(b.hitRate, 100 - b.hitRate) - Math.max(a.hitRate, 100 - a.hitRate);
       return b.line - a.line;
     });
 
-  const suggestedProps = propLines
-    .filter((p) => p.sport === sport && !slip.some((l) => l.prop.id === p.id))
-    .map((p) => {
-      const overEdge = getEdge(p, "over");
-      const underEdge = getEdge(p, "under");
-      return { prop: p, side: (overEdge >= underEdge ? "over" : "under") as "over" | "under", edge: Math.max(overEdge, underEdge) };
-    })
-    .filter((s) => s.edge > 0)
-    .sort((a, b) => b.edge - a.edge)
-    .slice(0, 5);
+  // Derive unique stat types from current sport props for filter pills
+  const availableStatTypes = Array.from(new Set(propLines.filter((p) => p.sport === sport).map((p) => p.stat)));
 
-  const addToSlip = (prop: PropLine, side: "over" | "under") => {
+  const addToSlip = useCallback((prop: PropLine, side: "over" | "under") => {
     if (slip.find((l) => l.prop.id === prop.id)) return;
-    setSlip((prev) => [...prev, { id: `${prop.id}-${side}`, prop, side }]);
-  };
+    const legId = `${prop.id}-${side}`;
+    setSlip((prev) => [...prev, { id: legId, prop, side }]);
+    setAnimatingLeg(legId);
+    setTimeout(() => setAnimatingLeg(null), 600);
+  }, [slip]);
 
   const removeFromSlip = (id: string) => setSlip((prev) => prev.filter((l) => l.id !== id));
 
-  // ─── Parlay calculator ───────────────────────────────────────
+  const toggleBook = (book: Sportsbook) => {
+    setMyBooks((prev) => {
+      const next = new Set(prev);
+      if (next.has(book)) { if (next.size > 1) next.delete(book); }
+      else next.add(book);
+      return next;
+    });
+  };
+
   const parlayLegs = slip.map((leg) => {
-    const allBooks = getAllBookOdds(leg.prop);
+    const allBooks = getAllBookOdds(leg.prop).filter((sb) => myBooks.has(sb.sportsbook));
     const best = getBestBook(allBooks, leg.side);
     const odds = leg.side === "over" ? best.over : best.under;
-    return { leg, bestBook: best, odds, decimal: americanToDecimal(odds), edge: getEdge(leg.prop, leg.side) };
+    return { leg, bestBook: best, odds, decimal: americanToDecimal(odds), edge: getEdge(leg.prop, leg.side), allBooks };
   });
 
   const combinedDecimal = parlayLegs.reduce((acc, l) => acc * l.decimal, 1);
   const combinedAmerican = slip.length > 0 ? decimalToAmerican(combinedDecimal) : 0;
-  const mockBet = 100;
-  const mockPayout = Math.round(combinedDecimal * mockBet * 100) / 100;
+  const payout = Math.round(combinedDecimal * betAmount * 100) / 100;
+
+  const copySlip = async () => {
+    const slipText = parlayLegs.map(({ leg, bestBook, odds }, i) =>
+      `Leg ${i + 1}: ${leg.prop.playerName} ${leg.prop.stat} ${leg.side === "over" ? "Over" : "Under"} ${leg.prop.line} — Best odds ${formatOdds(odds)} @ ${bestBook.sportsbook} (Edge: ${getEdge(leg.prop, leg.side).toFixed(1)}%)`
+    ).join("\n") + `\n\nCombined parlay odds: ${formatOdds(combinedAmerican)}\n$${betAmount} bet pays $${payout.toFixed(2)}`;
+    await navigator.clipboard.writeText(slipText);
+    toast.success("Slip copied to clipboard!");
+  };
+
+  const shareSlip = async () => {
+    if (!slipRef.current) return;
+    try {
+      const dataUrl = await toPng(slipRef.current, { backgroundColor: "#1a1a2e" });
+      const link = document.createElement("a");
+      link.download = "parlay-slip.png";
+      link.href = dataUrl;
+      link.click();
+      toast.success("Slip screenshot downloaded!");
+    } catch {
+      await copySlip();
+    }
+  };
 
   if (!hasAdvanced) {
     return (
@@ -133,7 +169,6 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
 
   return (
     <div className={`${embedded ? "" : "container py-4"} flex h-full flex-col`}>
-      {/* Header */}
       {!embedded && (
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -165,6 +200,23 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
                 className="w-full rounded-lg border border-border bg-card pl-8 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
               />
             </div>
+
+            {/* Stat filter pills */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Filter size={10} className="text-muted-foreground" />
+              {["All", ...availableStatTypes].map((stat) => (
+                <button
+                  key={stat}
+                  onClick={() => setStatFilter(stat)}
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                    statFilter === stat ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {stat}
+                </button>
+              ))}
+            </div>
+
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-muted-foreground">Sort:</span>
               {([["edge", "Best Edge"], ["hitRate", "Hit Rate"], ["line", "Line"]] as const).map(([key, label]) => (
@@ -182,50 +234,10 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
             </div>
           </div>
 
-          {/* Auto-suggestions */}
-          {showSuggestions && suggestedProps.length > 0 && !builderSearch && (
-            <div className="border-b border-primary/20 bg-primary/5 p-2.5">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5">
-                  <Star size={12} className="text-primary" />
-                  <span className="text-[10px] font-bold text-primary">Auto-Suggested High Activity</span>
-                </div>
-                <button onClick={() => setShowSuggestions(false)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
-              </div>
-              <div className="space-y-1">
-                {suggestedProps.map(({ prop, side, edge }) => {
-                  const allBooks = getAllBookOdds(prop);
-                  const best = getBestBook(allBooks, side);
-                  const odds = side === "over" ? best.over : best.under;
-                  const inSlip = slip.some((l) => l.prop.id === prop.id);
-                  return (
-                    <button
-                      key={prop.id}
-                      onClick={() => !inSlip && addToSlip(prop, side)}
-                      disabled={inSlip}
-                      className={`flex w-full items-center justify-between rounded-lg border p-2 text-left transition-colors ${
-                        inSlip ? "border-primary/30 bg-primary/10 opacity-50" : "border-primary/20 bg-card hover:border-primary/40"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold text-foreground">{prop.playerName}</span>
-                        <span className="text-[9px] text-muted-foreground">{prop.stat} {side === "over" ? "O" : "U"} {prop.line}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">+{edge.toFixed(1)}% edge</span>
-                        <span className="font-mono text-[10px] font-bold text-foreground">{formatOdds(odds)}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Props list */}
+          {/* Props list — no auto-suggestions section */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
             {availableProps.length === 0 && (
-              <p className="py-8 text-center text-xs text-muted-foreground">No props for {sport}</p>
+              <p className="py-8 text-center text-xs text-muted-foreground">No props for {sport}{statFilter !== "All" ? ` (${statFilter})` : ""}</p>
             )}
             {availableProps.map((prop) => {
               const allBooks = getAllBookOdds(prop);
@@ -236,8 +248,6 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
               const inSlip = slip.some((l) => l.prop.id === prop.id);
               const isExpanded = expandedProp === prop.id;
               const profile = getPlayerProfile(prop.playerId);
-
-              // Best odds badge — pick overall best side
               const bestSide = overEdge >= underEdge ? "over" : "under";
               const bestBookForBadge = bestSide === "over" ? bestOver : bestUnder;
 
@@ -246,7 +256,6 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
                   <div className="p-2.5">
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-1.5">
-                        {/* Player icon */}
                         {profile && (
                           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs">{profile.avatarEmoji}</span>
                         )}
@@ -257,7 +266,6 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {/* Best Odds Badge */}
                         <span className="inline-flex items-center gap-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/25 px-1.5 py-0.5 text-[8px] font-bold text-emerald-400">
                           <Trophy size={8} />
                           Best: {BOOK_SHORT[bestBookForBadge.sportsbook]}
@@ -304,7 +312,6 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
                     </div>
                   </div>
 
-                  {/* Expanded: all 5 sportsbooks side by side */}
                   {isExpanded && (
                     <div className="border-t border-border/50 bg-secondary/30 px-2.5 py-2 space-y-1">
                       <div className="flex items-center gap-1 mb-1">
@@ -345,97 +352,108 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
           </div>
         </div>
 
-        {/* ─── Bet Slip with Parlay Calculator ─── */}
+        {/* ─── Bet Slip ─── */}
         <div className="flex w-80 shrink-0 flex-col rounded-xl border border-border bg-card">
+          {/* My Books filter */}
+          <div className="border-b border-border px-4 py-2">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">My Books</span>
+            <div className="flex items-center gap-1 mt-1.5">
+              {ALL_BOOKS.map((book) => (
+                <button
+                  key={book}
+                  onClick={() => toggleBook(book)}
+                  className={`rounded-md px-2 py-1 text-[9px] font-bold transition-colors ${
+                    myBooks.has(book)
+                      ? "bg-primary/15 text-primary border border-primary/30"
+                      : "bg-muted/30 text-muted-foreground border border-transparent hover:border-border"
+                  }`}
+                >
+                  {BOOK_SHORT[book]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="border-b border-border px-4 py-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-foreground">🎫 Your Slip</h3>
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">{slip.length} leg{slip.length !== 1 ? "s" : ""}</span>
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+
+          <div ref={slipRef} className="flex-1 overflow-y-auto p-3 space-y-2">
             {slip.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
                 <Wrench size={24} className="text-muted-foreground/40" />
                 <p className="text-xs text-muted-foreground">Click Over/Under on any prop to add it to your slip</p>
-                {suggestedProps.length > 0 && (
-                  <button
-                    onClick={() => { suggestedProps.slice(0, 3).forEach((s) => addToSlip(s.prop, s.side)); }}
-                    className="mt-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-[10px] font-semibold text-primary hover:bg-primary/10 transition-colors"
-                  >
-                    <Star size={12} className="inline mr-1" />
-                    Auto-fill top 3 value props
-                  </button>
-                )}
               </div>
             )}
 
-            {/* Slip legs with multi-book comparison */}
-            {parlayLegs.map(({ leg, bestBook, odds, edge }, i) => {
-              const allBooks = getAllBookOdds(leg.prop);
-              return (
-                <div key={leg.id} className="rounded-lg border border-border bg-secondary/40 p-2.5 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-[8px] font-bold text-primary">{i + 1}</span>
-                        <p className="text-xs font-semibold text-foreground">{leg.prop.playerName}</p>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground ml-5.5">{leg.prop.stat} — {leg.side === "over" ? "Over" : "Under"} {leg.prop.line}</p>
+            {parlayLegs.map(({ leg, bestBook, odds, edge, allBooks }, i) => (
+              <div
+                key={leg.id}
+                className={`rounded-lg border border-border bg-secondary/40 p-2.5 space-y-2 transition-all ${
+                  animatingLeg === leg.id ? "animate-slide-in-right ring-2 ring-primary/50" : ""
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-[8px] font-bold text-primary">{i + 1}</span>
+                      <p className="text-xs font-semibold text-foreground">{leg.prop.playerName}</p>
                     </div>
-                    <button onClick={() => removeFromSlip(leg.id)} className="rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                      <X size={14} />
-                    </button>
+                    <p className="text-[10px] text-muted-foreground ml-5.5">{leg.prop.stat} — {leg.side === "over" ? "Over" : "Under"} {leg.prop.line}</p>
                   </div>
-
-                  {/* All books for this leg */}
-                  <div className="grid grid-cols-5 gap-1">
-                    {allBooks.map((sb) => {
-                      const sbOdds = leg.side === "over" ? sb.over : sb.under;
-                      const isBest = sb.sportsbook === bestBook.sportsbook;
-                      return (
-                        <div
-                          key={sb.sportsbook}
-                          className={`flex flex-col items-center rounded-md p-1.5 text-center transition-colors ${
-                            isBest
-                              ? "bg-emerald-500/15 border border-emerald-500/30"
-                              : "bg-muted/50 border border-transparent"
-                          }`}
-                        >
-                          <span className={`text-[8px] font-bold ${isBest ? "text-emerald-400" : "text-muted-foreground"}`}>
-                            {BOOK_SHORT[sb.sportsbook]}
-                          </span>
-                          <span className={`font-mono text-[9px] font-bold ${isBest ? "text-emerald-400" : "text-foreground"}`}>
-                            {formatOdds(sbOdds)}
-                          </span>
-                          {isBest && <CheckCircle size={8} className="text-emerald-400 mt-0.5" />}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[8px] font-bold text-emerald-400">
-                      <Trophy size={8} /> Best: {bestBook.sportsbook} {formatOdds(odds)}
-                    </span>
-                    {edge > 0 && (
-                      <span className="rounded bg-primary/10 px-1 py-0.5 text-[8px] font-bold text-primary">+{edge.toFixed(1)}% edge</span>
-                    )}
-                  </div>
+                  <button onClick={() => removeFromSlip(leg.id)} className="rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                    <X size={14} />
+                  </button>
                 </div>
-              );
-            })}
+
+                {/* Sportsbook columns — only visible books, best highlighted green */}
+                <div className={`grid gap-1`} style={{ gridTemplateColumns: `repeat(${visibleBooks.length}, 1fr)` }}>
+                  {allBooks.filter((sb) => myBooks.has(sb.sportsbook)).map((sb) => {
+                    const sbOdds = leg.side === "over" ? sb.over : sb.under;
+                    const isBest = sb.sportsbook === bestBook.sportsbook;
+                    return (
+                      <div
+                        key={sb.sportsbook}
+                        className={`flex flex-col items-center rounded-md p-1.5 text-center transition-colors ${
+                          isBest
+                            ? "bg-emerald-500/20 border-2 border-emerald-500/50 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                            : "bg-muted/50 border border-transparent"
+                        }`}
+                      >
+                        <span className={`text-[8px] font-bold ${isBest ? "text-emerald-400" : "text-muted-foreground"}`}>
+                          {BOOK_SHORT[sb.sportsbook]}
+                        </span>
+                        <span className={`font-mono text-[9px] font-bold ${isBest ? "text-emerald-400" : "text-foreground"}`}>
+                          {formatOdds(sbOdds)}
+                        </span>
+                        {isBest && <CheckCircle size={8} className="text-emerald-400 mt-0.5" />}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[8px] font-bold text-emerald-400">
+                    <Trophy size={8} /> Best: {bestBook.sportsbook} {formatOdds(odds)}
+                  </span>
+                  {edge > 0 && (
+                    <span className="rounded bg-primary/10 px-1 py-0.5 text-[8px] font-bold text-primary">+{edge.toFixed(1)}% edge</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* ─── Parlay Summary Footer ─── */}
           {slip.length > 0 && (
             <div className="border-t border-border p-3 space-y-3">
-              {/* Combined parlay odds */}
               <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 space-y-2">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Trophy size={12} className="text-emerald-400" />
                   <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Best Odds Parlay</span>
                 </div>
 
-                {/* Per-leg breakdown */}
                 <div className="space-y-1">
                   {parlayLegs.map(({ leg, bestBook, odds }, i) => (
                     <div key={leg.id} className="flex items-center justify-between text-[10px]">
@@ -457,9 +475,17 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                       <DollarSign size={10} />
-                      <span>${mockBet} bet pays</span>
+                      <span>$</span>
+                      <input
+                        type="number"
+                        value={betAmount}
+                        onChange={(e) => setBetAmount(Math.max(0, Number(e.target.value)))}
+                        className="w-16 rounded border border-border bg-secondary/50 px-1.5 py-0.5 text-[11px] font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-ring/30"
+                        min={0}
+                      />
+                      <span>bet pays</span>
                     </div>
-                    <span className="font-mono text-sm font-bold text-foreground">${mockPayout.toFixed(2)}</span>
+                    <span className="font-mono text-sm font-bold text-foreground">${payout.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -471,17 +497,21 @@ export default function PropBuilderPage({ embedded }: { embedded?: boolean } = {
                 </span>
               </div>
 
-              <button
-                onClick={() => {
-                  const slipText = parlayLegs.map(({ leg, bestBook, odds }, i) =>
-                    `Leg ${i + 1}: ${leg.prop.playerName} ${leg.prop.stat} ${leg.side === "over" ? "Over" : "Under"} ${leg.prop.line} — Best odds ${formatOdds(odds)} @ ${bestBook.sportsbook} (Edge: ${getEdge(leg.prop, leg.side).toFixed(1)}%)`
-                  ).join("\n") + `\n\nCombined parlay odds: ${formatOdds(combinedAmerican)}\n$${mockBet} bet pays $${mockPayout.toFixed(2)}`;
-                  navigate(`/edge?slip=${encodeURIComponent(slipText)}`);
-                }}
-                className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                🤖 Analyze with AI
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={copySlip}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-border py-2 text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                >
+                  <Copy size={12} /> Copy Slip
+                </button>
+                <button
+                  onClick={shareSlip}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-primary py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Share2 size={12} /> Share
+                </button>
+              </div>
+
               <button
                 onClick={() => setSlip([])}
                 className="w-full rounded-lg border border-border py-2 text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
