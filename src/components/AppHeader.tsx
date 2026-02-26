@@ -55,7 +55,7 @@ const AppHeader = () => {
         </Link>
 
         {/* Desktop nav — hidden on mobile */}
-        <nav className="hidden md:flex items-center gap-0.5">
+        <nav className="flex items-center gap-0.5">
           {navItems.map((item) => {
             const locked = !hasAccess(item.minTier);
             const isActive = location.pathname === item.path;
