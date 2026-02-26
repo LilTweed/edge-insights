@@ -10,8 +10,7 @@ const navItems: NavItem[] = [
   { label: "Games", path: "/", minTier: "free" },
   { label: "Props", path: "/props", minTier: "advanced" },
   { label: "Insights", path: "/insights", minTier: "advanced" },
-  { label: "Edge", path: "/edge", minTier: "advanced" },
-  { label: "Notes", path: "/notes", minTier: "advanced", proOnly: true },
+  { label: "Edge", path: "/edge", minTier: "advanced", proOnly: true },
 ];
 
 const AppHeader = () => {
