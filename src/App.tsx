@@ -17,7 +17,7 @@ import PlayerDetailPage from "./pages/PlayerDetailPage";
 import GameDetailPage from "./pages/GameDetailPage";
 import TeamsPage from "./pages/TeamsPage";
 import TeamDetailPage from "./pages/TeamDetailPage";
-import AIChatPage from "./pages/AIChatPage";
+
 import PropBuilderPage from "./pages/PropBuilderPage";
 import EdgePage from "./pages/EdgePage";
 import StatNotesPage from "./pages/StatNotesPage";
@@ -61,7 +61,7 @@ const App = () => (
               <Route path="/game/:id" element={<GameDetailPage />} />
               <Route path="/teams" element={<TeamsPage />} />
               <Route path="/team/:id" element={<TeamDetailPage />} />
-              <Route path="/ai-chat" element={<AIChatPage />} />
+              
               <Route path="/builder" element={<PropBuilderPage />} />
               <Route path="/edge" element={<EdgePage />} />
               <Route path="/notes" element={<StatNotesPage />} />
@@ -70,7 +70,7 @@ const App = () => (
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/research" element={<ResearchDashboard />} />
               {/* Legacy redirect */}
-              <Route path="/ai-props" element={<AIChatPage />} />
+              
               <Route path="/install" element={<InstallPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

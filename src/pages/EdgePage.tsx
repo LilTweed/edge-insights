@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Bot, Wrench, Zap } from "lucide-react";
+import { Wrench, Zap, StickyNote } from "lucide-react";
 import PageDisclaimer from "@/components/PageDisclaimer";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSearchParams } from "react-router-dom";
 import UpgradeGate from "@/components/UpgradeGate";
-import AIChatPage from "./AIChatPage";
+import StatNotesPage from "./StatNotesPage";
 import PropBuilderPage from "./PropBuilderPage";
 
 export default function EdgePage() {
   const [searchParams] = useSearchParams();
   const { tier, isAdvanced } = useSubscription();
-  const defaultTab = searchParams.get("tab") === "builder" ? "builder" : "chat";
+  const defaultTab = searchParams.get("tab") === "builder" ? "builder" : "notes";
   const [tab, setTab] = useState(defaultTab);
 
   if (!isAdvanced) {
@@ -32,7 +32,7 @@ export default function EdgePage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-foreground">Edge</h1>
-          <p className="text-xs text-muted-foreground">AI-powered research & analytics tools</p>
+          <p className="text-xs text-muted-foreground">Notes, favorites & prop builder</p>
         </div>
       </div>
 
@@ -40,16 +40,16 @@ export default function EdgePage() {
 
       <Tabs value={tab} onValueChange={setTab} className="flex flex-1 flex-col overflow-hidden">
         <TabsList className="w-fit">
-          <TabsTrigger value="chat" className="gap-1.5">
-            <Bot size={14} /> AI Chat
+          <TabsTrigger value="notes" className="gap-1.5">
+            <StickyNote size={14} /> Notes
           </TabsTrigger>
           <TabsTrigger value="builder" className="gap-1.5">
             <Wrench size={14} /> Prop Builder
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
-          <AIChatPage embedded />
+        <TabsContent value="notes" className="flex-1 overflow-hidden mt-0">
+          <StatNotesPage embedded />
         </TabsContent>
         <TabsContent value="builder" className="flex-1 overflow-hidden mt-0">
           <PropBuilderPage embedded />
