@@ -10,9 +10,77 @@ import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useState, useMemo } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import UpgradeGate from "@/components/UpgradeGate";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, Table2, DollarSign, TrendingUp, Users, Star } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, Table2, DollarSign, TrendingUp, TrendingDown, Minus, Users, Star, HelpCircle, Filter, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useFavorites } from "@/hooks/useFavoritesCloud";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// ─── Beginner-friendly glossary definitions ─────────────────────────
+const TERMS: Record<string, string> = {
+  "Prop": "A prop (proposition) bet is a wager on a specific player stat — like how many points they'll score — rather than the game outcome.",
+  "Line": "The number set by sportsbooks. You bet whether the player will go OVER or UNDER this number.",
+  "Hit Rate": "How often the player has gone over the line this season, shown as a percentage. Higher = more consistent.",
+  "Over": "A bet that the player will exceed the line.",
+  "Under": "A bet that the player will stay below the line.",
+  "Edge": "The difference between the actual hit rate and what the odds imply. Positive edge = potential value.",
+  "Last 10": "Hit rate based only on the player's most recent 10 games, showing current form.",
+  "Games Played": "Total games this season where this stat was tracked. More games = more reliable hit rate.",
+};
+
+function TermTooltip({ term, children }: { term: string; children: React.ReactNode }) {
+  const explanation = TERMS[term];
+  if (!explanation) return <>{children}</>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-0.5 cursor-help border-b border-dotted border-muted-foreground/40">
+          {children}
+          <HelpCircle className="h-3 w-3 text-muted-foreground/60" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
+        <p className="font-semibold text-foreground mb-0.5">{term}</p>
+        <p className="text-muted-foreground">{explanation}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function ConfidenceBadge({ gamesPlayed }: { gamesPlayed: number }) {
+  if (gamesPlayed >= 30)
+    return <span className="rounded-full bg-success/15 px-1.5 py-0.5 text-[9px] font-bold text-success">Reliable</span>;
+  if (gamesPlayed >= 15)
+    return <span className="rounded-full bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-bold text-yellow-500">Moderate</span>;
+  return <span className="rounded-full bg-destructive/15 px-1.5 py-0.5 text-[9px] font-bold text-destructive">Small sample</span>;
+}
+
+function TrendIndicator({ hitRate, hitRateLast10 }: { hitRate: number; hitRateLast10: number }) {
+  const diff = hitRateLast10 - hitRate;
+  if (Math.abs(diff) < 3)
+    return (
+      <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+        <Minus className="h-3 w-3" />
+        <span className="text-[10px] font-mono">Stable</span>
+      </span>
+    );
+  if (diff > 0)
+    return (
+      <span className="inline-flex items-center gap-0.5 text-success">
+        <TrendingUp className="h-3 w-3" />
+        <span className="text-[10px] font-mono">+{diff.toFixed(0)}%</span>
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-0.5 text-destructive">
+      <TrendingDown className="h-3 w-3" />
+      <span className="text-[10px] font-mono">{diff.toFixed(0)}%</span>
+    </span>
+  );
+}
 
 type SortKey = "player" | "line" | "hitRate" | "edge";
 type ViewMode = "basic" | "advanced" | "compare";
@@ -373,6 +441,21 @@ const PropsPage = () => {
         )
       )}
 
+      {/* Quick Glossary */}
+      {hasAdvanced && (
+        <div className="mt-10 rounded-xl border border-border/60 bg-card/50 p-5">
+          <h2 className="mb-3 text-sm font-bold text-foreground">📖 Quick Glossary</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {Object.entries(TERMS).map(([term, desc]) => (
+              <div key={term} className="flex gap-2">
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">{term}:</span>
+                <span className="text-xs text-muted-foreground">{desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {hasAdvanced && <MiniSlipBuilder props={filtered} />}
       {exportOpen && <ExportableDataView open={exportOpen} onClose={() => setExportOpen(false)} title="Props Export" props={filtered} />}
     </div>
@@ -397,11 +480,15 @@ function SimpleCleanPropCard({ prop }: { prop: PropLine }) {
           <p className="text-xs text-muted-foreground">{prop.stat} · Line {prop.line}</p>
         </div>
       </div>
-      <div className="text-right">
-        <p className={`font-mono text-lg font-bold ${prop.hitRate >= 60 ? "text-success" : prop.hitRate <= 40 ? "text-destructive" : "text-foreground"}`}>
-          {prop.hitRate}%
-        </p>
-        <p className="text-[10px] text-muted-foreground">{gamesOver}/{prop.gamesPlayed} over</p>
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <p className={`font-mono text-lg font-bold ${prop.hitRate >= 60 ? "text-success" : prop.hitRate <= 40 ? "text-destructive" : "text-foreground"}`}>
+            {prop.hitRate}%
+          </p>
+          <p className="text-[10px] text-muted-foreground">{gamesOver}/{prop.gamesPlayed} over</p>
+        </div>
+        <TrendIndicator hitRate={prop.hitRate} hitRateLast10={prop.hitRateLast10} />
+        <ConfidenceBadge gamesPlayed={prop.gamesPlayed} />
       </div>
     </Link>
   );
