@@ -46,15 +46,6 @@ const AppHeader = () => {
       <div className="mx-auto flex h-12 max-w-[390px] items-center justify-between px-4 md:max-w-none md:px-6">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-lg transition-transform group-hover:scale-105",
-            isAdvanced ? "pro-gradient shadow-[0_0_10px_hsl(var(--pro)/0.3)]" : "bg-primary"
-          )}>
-            <span className={cn(
-              "font-display text-xs font-bold tracking-tight",
-              isAdvanced ? "text-pro-foreground" : "text-primary-foreground"
-            )}>LV</span>
-          </div>
           <span className="font-display text-base font-bold tracking-tight text-foreground">LVRG</span>
           {isAdvanced && (
             <span className="ml-0.5 rounded-md pro-gradient px-1.5 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider animate-pro-glow">
