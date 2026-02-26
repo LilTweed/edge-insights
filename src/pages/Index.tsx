@@ -193,7 +193,7 @@ const GamesPage = () => {
             ? "Live scores, betting lines & odds across every sport."
             : isBasicOrAbove
             ? "Live scores, stats & news across every sport."
-            : "Live games and basic stats across every sport."}
+            : "Live games and news across every sport."}
         </p>
       </div>
 
