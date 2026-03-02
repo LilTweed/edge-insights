@@ -3,7 +3,7 @@ import type { PropLine } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { getPlayerProfile } from "@/data/playerProfiles";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield } from "lucide-react";
+import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield, CloudRain } from "lucide-react";
 import PropStatsPanel from "./PropStatsPanel";
 import PlayerAvatar from "./PlayerAvatar";
 import FavoriteButton from "./FavoriteButton";
@@ -161,7 +161,44 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
           </div>
         </div>
 
-        {/* Sportsbook Odds Comparison — side by side */}
+        {/* Weather Badge (outdoor sports only) */}
+        {prop.weather && (
+          <div className={`mb-3 rounded-lg border p-2.5 flex items-center gap-2.5 ${
+            prop.weather.impact === "high" ? "border-destructive/30 bg-destructive/5" :
+            prop.weather.impact === "moderate" ? "border-yellow-500/30 bg-yellow-500/5" :
+            "border-border/50 bg-secondary/20"
+          }`}>
+            <span className="text-lg">{prop.weather.icon}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-foreground">{prop.weather.tempF}°F</span>
+                <span className="text-[9px] text-muted-foreground">·</span>
+                <span className="text-[9px] text-muted-foreground">{prop.weather.condition}</span>
+                <span className="text-[9px] text-muted-foreground">·</span>
+                <span className="text-[9px] text-muted-foreground">{prop.weather.windMph} mph {prop.weather.windDir}</span>
+              </div>
+              {prop.weather.impactNote && (
+                <p className={`text-[8px] mt-0.5 ${
+                  prop.weather.impact === "high" ? "text-destructive" :
+                  prop.weather.impact === "moderate" ? "text-yellow-600 dark:text-yellow-400" :
+                  "text-muted-foreground"
+                }`}>
+                  {prop.weather.impact !== "none" && <CloudRain className="inline h-2.5 w-2.5 mr-0.5" />}
+                  {prop.weather.impactNote}
+                </p>
+              )}
+            </div>
+            {prop.weather.impact !== "none" && (
+              <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase ${
+                prop.weather.impact === "high" ? "bg-destructive/15 text-destructive" :
+                prop.weather.impact === "moderate" ? "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400" :
+                "bg-secondary text-muted-foreground"
+              }`}>
+                {prop.weather.impact}
+              </span>
+            )}
+          </div>
+        )}
         {viewMode === "advanced" && (
           <div className="mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5 block">Odds by Book</span>
