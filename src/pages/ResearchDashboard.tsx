@@ -96,6 +96,28 @@ function generateGameLog(player: Player) {
   return data;
 }
 
+/** Generate Home vs Away splits (deterministic from player data) */
+function generateHomeAwaySplits(player: Player) {
+  const rng = seededRandom(player.id + "homaway");
+  const avg = player.seasonAverages;
+  const gp = player.stats.gamesPlayed;
+  const homeGames = Math.round(gp * (0.48 + rng() * 0.04));
+  const awayGames = gp - homeGames;
+  const homeBump = 0.04 + rng() * 0.08;
+  const awayDip = -(0.02 + rng() * 0.06);
+  const makeSplit = (bump: number) => ({
+    points: Math.round((avg.points * (1 + bump)) * 10) / 10,
+    rebounds: Math.round((avg.rebounds * (1 + bump * 0.7)) * 10) / 10,
+    assists: Math.round((avg.assists * (1 + bump * 0.5)) * 10) / 10,
+    minutes: Math.round((avg.minutes * (1 + bump * 0.2)) * 10) / 10,
+    fgPct: Math.round((avg.fgPct + bump * 15) * 10) / 10,
+  });
+  return {
+    home: { games: homeGames, ...makeSplit(homeBump) },
+    away: { games: awayGames, ...makeSplit(awayDip) },
+  };
+}
+
 /** Mock defensive matchup grades */
 function getDefenderGrades(player: Player) {
   const rng = seededRandom(player.id + "def");
@@ -401,6 +423,54 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                           );
                         })}
                       </div>
+
+                      {/* Home vs Away Split */}
+                      {(() => {
+                        const splits = generateHomeAwaySplits(player);
+                        const splitStats = ["points", "rebounds", "assists", "fgPct"] as const;
+                        const splitLabels: Record<string, string> = { points: "PTS", rebounds: "REB", assists: "AST", fgPct: "FG%" };
+                        return (
+                          <div>
+                            <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1.5">Home vs Away</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              {(["home", "away"] as const).map((loc) => {
+                                const d = splits[loc];
+                                const isHome = loc === "home";
+                                return (
+                                  <div key={loc} className={`rounded-lg p-2.5 ${isHome ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-blue-500/10 border border-blue-500/20"}`}>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                      <p className={`text-[9px] font-bold uppercase ${isHome ? "text-emerald-500" : "text-blue-400"}`}>
+                                        {isHome ? "🏠 Home" : "✈️ Away"}
+                                      </p>
+                                      <span className="text-[9px] text-muted-foreground">{d.games} GP</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                      {splitStats.map((s) => {
+                                        const val = d[s];
+                                        const seasonVal = s === "fgPct" ? avg.fgPct : avg[s as keyof typeof avg] as number;
+                                        const diff = val - seasonVal;
+                                        return (
+                                          <div key={s} className="flex items-center justify-between">
+                                            <span className="text-[9px] text-muted-foreground">{splitLabels[s]}</span>
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="font-mono text-[11px] font-semibold text-foreground">
+                                                {s === "fgPct" ? `${val.toFixed(1)}%` : val.toFixed(1)}
+                                              </span>
+                                              <span className={`text-[8px] font-bold ${diff > 0 ? "text-emerald-500" : diff < 0 ? "text-red-400" : "text-muted-foreground"}`}>
+                                                {diff > 0 ? "+" : ""}{diff.toFixed(1)}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Sparkline */}
                       <div>
