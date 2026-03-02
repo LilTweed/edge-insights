@@ -62,14 +62,20 @@ const OnboardingTour = () => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const DISCLAIMER_KEY = "lvrg-disclaimer-accepted";
+
     if (!localStorage.getItem(STORAGE_KEY)) {
-      // Delay showing the tour so it doesn't flash during initial render
-      const timer = setTimeout(() => {
-        setVisible(true);
-        // Allow animation to start after mount
-        requestAnimationFrame(() => setReady(true));
-      }, 600);
-      return () => clearTimeout(timer);
+      // Wait until disclaimer is accepted before showing the tour
+      const check = () => {
+        if (localStorage.getItem(DISCLAIMER_KEY)) {
+          setVisible(true);
+          requestAnimationFrame(() => setReady(true));
+        }
+      };
+      // Poll briefly in case disclaimer is accepted after mount
+      const interval = setInterval(check, 500);
+      check();
+      return () => clearInterval(interval);
     }
 
     const handler = () => { setStep(0); setVisible(true); requestAnimationFrame(() => setReady(true)); };
