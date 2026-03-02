@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+export type WeatherImpactFilter = "any" | "high" | "moderate" | "low" | "none";
+
 export interface AdvancedFilters {
   teams: string[];
   players: string[];
@@ -9,6 +11,7 @@ export interface AdvancedFilters {
   minHitRate: number;
   maxLine: number | null;
   minLine: number | null;
+  weatherImpact: WeatherImpactFilter;
 }
 
 interface AdvancedSearchProps {
@@ -123,10 +126,19 @@ const AdvancedSearch = ({
     filters.teams.length + filters.players.length + filters.stats.length +
     (filters.minHitRate > 0 ? 1 : 0) +
     (filters.minLine !== null ? 1 : 0) +
-    (filters.maxLine !== null ? 1 : 0);
+    (filters.maxLine !== null ? 1 : 0) +
+    (filters.weatherImpact !== "any" ? 1 : 0);
 
   const clearAll = () =>
-    onChange({ teams: [], players: [], stats: [], minHitRate: 0, minLine: null, maxLine: null });
+    onChange({ teams: [], players: [], stats: [], minHitRate: 0, minLine: null, maxLine: null, weatherImpact: "any" });
+
+  const weatherOptions: { value: WeatherImpactFilter; label: string; color: string }[] = [
+    { value: "any", label: "Any", color: "" },
+    { value: "high", label: "🔴 High", color: "text-destructive" },
+    { value: "moderate", label: "🟡 Moderate", color: "text-yellow-500" },
+    { value: "low", label: "🟢 Low", color: "text-success" },
+    { value: "none", label: "☀️ None", color: "text-muted-foreground" },
+  ];
 
   return (
     <div className="rounded-xl border border-border bg-card">
@@ -201,6 +213,19 @@ const AdvancedSearch = ({
                 placeholder="Max"
                 className="w-12 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
               />
+            </div>
+
+            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-2.5 py-1.5">
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">Weather:</span>
+              <select
+                value={filters.weatherImpact}
+                onChange={(e) => onChange({ ...filters, weatherImpact: e.target.value as WeatherImpactFilter })}
+                className="bg-transparent text-xs text-foreground outline-none cursor-pointer"
+              >
+                {weatherOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
 
             {activeCount > 0 && (
