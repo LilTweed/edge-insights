@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { allGames, getPropsForGame, getMatchupHistory, formatOdds } from "@/data/mockData";
 import { getHistoricalTeam, getStatColumns, formatStatLabel, allHistoricalPlayers } from "@/data/historicalStats";
 import PropCard from "@/components/PropCard";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CloudRain, Wind, Droplets, Thermometer } from "lucide-react";
 
 const GameDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -78,6 +78,67 @@ const GameDetailPage = () => {
           </div>
         )}
       </div>
+
+      {/* Weather Projection (outdoor sports) */}
+      {game.weather && (
+        <div className={`mb-6 rounded-xl border p-4 ${
+          game.weather.impact === "high" ? "border-destructive/30 bg-destructive/5" :
+          game.weather.impact === "moderate" ? "border-yellow-500/30 bg-yellow-500/5" :
+          "border-border bg-card"
+        }`}>
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+            <span className="text-xl">{game.weather.icon}</span> Weather Projection
+            {game.weather.impact !== "none" && (
+              <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
+                game.weather.impact === "high" ? "bg-destructive/15 text-destructive" :
+                game.weather.impact === "moderate" ? "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400" :
+                "bg-secondary text-muted-foreground"
+              }`}>
+                {game.weather.impact} impact
+              </span>
+            )}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+            <div className="flex items-center gap-2 rounded-lg bg-secondary/50 px-3 py-2">
+              <Thermometer className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-[9px] text-muted-foreground">Temp</p>
+                <p className="font-mono text-sm font-bold text-foreground">{game.weather.tempF}°F</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-secondary/50 px-3 py-2">
+              <Wind className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-[9px] text-muted-foreground">Wind</p>
+                <p className="font-mono text-sm font-bold text-foreground">{game.weather.windMph} mph {game.weather.windDir}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-secondary/50 px-3 py-2">
+              <Droplets className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-[9px] text-muted-foreground">Humidity</p>
+                <p className="font-mono text-sm font-bold text-foreground">{game.weather.humidity}%</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-secondary/50 px-3 py-2">
+              <CloudRain className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-[9px] text-muted-foreground">Precip</p>
+                <p className="font-mono text-sm font-bold text-foreground">{game.weather.precipChance}%</p>
+              </div>
+            </div>
+          </div>
+          {game.weather.impactNote && (
+            <p className={`text-xs ${
+              game.weather.impact === "high" ? "text-destructive font-semibold" :
+              game.weather.impact === "moderate" ? "text-yellow-600 dark:text-yellow-400" :
+              "text-muted-foreground"
+            }`}>
+              💡 {game.weather.impactNote}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Injury Report */}
       {game.keyInjuries && game.keyInjuries.length > 0 && (

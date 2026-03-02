@@ -126,6 +126,7 @@ export interface PropLine {
   opponent?: string;
   opponentFull?: string;
   opponentDefRank?: number;
+  weather?: WeatherProjection;
 }
 
 export interface SportsbookLine {
@@ -139,6 +140,18 @@ export interface GamePlayerProp {
   playerName: string;
   stat: string;
   line: number;
+}
+
+export interface WeatherProjection {
+  tempF: number;
+  condition: "Clear" | "Cloudy" | "Rain" | "Snow" | "Windy" | "Dome" | "Partly Cloudy" | "Thunderstorm";
+  windMph: number;
+  windDir: string;
+  humidity: number;
+  precipChance: number;
+  icon: string; // emoji
+  impact: "none" | "low" | "moderate" | "high";
+  impactNote?: string;
 }
 
 export interface Game {
@@ -172,6 +185,7 @@ export interface Game {
   quarterScores?: { period: string; home: number; away: number }[];
   keyInjuries?: { player: string; status: string; injury: string }[];
   playerProps?: GamePlayerProp[];
+  weather?: WeatherProjection;
 }
 
 // ===================== MOCK TEAMS =====================
@@ -348,6 +362,48 @@ export const matchupHistories: MatchupHistory[] = [
   ]}, last10: { team1Wins: 7, team2Wins: 3 }, streak: "KC W3", avgScore: { team1: 29, team2: 26.6 }, lastMeeting: "Jan 19, 2025" },
 ];
 
+// ===================== WEATHER DATA =====================
+
+const outdoorSports: Sport[] = ["NFL", "MLB", "Soccer", "NCAAF"];
+
+function isOutdoorSport(sport: Sport): boolean {
+  return outdoorSports.includes(sport);
+}
+
+const weatherPresets: Record<string, WeatherProjection> = {
+  kcBuf: { tempF: 28, condition: "Snow", windMph: 18, windDir: "NW", humidity: 85, precipChance: 65, icon: "🌨️", impact: "high", impactNote: "Snow & cold may limit passing game; expect heavier run schemes" },
+  balMia: { tempF: 72, condition: "Partly Cloudy", windMph: 8, windDir: "SE", humidity: 68, precipChance: 10, icon: "⛅", impact: "none", impactNote: "Ideal conditions — no weather impact expected" },
+  cinAri: { tempF: 95, condition: "Clear", windMph: 5, windDir: "SW", humidity: 22, precipChance: 0, icon: "☀️", impact: "low", impactNote: "Extreme heat may affect late-game stamina" },
+  nyyLad: { tempF: 68, condition: "Clear", windMph: 12, windDir: "NE", humidity: 45, precipChance: 5, icon: "☀️", impact: "low", impactNote: "Wind blowing in — may suppress fly balls slightly" },
+  laaAtl: { tempF: 78, condition: "Thunderstorm", windMph: 15, windDir: "S", humidity: 80, precipChance: 75, icon: "⛈️", impact: "high", impactNote: "Storms possible — game delay risk; wet conditions hurt batting" },
+  mciLiv: { tempF: 52, condition: "Rain", windMph: 14, windDir: "W", humidity: 88, precipChance: 80, icon: "🌧️", impact: "moderate", impactNote: "Wet pitch — expect fewer goals, slippery conditions" },
+  arsRma: { tempF: 58, condition: "Cloudy", windMph: 10, windDir: "E", humidity: 72, precipChance: 30, icon: "☁️", impact: "low", impactNote: "Overcast but dry — minimal impact on play" },
+};
+
+function getWeatherForProp(propId: string, sport: Sport): WeatherProjection | undefined {
+  if (!isOutdoorSport(sport)) return undefined;
+  // Map props to their game weather
+  if (propId.startsWith("p3") && sport === "NFL") {
+    if (["p30","p31"].includes(propId)) return weatherPresets.kcBuf;
+    if (["p32","p33"].includes(propId)) return weatherPresets.kcBuf;
+    if (["p34","p35","p37"].includes(propId)) return weatherPresets.balMia;
+    if (["p36"].includes(propId)) return weatherPresets.balMia;
+    if (["p38","p39"].includes(propId)) return weatherPresets.cinAri;
+  }
+  if (propId.startsWith("p4") && sport === "MLB") {
+    if (["p40","p41","p45"].includes(propId)) return weatherPresets.nyyLad;
+    if (["p42","p43","p47"].includes(propId)) return weatherPresets.nyyLad;
+    if (["p44","p46","p48"].includes(propId)) return weatherPresets.laaAtl;
+  }
+  if (propId.startsWith("p6") && sport === "Soccer") {
+    if (["p60","p61"].includes(propId)) return weatherPresets.mciLiv;
+    if (["p62"].includes(propId)) return weatherPresets.mciLiv;
+    if (["p63"].includes(propId)) return weatherPresets.arsRma;
+    if (["p64","p65"].includes(propId)) return weatherPresets.arsRma;
+  }
+  return undefined;
+}
+
 // ===================== MOCK PROP LINES =====================
 
 const sbooks: Sportsbook[] = ["FanDuel", "DraftKings", "BetMGM", "Bovada"];
@@ -362,7 +418,7 @@ function mkSb(line: number, overBase: number): SportsbookLine[] {
 }
 
 function mkProp(id: string, playerId: string, name: string, team: string, stat: string, line: number, sport: Sport, hitRate: number, hitRateL10: number, gp: number, opp?: string, oppFull?: string, oppDefRank?: number): PropLine {
-  return { id, playerId, playerName: name, teamAbbr: team, stat, line, sport, sportsbooks: mkSb(line, -110), hitRate, hitRateLast10: hitRateL10, gamesPlayed: gp, opponent: opp, opponentFull: oppFull, opponentDefRank: oppDefRank };
+  return { id, playerId, playerName: name, teamAbbr: team, stat, line, sport, sportsbooks: mkSb(line, -110), hitRate, hitRateLast10: hitRateL10, gamesPlayed: gp, opponent: opp, opponentFull: oppFull, opponentDefRank: oppDefRank, weather: getWeatherForProp(id, sport) };
 }
 
 export const propLines: PropLine[] = [
