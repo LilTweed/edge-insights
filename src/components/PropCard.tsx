@@ -3,7 +3,7 @@ import type { PropLine } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { getPlayerProfile } from "@/data/playerProfiles";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield, CloudRain } from "lucide-react";
+import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield, CloudRain, Users } from "lucide-react";
 import PropStatsPanel from "./PropStatsPanel";
 import PlayerAvatar from "./PlayerAvatar";
 import FavoriteButton from "./FavoriteButton";
@@ -221,6 +221,34 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Public Betting Split */}
+        {prop.publicBets && (
+          <div className="mb-3 rounded-lg border border-border/50 bg-secondary/20 p-2.5 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                <Users className="h-3 w-3" /> Public Action
+              </span>
+              <span className="text-[9px] text-muted-foreground">
+                {prop.publicBets.totalBets.toLocaleString()} bets
+              </span>
+            </div>
+            <div className="flex h-2 w-full overflow-hidden rounded-full">
+              <div
+                className="h-full bg-primary/70 transition-all"
+                style={{ width: `${prop.publicBets.overPct}%` }}
+              />
+              <div
+                className="h-full bg-muted-foreground/30 transition-all"
+                style={{ width: `${prop.publicBets.underPct}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] font-mono">
+              <span className="text-primary font-semibold">Over {prop.publicBets.overPct}%</span>
+              <span className="text-muted-foreground">Under {prop.publicBets.underPct}%</span>
             </div>
           </div>
         )}
