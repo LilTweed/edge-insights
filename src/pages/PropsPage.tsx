@@ -93,6 +93,7 @@ const defaultAdvanced: AdvancedFilters = {
   minHitRate: 0,
   minLine: null,
   maxLine: null,
+  weatherImpact: "any",
 };
 
 const PropsPage = () => {
@@ -133,6 +134,12 @@ const PropsPage = () => {
       if (advanced.minHitRate > 0) list = list.filter((p) => p.hitRate >= advanced.minHitRate);
       if (advanced.minLine !== null) list = list.filter((p) => p.line >= advanced.minLine!);
       if (advanced.maxLine !== null) list = list.filter((p) => p.line <= advanced.maxLine!);
+      if (advanced.weatherImpact !== "any") {
+        list = list.filter((p) => {
+          const impact = p.weather?.impact ?? "none";
+          return impact === advanced.weatherImpact;
+        });
+      }
     }
     if (search) {
       const q = search.toLowerCase();
