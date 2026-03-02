@@ -65,17 +65,19 @@ const OnboardingTour = () => {
     const DISCLAIMER_KEY = "lvrg-disclaimer-accepted";
 
     if (!localStorage.getItem(STORAGE_KEY)) {
-      // Wait until disclaimer is accepted before showing the tour
+      let cleared = false;
       const check = () => {
+        if (cleared) return;
         if (localStorage.getItem(DISCLAIMER_KEY)) {
+          cleared = true;
+          clearInterval(interval);
           setVisible(true);
           requestAnimationFrame(() => setReady(true));
         }
       };
-      // Poll briefly in case disclaimer is accepted after mount
       const interval = setInterval(check, 500);
       check();
-      return () => clearInterval(interval);
+      return () => { cleared = true; clearInterval(interval); };
     }
 
     const handler = () => { setStep(0); setVisible(true); requestAnimationFrame(() => setReady(true)); };
