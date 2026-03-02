@@ -123,6 +123,9 @@ export interface PropLine {
   hitRate: number;
   hitRateLast10: number;
   gamesPlayed: number;
+  opponent?: string;
+  opponentFull?: string;
+  opponentDefRank?: number;
 }
 
 export interface SportsbookLine {
@@ -358,72 +361,72 @@ function mkSb(line: number, overBase: number): SportsbookLine[] {
   }));
 }
 
-function mkProp(id: string, playerId: string, name: string, team: string, stat: string, line: number, sport: Sport, hitRate: number, hitRateL10: number, gp: number): PropLine {
-  return { id, playerId, playerName: name, teamAbbr: team, stat, line, sport, sportsbooks: mkSb(line, -110), hitRate, hitRateLast10: hitRateL10, gamesPlayed: gp };
+function mkProp(id: string, playerId: string, name: string, team: string, stat: string, line: number, sport: Sport, hitRate: number, hitRateL10: number, gp: number, opp?: string, oppFull?: string, oppDefRank?: number): PropLine {
+  return { id, playerId, playerName: name, teamAbbr: team, stat, line, sport, sportsbooks: mkSb(line, -110), hitRate, hitRateLast10: hitRateL10, gamesPlayed: gp, opponent: opp, opponentFull: oppFull, opponentDefRank: oppDefRank };
 }
 
 export const propLines: PropLine[] = [
-  // NBA
-  mkProp("p1","lb23","LeBron James","LAL","Points",24.5,"NBA",62,70,55),
-  mkProp("p2","lb23","LeBron James","LAL","Assists",7.5,"NBA",55,60,55),
-  mkProp("p3","lb23","LeBron James","LAL","Rebounds",7.5,"NBA",58,50,55),
-  mkProp("p4","ad3","Anthony Davis","LAL","Points",25.5,"NBA",57,60,50),
-  mkProp("p5","ad3","Anthony Davis","LAL","Rebounds",11.5,"NBA",64,70,50),
-  mkProp("p6","jt0","Jayson Tatum","BOS","Points",27.5,"NBA",60,65,52),
-  mkProp("p7","jt0","Jayson Tatum","BOS","Rebounds",8.5,"NBA",53,50,52),
-  mkProp("p8","jb7","Jaylen Brown","BOS","Points",22.5,"NBA",58,55,48),
-  mkProp("p9","sc30","Steph Curry","GSW","Points",28.5,"NBA",55,45,50),
-  mkProp("p10","sc30","Steph Curry","GSW","3-Pointers Made",4.5,"NBA",48,40,50),
-  mkProp("p11","nj15","Nikola Jokic","DEN","Points",26.5,"NBA",63,70,54),
-  mkProp("p12","nj15","Nikola Jokic","DEN","Rebounds",12.5,"NBA",60,65,54),
-  mkProp("p13","nj15","Nikola Jokic","DEN","Assists",9.5,"NBA",58,55,54),
-  mkProp("p14","le11","Luka Doncic","DAL","Points",32.5,"NBA",52,55,45),
-  mkProp("p15","le11","Luka Doncic","DAL","Assists",8.5,"NBA",56,60,45),
-  mkProp("p16","ga34","Giannis Antetokounmpo","MIL","Points",30.5,"NBA",59,65,51),
-  mkProp("p17","ga34","Giannis Antetokounmpo","MIL","Rebounds",11.5,"NBA",62,60,51),
-  mkProp("p18","se1","Shai Gilgeous-Alexander","OKC","Points",31.5,"NBA",61,70,53),
-  mkProp("p19","dm25","Donovan Mitchell","CLE","Points",24.5,"NBA",57,50,49),
-  mkProp("p20","kd35","Kevin Durant","PHX","Points",27.5,"NBA",60,55,40),
+  // NBA — tonight's matchups: LAL vs BOS, DEN vs DAL, GSW vs MIL, OKC vs CLE, PHX vs DEN
+  mkProp("p1","lb23","LeBron James","LAL","Points",24.5,"NBA",62,70,55,"BOS","Boston Celtics",2),
+  mkProp("p2","lb23","LeBron James","LAL","Assists",7.5,"NBA",55,60,55,"BOS","Boston Celtics",5),
+  mkProp("p3","lb23","LeBron James","LAL","Rebounds",7.5,"NBA",58,50,55,"BOS","Boston Celtics",8),
+  mkProp("p4","ad3","Anthony Davis","LAL","Points",25.5,"NBA",57,60,50,"BOS","Boston Celtics",2),
+  mkProp("p5","ad3","Anthony Davis","LAL","Rebounds",11.5,"NBA",64,70,50,"BOS","Boston Celtics",6),
+  mkProp("p6","jt0","Jayson Tatum","BOS","Points",27.5,"NBA",60,65,52,"LAL","Los Angeles Lakers",18),
+  mkProp("p7","jt0","Jayson Tatum","BOS","Rebounds",8.5,"NBA",53,50,52,"LAL","Los Angeles Lakers",15),
+  mkProp("p8","jb7","Jaylen Brown","BOS","Points",22.5,"NBA",58,55,48,"LAL","Los Angeles Lakers",18),
+  mkProp("p9","sc30","Steph Curry","GSW","Points",28.5,"NBA",55,45,50,"MIL","Milwaukee Bucks",10),
+  mkProp("p10","sc30","Steph Curry","GSW","3-Pointers Made",4.5,"NBA",48,40,50,"MIL","Milwaukee Bucks",12),
+  mkProp("p11","nj15","Nikola Jokic","DEN","Points",26.5,"NBA",63,70,54,"DAL","Dallas Mavericks",14),
+  mkProp("p12","nj15","Nikola Jokic","DEN","Rebounds",12.5,"NBA",60,65,54,"DAL","Dallas Mavericks",20),
+  mkProp("p13","nj15","Nikola Jokic","DEN","Assists",9.5,"NBA",58,55,54,"DAL","Dallas Mavericks",11),
+  mkProp("p14","le11","Luka Doncic","DAL","Points",32.5,"NBA",52,55,45,"DEN","Denver Nuggets",4),
+  mkProp("p15","le11","Luka Doncic","DAL","Assists",8.5,"NBA",56,60,45,"DEN","Denver Nuggets",7),
+  mkProp("p16","ga34","Giannis Antetokounmpo","MIL","Points",30.5,"NBA",59,65,51,"GSW","Golden State Warriors",22),
+  mkProp("p17","ga34","Giannis Antetokounmpo","MIL","Rebounds",11.5,"NBA",62,60,51,"GSW","Golden State Warriors",19),
+  mkProp("p18","se1","Shai Gilgeous-Alexander","OKC","Points",31.5,"NBA",61,70,53,"CLE","Cleveland Cavaliers",3),
+  mkProp("p19","dm25","Donovan Mitchell","CLE","Points",24.5,"NBA",57,50,49,"OKC","Oklahoma City Thunder",1),
+  mkProp("p20","kd35","Kevin Durant","PHX","Points",27.5,"NBA",60,55,40,"DEN","Denver Nuggets",4),
 
-  // NFL
-  mkProp("p30","pm15","Patrick Mahomes","KC","Pass Yards",275.5,"NFL",58,60,17),
-  mkProp("p31","pm15","Patrick Mahomes","KC","Pass TDs",1.5,"NFL",76,80,17),
-  mkProp("p32","ja17","Josh Allen","BUF","Pass Yards",265.5,"NFL",55,50,16),
-  mkProp("p33","ja17","Josh Allen","BUF","Rush Yards",35.5,"NFL",52,60,16),
-  mkProp("p34","lj8","Lamar Jackson","BAL","Pass Yards",225.5,"NFL",53,55,16),
-  mkProp("p35","lj8","Lamar Jackson","BAL","Rush Yards",65.5,"NFL",60,70,16),
-  mkProp("p36","jh10","Tyreek Hill","MIA","Rec Yards",75.5,"NFL",52,40,15),
-  mkProp("p37","dh4","Derrick Henry","BAL","Rush Yards",85.5,"NFL",55,60,16),
-  mkProp("p38","cm1","Ja'Marr Chase","CIN","Rec Yards",80.5,"NFL",54,65,16),
-  mkProp("p39","jj99","J.J. Watt","ARI","Sacks",0.5,"NFL",35,30,14),
+  // NFL — KC vs BUF, BAL vs MIA, CIN vs ARI
+  mkProp("p30","pm15","Patrick Mahomes","KC","Pass Yards",275.5,"NFL",58,60,17,"BUF","Buffalo Bills",5),
+  mkProp("p31","pm15","Patrick Mahomes","KC","Pass TDs",1.5,"NFL",76,80,17,"BUF","Buffalo Bills",8),
+  mkProp("p32","ja17","Josh Allen","BUF","Pass Yards",265.5,"NFL",55,50,16,"KC","Kansas City Chiefs",3),
+  mkProp("p33","ja17","Josh Allen","BUF","Rush Yards",35.5,"NFL",52,60,16,"KC","Kansas City Chiefs",6),
+  mkProp("p34","lj8","Lamar Jackson","BAL","Pass Yards",225.5,"NFL",53,55,16,"MIA","Miami Dolphins",20),
+  mkProp("p35","lj8","Lamar Jackson","BAL","Rush Yards",65.5,"NFL",60,70,16,"MIA","Miami Dolphins",25),
+  mkProp("p36","jh10","Tyreek Hill","MIA","Rec Yards",75.5,"NFL",52,40,15,"BAL","Baltimore Ravens",2),
+  mkProp("p37","dh4","Derrick Henry","BAL","Rush Yards",85.5,"NFL",55,60,16,"MIA","Miami Dolphins",22),
+  mkProp("p38","cm1","Ja'Marr Chase","CIN","Rec Yards",80.5,"NFL",54,65,16,"ARI","Arizona Cardinals",28),
+  mkProp("p39","jj99","J.J. Watt","ARI","Sacks",0.5,"NFL",35,30,14,"CIN","Cincinnati Bengals",16),
 
-  // MLB
-  mkProp("p40","aj99","Aaron Judge","NYY","Total Bases",1.5,"MLB",68,75,120),
-  mkProp("p41","aj99","Aaron Judge","NYY","HRs",0.5,"MLB",38,45,120),
-  mkProp("p42","so17","Shohei Ohtani","LAD","Total Bases",1.5,"MLB",65,70,130),
-  mkProp("p43","so17","Shohei Ohtani","LAD","HRs",0.5,"MLB",35,40,130),
-  mkProp("p44","mt27","Mike Trout","LAA","Hits",0.5,"MLB",70,65,80),
-  mkProp("p45","gc28","Gerrit Cole","NYY","Strikeouts",7.5,"MLB",55,60,25),
-  mkProp("p46","ra45","Spencer Strider","ATL","Strikeouts",8.5,"MLB",52,55,22),
-  mkProp("p47","fs27","Freddie Freeman","LAD","Hits",1.5,"MLB",48,55,135),
-  mkProp("p48","ra22","Ronald Acuna Jr.","ATL","Stolen Bases",0.5,"MLB",45,50,100),
+  // MLB — NYY vs LAD, LAA vs ATL
+  mkProp("p40","aj99","Aaron Judge","NYY","Total Bases",1.5,"MLB",68,75,120,"LAD","Los Angeles Dodgers",3),
+  mkProp("p41","aj99","Aaron Judge","NYY","HRs",0.5,"MLB",38,45,120,"LAD","Los Angeles Dodgers",5),
+  mkProp("p42","so17","Shohei Ohtani","LAD","Total Bases",1.5,"MLB",65,70,130,"NYY","New York Yankees",7),
+  mkProp("p43","so17","Shohei Ohtani","LAD","HRs",0.5,"MLB",35,40,130,"NYY","New York Yankees",10),
+  mkProp("p44","mt27","Mike Trout","LAA","Hits",0.5,"MLB",70,65,80,"ATL","Atlanta Braves",12),
+  mkProp("p45","gc28","Gerrit Cole","NYY","Strikeouts",7.5,"MLB",55,60,25,"LAD","Los Angeles Dodgers",4),
+  mkProp("p46","ra45","Spencer Strider","ATL","Strikeouts",8.5,"MLB",52,55,22,"LAA","Los Angeles Angels",18),
+  mkProp("p47","fs27","Freddie Freeman","LAD","Hits",1.5,"MLB",48,55,135,"NYY","New York Yankees",8),
+  mkProp("p48","ra22","Ronald Acuna Jr.","ATL","Stolen Bases",0.5,"MLB",45,50,100,"LAA","Los Angeles Angels",24),
 
-  // NHL
-  mkProp("p50","cm97","Connor McDavid","EDM","Points",1.5,"NHL",55,60,60),
-  mkProp("p51","cm97","Connor McDavid","EDM","Assists",0.5,"NHL",68,75,60),
-  mkProp("p52","nk86","Nikita Kucherov","TBL","Points",1.5,"NHL",52,55,58),
-  mkProp("p53","am34","Auston Matthews","TOR","Goals",0.5,"NHL",48,55,55),
-  mkProp("p54","am34","Auston Matthews","TOR","Shots on Goal",3.5,"NHL",60,65,55),
-  mkProp("p55","lm8","Cale Makar","COL","Points",0.5,"NHL",62,60,56),
-  mkProp("p56","dk71","David Pastrnak","BOS","Goals",0.5,"NHL",45,50,57),
+  // NHL — EDM vs TOR, TBL vs COL, BOS vs TBL
+  mkProp("p50","cm97","Connor McDavid","EDM","Points",1.5,"NHL",55,60,60,"TOR","Toronto Maple Leafs",9),
+  mkProp("p51","cm97","Connor McDavid","EDM","Assists",0.5,"NHL",68,75,60,"TOR","Toronto Maple Leafs",11),
+  mkProp("p52","nk86","Nikita Kucherov","TBL","Points",1.5,"NHL",52,55,58,"COL","Colorado Avalanche",6),
+  mkProp("p53","am34","Auston Matthews","TOR","Goals",0.5,"NHL",48,55,55,"EDM","Edmonton Oilers",15),
+  mkProp("p54","am34","Auston Matthews","TOR","Shots on Goal",3.5,"NHL",60,65,55,"EDM","Edmonton Oilers",13),
+  mkProp("p55","lm8","Cale Makar","COL","Points",0.5,"NHL",62,60,56,"TBL","Tampa Bay Lightning",8),
+  mkProp("p56","dk71","David Pastrnak","BOS","Goals",0.5,"NHL",45,50,57,"TBL","Tampa Bay Lightning",7),
 
-  // Soccer
-  mkProp("p60","eh9","Erling Haaland","MCI","Shots on Target",2.5,"Soccer",52,60,28),
-  mkProp("p61","eh9","Erling Haaland","MCI","Goals",0.5,"Soccer",55,65,28),
-  mkProp("p62","ms11","Mohamed Salah","LIV","Shots on Target",2.5,"Soccer",50,45,30),
-  mkProp("p63","bs7","Bukayo Saka","ARS","Assists",0.5,"Soccer",40,50,27),
-  mkProp("p64","km10","Kylian Mbappe","RMA","Shots on Target",3.5,"Soccer",48,55,25),
-  mkProp("p65","km10","Kylian Mbappe","RMA","Goals",0.5,"Soccer",52,60,25),
+  // Soccer — MCI vs LIV, ARS vs RMA
+  mkProp("p60","eh9","Erling Haaland","MCI","Shots on Target",2.5,"Soccer",52,60,28,"LIV","Liverpool",3),
+  mkProp("p61","eh9","Erling Haaland","MCI","Goals",0.5,"Soccer",55,65,28,"LIV","Liverpool",2),
+  mkProp("p62","ms11","Mohamed Salah","LIV","Shots on Target",2.5,"Soccer",50,45,30,"MCI","Manchester City",1),
+  mkProp("p63","bs7","Bukayo Saka","ARS","Assists",0.5,"Soccer",40,50,27,"RMA","Real Madrid",4),
+  mkProp("p64","km10","Kylian Mbappe","RMA","Shots on Target",3.5,"Soccer",48,55,25,"ARS","Arsenal",2),
+  mkProp("p65","km10","Kylian Mbappe","RMA","Goals",0.5,"Soccer",52,60,25,"ARS","Arsenal",1),
 
   // UFC
   mkProp("p70","im1","Islam Makhachev","UFC","Takedowns",2.5,"UFC",65,70,5),

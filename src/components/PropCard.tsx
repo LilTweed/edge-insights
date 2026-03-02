@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import type { PropLine } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { getPlayerProfile } from "@/data/playerProfiles";
@@ -38,8 +38,8 @@ function getStreak(hitRate: number, hitRateLast10: number): "hot" | "cold" | "ne
   return "neutral";
 }
 
-/** Mock defensive rank for opponent (deterministic from prop id) */
-function getDefRank(propId: string): number {
+/** Mock defensive rank for opponent (fallback when no data) */
+function getDefRankFallback(propId: string): number {
   let h = 0;
   for (let i = 0; i < propId.length; i++) h = (Math.imul(31, h) + propId.charCodeAt(i)) | 0;
   return ((h >>> 0) % 30) + 1;
@@ -52,7 +52,9 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
   const isFavPlayer = checkFav("player", prop.playerId);
   const profile = getPlayerProfile(prop.playerId);
   const streak = getStreak(prop.hitRate, prop.hitRateLast10);
-  const defRank = getDefRank(prop.id);
+  const defRank = prop.opponentDefRank ?? getDefRankFallback(prop.id);
+  const oppLabel = prop.opponent ?? "OPP";
+  const oppFull = prop.opponentFull;
 
   const gamesOver = Math.round((prop.hitRate / 100) * prop.gamesPlayed);
   const gamesUnder = prop.gamesPlayed - gamesOver;
@@ -121,12 +123,14 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
         <div className="mb-3 flex items-baseline justify-between">
           <div>
             <span className="text-xs font-medium text-muted-foreground">{prop.stat}</span>
-            {/* Defensive rank badge */}
             <div className="flex items-center gap-1 mt-0.5">
               <Shield className="h-3 w-3 text-muted-foreground" />
               <span className="text-[9px] text-muted-foreground">
-                vs #{defRank} DEF
+                vs <span className="font-semibold text-foreground">{oppLabel}</span>
+                {" "}· #{defRank} {prop.stat.includes("Point") || prop.stat.includes("Pass") || prop.stat.includes("Rec") || prop.stat === "Goals" || prop.stat === "Shots on Target" ? "scoring" : "stat"} DEF
               </span>
+              {defRank <= 5 && <span className="text-[8px] font-bold text-emerald-500 ml-0.5">ELITE</span>}
+              {defRank >= 25 && <span className="text-[8px] font-bold text-red-400 ml-0.5">WEAK</span>}
             </div>
           </div>
           <span className="font-mono text-xl font-bold text-foreground">{prop.line}</span>
