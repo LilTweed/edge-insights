@@ -5,17 +5,14 @@ import UpgradeGate from "@/components/UpgradeGate";
 import {
   allPlayers,
   allTeams,
-  propLines,
   matchupHistories,
   injuries,
   type Sport,
   type Player,
-  type PropLine,
 } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import { EnhancedH2HPanel } from "@/components/AdvancedStatsPanel";
 import { useFavoriteTeams } from "@/hooks/useFavoriteTeams";
-import PlayerCard from "@/components/PlayerCard";
 import HistoricalSearch from "@/components/HistoricalSearch";
 import {
   Search,
@@ -33,11 +30,12 @@ import {
   Heart,
   Shield,
   RefreshCw,
-  UserCircle,
 } from "lucide-react";
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   ResponsiveContainer,
@@ -46,8 +44,6 @@ import {
 } from "recharts";
 
 type Tab = "stats" | "trends" | "matchups" | "teams" | "history";
-
-const ESPN_SPORTS = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF", "UFC", "PGA", "Soccer"] as const;
 
 /** Deterministic pseudo-random seeded by string */
 function seededRandom(seed: string) {
@@ -75,11 +71,41 @@ function generateSparkline(player: Player, stat: "points" | "rebounds" | "assist
   const rng = seededRandom(player.id + stat);
   const avg = player.seasonAverages[stat];
   const data = [];
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 20; i++) {
     const val = Math.max(0, avg + (rng() - 0.5) * avg * 0.6);
     data.push({ g: i + 1, v: Math.round(val * 10) / 10 });
   }
   return data;
+}
+
+/** Generate game log data for History tab */
+function generateGameLog(player: Player) {
+  const rng = seededRandom(player.id + "gamelog");
+  const gp = player.stats.gamesPlayed;
+  const avg = player.seasonAverages;
+  const data = [];
+  for (let i = 0; i < gp; i++) {
+    data.push({
+      game: i + 1,
+      label: `G${i + 1}`,
+      pts: Math.max(0, Math.round((avg.points + (rng() - 0.5) * avg.points * 0.6) * 10) / 10),
+      reb: Math.max(0, Math.round((avg.rebounds + (rng() - 0.5) * avg.rebounds * 0.8) * 10) / 10),
+      ast: Math.max(0, Math.round((avg.assists + (rng() - 0.5) * avg.assists * 0.7) * 10) / 10),
+    });
+  }
+  return data;
+}
+
+/** Mock defensive matchup grades */
+function getDefenderGrades(player: Player) {
+  const rng = seededRandom(player.id + "def");
+  const grades = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "D"];
+  return [
+    { stat: "Points", grade: grades[Math.floor(rng() * 5)], diff: +(rng() * 6 - 3).toFixed(1) },
+    { stat: "Rebounds", grade: grades[Math.floor(rng() * 6)], diff: +(rng() * 4 - 2).toFixed(1) },
+    { stat: "Assists", grade: grades[Math.floor(rng() * 7)], diff: +(rng() * 4 - 2).toFixed(1) },
+    { stat: "Efficiency", grade: grades[Math.floor(rng() * 6)], diff: +(rng() * 8 - 4).toFixed(1) },
+  ];
 }
 
 const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
@@ -93,13 +119,13 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   const [minGames, setMinGames] = useState(0);
   const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [historyPlayer, setHistoryPlayer] = useState<string | null>(null);
+  const [trendStat, setTrendStat] = useState<"points" | "rebounds" | "assists">("points");
   const { toggle, isFavorite } = useFavoriteTeams();
-  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
-
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
 
   const players = useMemo(() => allPlayers.filter((p) => p.sport === sport), [sport]);
   const teams = useMemo(() => allTeams.filter((t) => t.sport === sport), [sport]);
-  const props = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
   const sportInjuries = useMemo(() => injuries.filter((i) => teams.some((t) => t.abbreviation === i.teamAbbr)), [teams]);
 
   const positions = useMemo(() => ["All", ...Array.from(new Set(players.map((p) => p.position))).sort()], [players]);
@@ -140,8 +166,6 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
     if (statSort === key) setSortAsc(!sortAsc);
     else { setStatSort(key); setSortAsc(false); }
   };
-
-  const playerProps = (playerId: string): PropLine[] => props.filter((p) => p.playerId === playerId);
 
   const teamStatColumns = (s: Sport) => {
     if (s === "NCAAF" || s === "NFL") {
@@ -219,19 +243,14 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
 
   return (
     <div className={`${embedded ? "" : "container py-6"} ${hasAdvanced && !embedded ? "animate-pro-shimmer" : ""}`}>
-      {/* Header */}
       {!embedded && (
         <div className="mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Research Dashboard</h1>
-            {hasAdvanced && (
-              <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">
-                PRO
-              </span>
-            )}
+            <span className="rounded-md pro-gradient px-2 py-0.5 text-[9px] font-bold text-pro-foreground tracking-wider">PRO</span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {hasAdvanced ? "Player stats · Trend analysis · H2H matchups · Injury modeling" : "Browse player and team stats at a glance"}
+            Player stats · Trend analysis · H2H matchups · Team comparisons
           </p>
         </div>
       )}
@@ -240,8 +259,8 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
         <SportFilter active={sport} onChange={(s) => { setSport(s); setSearch(""); setPosFilter("All"); setTeamFilter("All"); }} />
       </div>
 
-      {/* Injury Ticker — Advanced only */}
-      {hasAdvanced && sportInjuries.length > 0 && (
+      {/* Injury Ticker */}
+      {sportInjuries.length > 0 && (
         <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-lg border border-border bg-card px-3 py-2 scrollbar-thin">
           <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-yellow-500" />
           <span className="text-[10px] font-bold text-muted-foreground flex-shrink-0">INJURIES</span>
@@ -273,62 +292,50 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
         ))}
       </div>
 
-      {/* ─── STATS TAB ─── */}
+      {/* ─── STATS TAB: Season averages table ─── */}
       {tab === "stats" && (
         <div>
-          {/* Filters — Advanced only */}
-          {hasAdvanced && (
-            <>
-              <button
-                onClick={() => setFiltersOpen(!filtersOpen)}
-                className="mb-3 flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Filter className="h-3.5 w-3.5" />
-                Filters
-                {filtersOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </button>
+          <button
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="mb-3 flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Filter className="h-3.5 w-3.5" /> Filters
+            {filtersOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          </button>
 
-              {filtersOpen && (
-                <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <div>
-                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Position</label>
-                    <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
-                      {positions.map((p) => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Team</label>
-                    <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
-                      {teamOptions.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Min Games</label>
-                    <input type="number" value={minGames} onChange={(e) => setMinGames(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground" min={0} />
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase text-muted-foreground">Sort By</label>
-                    <select value={statSort} onChange={(e) => setStatSort(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
-                      {statOptions.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                    </select>
-                  </div>
-                </div>
-              )}
-            </>
+          {filtersOpen && (
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Position</label>
+                <select value={posFilter} onChange={(e) => setPosFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                  {positions.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Team</label>
+                <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                  {teamOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Min Games</label>
+                <input type="number" value={minGames} onChange={(e) => setMinGames(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground" min={0} />
+              </div>
+              <div>
+                <label className="text-[9px] font-bold uppercase text-muted-foreground">Sort By</label>
+                <select value={statSort} onChange={(e) => setStatSort(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground">
+                  {statOptions.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                </select>
+              </div>
+            </div>
           )}
 
-          {/* Search */}
           <div className="relative mb-4">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search player or team…"
-              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-            />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search player or team…" className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20" />
           </div>
 
-          {/* Stat Column Headers */}
+          {/* Column Headers */}
           <div className="mb-2 hidden sm:grid grid-cols-[2fr_repeat(6,1fr)] gap-1 px-3">
             <span className="text-[9px] font-bold uppercase text-muted-foreground">Player</span>
             {statOptions.map((s) => (
@@ -344,7 +351,6 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
             {filtered.map((player) => {
               const avg = player.seasonAverages;
               const trend = getTrend(player);
-              const pProps = playerProps(player.id);
               const isExpanded = expandedPlayer === player.id;
               const TIcon = trend.dir === "up" ? TrendingUp : trend.dir === "down" ? TrendingDown : Minus;
 
@@ -371,7 +377,6 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                     ))}
                   </button>
 
-                  {/* Expanded Detail */}
                   {isExpanded && (
                     <div className="border-t border-border px-4 py-4 space-y-4 animate-fade-in">
                       {/* Split: Season / L10 / L5 */}
@@ -397,50 +402,23 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                         })}
                       </div>
 
-                      {/* Sparkline Chart — Advanced only */}
-                      {hasAdvanced && (
-                        <div>
-                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Last 15 Games — {statSort.charAt(0).toUpperCase() + statSort.slice(1)}</p>
-                          <div className="h-24 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={generateSparkline(player, statSort as any)} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                                <XAxis dataKey="g" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                                <ReferenceLine y={avg[statSort as keyof typeof avg] as number} stroke="hsl(var(--primary))" strokeDasharray="4 3" strokeWidth={1.5} />
-                                <Tooltip
-                                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px", color: "hsl(var(--foreground))" }}
-                                />
-                                <Bar dataKey="v" radius={[2, 2, 0, 0]} fill="hsl(var(--primary) / 0.5)" />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
+                      {/* Sparkline */}
+                      <div>
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Last 15 Games — {statSort.charAt(0).toUpperCase() + statSort.slice(1)}</p>
+                        <div className="h-24 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={generateSparkline(player, statSort as any)} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                              <XAxis dataKey="g" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                              <YAxis tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                              <ReferenceLine y={avg[statSort as keyof typeof avg] as number} stroke="hsl(var(--primary))" strokeDasharray="4 3" strokeWidth={1.5} />
+                              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px", color: "hsl(var(--foreground))" }} />
+                              <Bar dataKey="v" radius={[2, 2, 0, 0]} fill="hsl(var(--primary) / 0.5)" />
+                            </BarChart>
+                          </ResponsiveContainer>
                         </div>
-                      )}
+                      </div>
 
-                      {/* Active Props — Advanced only */}
-                      {hasAdvanced && pProps.length > 0 && (
-                        <div>
-                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1.5">Active Props</p>
-                          <div className="grid grid-cols-2 gap-1.5">
-                            {pProps.map((prop) => (
-                              <div key={prop.id} className="rounded-lg border border-border/50 bg-secondary/30 px-2.5 py-2 flex items-center justify-between">
-                                <div>
-                                  <span className="text-[10px] text-muted-foreground">{prop.stat}</span>
-                                  <span className="ml-1.5 font-mono text-xs font-bold text-foreground">{prop.line}</span>
-                                </div>
-                                <span className={`font-mono text-[10px] font-bold ${prop.hitRate >= 60 ? "text-success" : prop.hitRate <= 40 ? "text-destructive" : "text-muted-foreground"}`}>
-                                  {prop.hitRate}%
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <Link
-                        to={`/player/${player.id}`}
-                        className="block text-center text-[10px] font-semibold text-primary hover:underline"
-                      >
+                      <Link to={`/player/${player.id}`} className="block text-center text-[10px] font-semibold text-primary hover:underline">
                         View Full Profile →
                       </Link>
                     </div>
@@ -452,108 +430,99 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
               <p className="text-center text-sm text-muted-foreground py-12">No players match your filters</p>
             )}
           </div>
-
           <p className="mt-3 text-center text-[10px] text-muted-foreground">{filtered.length} player{filtered.length !== 1 ? "s" : ""}</p>
         </div>
       )}
 
-      {/* ─── TRENDS TAB ─── */}
+      {/* ─── TRENDS TAB: Sparkline charts over last 20 games ─── */}
       {tab === "trends" && (
         <div>
-          <div className="relative mb-4">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search player…"
-              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-            />
+          <div className="flex items-center gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search player…" className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20" />
+            </div>
+            <div className="flex rounded-lg border border-border bg-card overflow-hidden">
+              {(["points", "rebounds", "assists"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setTrendStat(s)}
+                  className={`px-3 py-2 text-[10px] font-semibold transition-colors ${trendStat === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {/* Hot / Cold columns */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* Hot */}
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="border-b border-border bg-secondary/30 px-3 py-2 flex items-center gap-1.5">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
                 <span className="text-xs font-bold text-foreground">Trending Up</span>
               </div>
               <div className="divide-y divide-border/30">
-                {trendPlayers.filter((t) => t.trend.dir === "up").slice(0, 8).map(({ player, trend }) => (
-                  <Link key={player.id} to={`/player/${player.id}`} className="flex items-center justify-between px-3 py-2 hover:bg-secondary/30 transition-colors">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground truncate">{player.name}</p>
-                      <p className="text-[9px] text-muted-foreground">{player.teamAbbr} · {player.position}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
+                {trendPlayers.filter((t) => t.trend.dir === "up").slice(0, 6).map(({ player, trend }) => (
+                  <div key={player.id} className="px-3 py-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <Link to={`/player/${player.id}`} className="text-xs font-semibold text-foreground hover:text-primary truncate">
+                        {player.name}
+                      </Link>
                       <span className="font-mono text-xs font-bold text-emerald-500">+{trend.pct}%</span>
-                      <p className="text-[9px] text-muted-foreground">{player.last5.points.toFixed(1)} L5 PPG</p>
                     </div>
-                  </Link>
+                    <div className="h-12 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={generateSparkline(player, trendStat)} margin={{ top: 2, right: 2, bottom: 0, left: -20 }}>
+                          <Line type="monotone" dataKey="v" stroke="hsl(142 71% 45%)" strokeWidth={1.5} dot={false} />
+                          <ReferenceLine y={player.seasonAverages[trendStat]} stroke="hsl(var(--muted-foreground) / 0.3)" strokeDasharray="3 3" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 ))}
                 {trendPlayers.filter((t) => t.trend.dir === "up").length === 0 && (
-                  <p className="text-center text-xs text-muted-foreground py-6">No upward trends found</p>
+                  <p className="text-center text-xs text-muted-foreground py-6">No upward trends</p>
                 )}
               </div>
             </div>
 
-            {/* Cold */}
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="border-b border-border bg-secondary/30 px-3 py-2 flex items-center gap-1.5">
                 <TrendingDown className="h-3.5 w-3.5 text-red-400" />
                 <span className="text-xs font-bold text-foreground">Trending Down</span>
               </div>
               <div className="divide-y divide-border/30">
-                {trendPlayers.filter((t) => t.trend.dir === "down").slice(0, 8).map(({ player, trend }) => (
-                  <Link key={player.id} to={`/player/${player.id}`} className="flex items-center justify-between px-3 py-2 hover:bg-secondary/30 transition-colors">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground truncate">{player.name}</p>
-                      <p className="text-[9px] text-muted-foreground">{player.teamAbbr} · {player.position}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
+                {trendPlayers.filter((t) => t.trend.dir === "down").slice(0, 6).map(({ player, trend }) => (
+                  <div key={player.id} className="px-3 py-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <Link to={`/player/${player.id}`} className="text-xs font-semibold text-foreground hover:text-primary truncate">
+                        {player.name}
+                      </Link>
                       <span className="font-mono text-xs font-bold text-red-400">{trend.pct}%</span>
-                      <p className="text-[9px] text-muted-foreground">{player.last5.points.toFixed(1)} L5 PPG</p>
                     </div>
-                  </Link>
+                    <div className="h-12 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={generateSparkline(player, trendStat)} margin={{ top: 2, right: 2, bottom: 0, left: -20 }}>
+                          <Line type="monotone" dataKey="v" stroke="hsl(0 84% 60%)" strokeWidth={1.5} dot={false} />
+                          <ReferenceLine y={player.seasonAverages[trendStat]} stroke="hsl(var(--muted-foreground) / 0.3)" strokeDasharray="3 3" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 ))}
                 {trendPlayers.filter((t) => t.trend.dir === "down").length === 0 && (
-                  <p className="text-center text-xs text-muted-foreground py-6">No downward trends found</p>
+                  <p className="text-center text-xs text-muted-foreground py-6">No downward trends</p>
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Props Value Finder */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="border-b border-border bg-secondary/30 px-3 py-2">
-              <span className="text-xs font-bold text-foreground">🎯 High Hit Rate Props (≥65%)</span>
-            </div>
-            <div className="divide-y divide-border/30">
-              {props.filter((p) => p.hitRate >= 65).sort((a, b) => b.hitRate - a.hitRate).slice(0, 12).map((prop) => (
-                <div key={prop.id} className="flex items-center justify-between px-3 py-2">
-                  <div>
-                    <Link to={`/player/${prop.playerId}`} className="text-xs font-semibold text-foreground hover:text-primary transition-colors">{prop.playerName}</Link>
-                    <p className="text-[9px] text-muted-foreground">{prop.teamAbbr} · {prop.stat} {prop.line}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${prop.hitRate}%` }} />
-                    </div>
-                    <span className="font-mono text-[11px] font-bold text-emerald-500">{prop.hitRate}%</span>
-                  </div>
-                </div>
-              ))}
-              {props.filter((p) => p.hitRate >= 65).length === 0 && (
-                <p className="text-center text-xs text-muted-foreground py-6">No high hit-rate props found</p>
-              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* ─── MATCHUPS TAB ─── */}
+      {/* ─── MATCHUPS TAB: H2H + defender grades ─── */}
       {tab === "matchups" && (
         <div>
-          {/* Team selector */}
           <div className="mb-4 flex flex-wrap gap-1.5">
             {teams.map((t) => {
               const hasMatchup = sportMatchups.some((m) => m.team1Id === t.id || m.team2Id === t.id);
@@ -581,8 +550,9 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                 .map((team) => {
                   const teamMatchups = sportMatchups.filter((m) => m.team1Id === team.id || m.team2Id === team.id);
                   if (teamMatchups.length === 0) return null;
+                  const teamPlayers = players.filter((p) => p.teamAbbr === team.abbreviation).slice(0, 3);
                   return (
-                    <div key={team.id} className="mb-4">
+                    <div key={team.id} className="mb-6">
                       <div className="mb-2 flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <Link to={`/team/${team.id}`} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
@@ -591,6 +561,38 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                         <span className="text-[10px] text-muted-foreground">({team.record})</span>
                       </div>
                       <EnhancedH2HPanel matchups={teamMatchups} teamId={team.id} compact />
+
+                      {/* Defender matchup grades */}
+                      {teamPlayers.length > 0 && (
+                        <div className="mt-3 rounded-xl border border-border bg-card p-3">
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">Defender Matchup Grades</p>
+                          <div className="space-y-2">
+                            {teamPlayers.map((player) => {
+                              const grades = getDefenderGrades(player);
+                              return (
+                                <div key={player.id} className="flex items-center gap-3">
+                                  <Link to={`/player/${player.id}`} className="text-xs font-semibold text-foreground hover:text-primary w-28 truncate">
+                                    {player.name}
+                                  </Link>
+                                  <div className="flex gap-2 flex-1">
+                                    {grades.map((g) => (
+                                      <div key={g.stat} className="rounded-md bg-secondary/50 px-2 py-1 text-center flex-1">
+                                        <p className="text-[8px] text-muted-foreground">{g.stat}</p>
+                                        <p className={`text-xs font-bold ${g.grade.startsWith("A") ? "text-emerald-500" : g.grade.startsWith("B") ? "text-foreground" : "text-red-400"}`}>
+                                          {g.grade}
+                                        </p>
+                                        <p className={`text-[8px] font-mono ${g.diff > 0 ? "text-emerald-500" : g.diff < 0 ? "text-red-400" : "text-muted-foreground"}`}>
+                                          {g.diff > 0 ? "+" : ""}{g.diff}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -599,23 +601,98 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
         </div>
       )}
 
-      {/* ─── HISTORY TAB ─── */}
+      {/* ─── HISTORY TAB: Game log charts ─── */}
       {tab === "history" && (
-        <HistoricalSearch />
+        <div>
+          <div className="relative mb-4">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search player for game log…" className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20" />
+          </div>
+
+          {/* Player selector */}
+          <div className="mb-4 flex flex-wrap gap-1.5">
+            {filtered.slice(0, 12).map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setHistoryPlayer(historyPlayer === p.id ? null : p.id)}
+                className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                  historyPlayer === p.id ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {p.name.split(" ").pop()}
+              </button>
+            ))}
+          </div>
+
+          {historyPlayer ? (() => {
+            const player = players.find((p) => p.id === historyPlayer);
+            if (!player) return null;
+            const log = generateGameLog(player);
+            const last20 = log.slice(-20);
+            return (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-sm font-bold text-foreground">{player.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{player.teamAbbr} · {player.position} · {player.stats.gamesPlayed} GP</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Points — Last 20 Games</p>
+                  <div className="h-32 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={last20} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                        <XAxis dataKey="label" tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} interval={3} />
+                        <YAxis tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                        <ReferenceLine y={player.seasonAverages.points} stroke="hsl(var(--primary))" strokeDasharray="4 3" strokeWidth={1.5} />
+                        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "11px", color: "hsl(var(--foreground))" }} />
+                        <Bar dataKey="pts" radius={[2, 2, 0, 0]} fill="hsl(var(--primary) / 0.5)" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Rebounds</p>
+                      <div className="h-20 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={last20} margin={{ top: 2, right: 2, bottom: 0, left: -20 }}>
+                            <Line type="monotone" dataKey="reb" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} />
+                            <ReferenceLine y={player.seasonAverages.rebounds} stroke="hsl(var(--muted-foreground) / 0.3)" strokeDasharray="3 3" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Assists</p>
+                      <div className="h-20 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={last20} margin={{ top: 2, right: 2, bottom: 0, left: -20 }}>
+                            <Line type="monotone" dataKey="ast" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} />
+                            <ReferenceLine y={player.seasonAverages.assists} stroke="hsl(var(--muted-foreground) / 0.3)" strokeDasharray="3 3" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })() : (
+            <div className="py-16 text-center">
+              <BarChart3 className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+              <p className="text-sm text-muted-foreground">Select a player above to view their game log charts</p>
+            </div>
+          )}
+        </div>
       )}
 
-
-      {/* ─── TEAMS TAB ─── */}
+      {/* ─── TEAMS TAB: Team stat comparison cards ─── */}
       {tab === "teams" && (
         <div>
           <div className="relative mb-4">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search teams…"
-              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-            />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search teams…" className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20" />
           </div>
 
           {byConference.map(([conf, confTeams]) => (
@@ -627,7 +704,6 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                   const getStats = teamStatColumns(sport);
                   const stats = team.stats ? getStats(team) : [];
                   const teamPlayers = players.filter((p) => p.teamAbbr === team.abbreviation);
-                  const teamProps = props.filter((p) => p.teamAbbr === team.abbreviation);
                   const teamInjuries = sportInjuries.filter((i) => i.teamAbbr === team.abbreviation);
 
                   return (
@@ -653,7 +729,6 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                         </div>
                       </Link>
 
-                      {/* Team Stats */}
                       {stats.length > 0 && (
                         <div className="mb-3 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)` }}>
                           {stats.filter((s) => s.value != null).map((s) => (
@@ -665,35 +740,19 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
                         </div>
                       )}
 
-                      {/* Key Players */}
                       {teamPlayers.length > 0 && (
                         <div className="mb-2">
                           <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1">Key Players</p>
                           <div className="flex flex-wrap gap-1">
                             {teamPlayers.slice(0, 3).map((p) => (
                               <Link key={p.id} to={`/player/${p.id}`} className="rounded-md bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-secondary transition-colors">
-                                {p.name.split(" ").pop()} · {p.seasonAverages.points.toFixed(1)}
+                                {p.name.split(" ").pop()} · {p.seasonAverages.points.toFixed(1)} ppg
                               </Link>
                             ))}
                           </div>
                         </div>
                       )}
 
-                      {/* Active Props */}
-                      {teamProps.length > 0 && (
-                        <div className="mb-2">
-                          <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1">Props ({teamProps.length})</p>
-                          <div className="flex flex-wrap gap-1">
-                            {teamProps.slice(0, 3).map((p) => (
-                              <span key={p.id} className="rounded-md bg-secondary/40 px-1.5 py-0.5 text-[9px] text-muted-foreground">
-                                {p.playerName.split(" ").pop()} {p.stat} {p.line} <span className={`font-bold ${p.hitRate >= 60 ? "text-emerald-500" : "text-foreground"}`}>{p.hitRate}%</span>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Injuries */}
                       {teamInjuries.length > 0 && (
                         <div>
                           <p className="text-[9px] font-bold uppercase text-muted-foreground mb-1">Injuries</p>
