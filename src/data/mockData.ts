@@ -111,6 +111,12 @@ export interface PlayerStats {
   [key: string]: number;
 }
 
+export interface PublicBetSplit {
+  overPct: number;
+  underPct: number;
+  totalBets: number;
+}
+
 export interface PropLine {
   id: string;
   playerId: string;
@@ -127,6 +133,7 @@ export interface PropLine {
   opponentFull?: string;
   opponentDefRank?: number;
   weather?: WeatherProjection;
+  publicBets?: PublicBetSplit;
 }
 
 export interface SportsbookLine {
@@ -418,7 +425,13 @@ function mkSb(line: number, overBase: number): SportsbookLine[] {
 }
 
 function mkProp(id: string, playerId: string, name: string, team: string, stat: string, line: number, sport: Sport, hitRate: number, hitRateL10: number, gp: number, opp?: string, oppFull?: string, oppDefRank?: number): PropLine {
-  return { id, playerId, playerName: name, teamAbbr: team, stat, line, sport, sportsbooks: mkSb(line, -110), hitRate, hitRateLast10: hitRateL10, gamesPlayed: gp, opponent: opp, opponentFull: oppFull, opponentDefRank: oppDefRank, weather: getWeatherForProp(id, sport) };
+  // Deterministic public bet split from prop id
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (Math.imul(31, h) + id.charCodeAt(i)) | 0;
+  const overPct = 35 + ((h >>> 0) % 31); // 35-65%
+  const totalBets = 800 + ((h >>> 0) % 9200); // 800-10000
+  const publicBets: PublicBetSplit = { overPct, underPct: 100 - overPct, totalBets };
+  return { id, playerId, playerName: name, teamAbbr: team, stat, line, sport, sportsbooks: mkSb(line, -110), hitRate, hitRateLast10: hitRateL10, gamesPlayed: gp, opponent: opp, opponentFull: oppFull, opponentDefRank: oppDefRank, weather: getWeatherForProp(id, sport), publicBets };
 }
 
 export const propLines: PropLine[] = [
