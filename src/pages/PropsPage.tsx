@@ -1,6 +1,6 @@
 import { propLines, allGames, type Sport, type PropLine, type Game, formatOdds } from "@/data/mockData";
 import HitRateTransparencyPanel from "@/components/HitRateTransparencyPanel";
-import PropCard from "@/components/PropCard";
+import PropCard, { ContrarianIndicator } from "@/components/PropCard";
 import SportsbookComparisonWidget from "@/components/SportsbookComparisonWidget";
 import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
@@ -499,6 +499,9 @@ function SimpleCleanPropCard({ prop }: { prop: PropLine }) {
             <p className="text-[10px] font-semibold text-primary">{prop.publicBets.overPct}% O</p>
             <p className="text-[9px] text-muted-foreground">{(prop.publicBets.totalBets / 1000).toFixed(1)}k bets</p>
           </div>
+        )}
+        {prop.publicBets && (
+          <ContrarianIndicator hitRate={prop.hitRate} overPct={prop.publicBets.overPct} />
         )}
         <TrendIndicator hitRate={prop.hitRate} hitRateLast10={prop.hitRateLast10} />
         <ConfidenceBadge gamesPlayed={prop.gamesPlayed} />

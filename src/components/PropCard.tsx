@@ -3,7 +3,7 @@ import type { PropLine } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { getPlayerProfile } from "@/data/playerProfiles";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield, CloudRain, Users } from "lucide-react";
+import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield, CloudRain, Users, AlertTriangle } from "lucide-react";
 import PropStatsPanel from "./PropStatsPanel";
 import PlayerAvatar from "./PlayerAvatar";
 import FavoriteButton from "./FavoriteButton";
@@ -250,6 +250,7 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
               <span className="text-primary font-semibold">Over {prop.publicBets.overPct}%</span>
               <span className="text-muted-foreground">Under {prop.publicBets.underPct}%</span>
             </div>
+            <ContrarianIndicator hitRate={prop.hitRate} overPct={prop.publicBets.overPct} />
           </div>
         )}
 
@@ -327,5 +328,31 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
     </>
   );
 };
+
+/** Contrarian indicator — flags when public betting diverges from hit rate */
+export function ContrarianIndicator({ hitRate, overPct }: { hitRate: number; overPct: number }) {
+  const underPct = 100 - overPct;
+  // Public heavily on Over but hit rate says Under is more likely
+  const publicOverContrarian = overPct >= 60 && hitRate <= 45;
+  // Public heavily on Under but hit rate says Over is more likely
+  const publicUnderContrarian = underPct >= 60 && hitRate >= 55;
+
+  if (!publicOverContrarian && !publicUnderContrarian) return null;
+
+  const side = publicOverContrarian ? "Under" : "Over";
+  const gap = publicOverContrarian
+    ? Math.round(overPct - hitRate)
+    : Math.round(hitRate - (100 - underPct));
+
+  return (
+    <div className="mt-1 flex items-center gap-1.5 rounded-md bg-accent/60 border border-accent px-2 py-1.5">
+      <AlertTriangle className="h-3.5 w-3.5 text-chart-4 shrink-0" />
+      <span className="text-[10px] leading-tight text-foreground">
+        <span className="font-bold text-chart-4">Contrarian {side}</span>
+        <span className="text-muted-foreground"> — Public is {gap}% off from the hit rate. Data favors the {side.toLowerCase()}.</span>
+      </span>
+    </div>
+  );
+}
 
 export default PropCard;
