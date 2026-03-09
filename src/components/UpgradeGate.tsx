@@ -6,24 +6,18 @@ import { useSubscription } from "@/hooks/useSubscription";
 import type { SubscriptionTier } from "@/hooks/useSubscription";
 
 interface UpgradeGateProps {
-  requiredTier: "basic" | "advanced";
+  requiredTier: "advanced";
   currentTier: SubscriptionTier;
   feature: string;
   children: React.ReactNode;
 }
-
-const tierLabels = { basic: "Basic", advanced: "Pro" };
-const tierPrices = { basic: "$4.99/mo", advanced: "$9.99/mo" };
 
 export default function UpgradeGate({ requiredTier, currentTier, feature, children }: UpgradeGateProps) {
   const { user } = useAuth();
   const { startTrial, isTrial, trialEndsAt } = useSubscription();
   const [starting, setStarting] = useState(false);
 
-  const hasAccess =
-    requiredTier === "basic"
-      ? currentTier === "basic" || currentTier === "advanced"
-      : currentTier === "advanced";
+  const hasAccess = currentTier === "advanced";
 
   if (hasAccess) return <>{children}</>;
 
@@ -33,7 +27,6 @@ export default function UpgradeGate({ requiredTier, currentTier, feature, childr
     setStarting(false);
   };
 
-  // Check if user already used their trial
   const trialExpired = trialEndsAt && new Date(trialEndsAt) <= new Date();
 
   return (
@@ -43,7 +36,7 @@ export default function UpgradeGate({ requiredTier, currentTier, feature, childr
       </div>
       <h2 className="text-xl font-bold text-foreground">{feature}</h2>
       <p className="max-w-sm text-sm text-muted-foreground">
-        This feature requires a <span className="font-semibold text-primary">{tierLabels[requiredTier]}</span> plan ({tierPrices[requiredTier]}).
+        This feature requires a <span className="font-semibold text-primary">Pro</span> plan ($9.99/mo).
       </p>
       {!user ? (
         <Link
@@ -54,7 +47,7 @@ export default function UpgradeGate({ requiredTier, currentTier, feature, childr
         </Link>
       ) : (
         <div className="flex flex-col items-center gap-3">
-          {!trialExpired && requiredTier === "advanced" && (
+          {!trialExpired && (
             <button
               onClick={handleStartTrial}
               disabled={starting}
@@ -72,7 +65,7 @@ export default function UpgradeGate({ requiredTier, currentTier, feature, childr
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <Sparkles className="h-4 w-4" />
-            Upgrade to {tierLabels[requiredTier]}
+            Upgrade to Pro
           </Link>
         </div>
       )}
