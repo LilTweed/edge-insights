@@ -144,7 +144,7 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   const [historyPlayer, setHistoryPlayer] = useState<string | null>(null);
   const [trendStat, setTrendStat] = useState<"points" | "rebounds" | "assists">("points");
   const { toggle, isFavorite } = useFavoriteTeams();
-  const { tier, isAdvanced: hasAdvanced } = useSubscription();
+  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
 
   const players = useMemo(() => allPlayers.filter((p) => p.sport === sport), [sport]);
   const teams = useMemo(() => allTeams.filter((t) => t.sport === sport), [sport]);
