@@ -10,7 +10,7 @@ import MiniSlipBuilder from "@/components/MiniSlipBuilder";
 import { useState, useMemo } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
 import UpgradeGate from "@/components/UpgradeGate";
-import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, Table2, DollarSign, TrendingUp, TrendingDown, Minus, Users, Star, HelpCircle, Filter, X } from "lucide-react";
+import { Share2, Search, ArrowUpDown, LayoutList, LayoutGrid, Table2, DollarSign, TrendingUp, TrendingDown, Minus, Users, Star, HelpCircle, Filter, X, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useFavorites } from "@/hooks/useFavoritesCloud";
 import {
