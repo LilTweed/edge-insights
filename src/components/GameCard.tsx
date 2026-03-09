@@ -1,7 +1,7 @@
 import type { Game } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Lock } from "lucide-react";
+import { AlertTriangle, Lock, CloudRain } from "lucide-react";
 
 interface GameCardProps {
   game: Game;
@@ -72,6 +72,35 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
         <span className="text-xs font-medium text-muted-foreground">{game.date} · {game.time}</span>
       </div>
+
+      {/* Weather — Pro only */}
+      {isPro && game.weather && (
+        <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs ${
+          game.weather.impact === "high"
+            ? "bg-destructive/10 border border-destructive/20"
+            : game.weather.impact === "moderate"
+            ? "bg-yellow-500/10 border border-yellow-500/20"
+            : "bg-secondary/60 border border-border/40"
+        }`}>
+          <span className="text-base">{game.weather.icon}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">{game.weather.tempF}°F · {game.weather.condition}</span>
+              <span className="text-muted-foreground">💨 {game.weather.windMph}mph {game.weather.windDir}</span>
+              {game.weather.impact !== "none" && (
+                <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                  game.weather.impact === "high" ? "bg-destructive/15 text-destructive"
+                    : game.weather.impact === "moderate" ? "bg-yellow-500/15 text-yellow-500"
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  {game.weather.impact.toUpperCase()} IMPACT
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground truncate">{game.weather.impactNote}</p>
+          </div>
+        </div>
+      )}
 
       {/* Teams with scores */}
       <div className="space-y-2">

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PageDisclaimer from "@/components/PageDisclaimer";
-import { type Sport, type Game } from "@/data/mockData";
+import { type Sport, type Game, type WeatherProjection } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import GameCard from "@/components/GameCard";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -62,6 +62,7 @@ const mockGames: Game[] = [
       { playerName: "Patrick Mahomes", stat: "Pass Yards", line: 285.5 },
       { playerName: "Josh Allen", stat: "Pass Yards", line: 275.5 },
     ],
+    weather: { tempF: 28, condition: "Snow", windMph: 18, windDir: "NW", humidity: 85, precipChance: 65, icon: "🌨️", impact: "high", impactNote: "Snow & cold may limit passing game; expect heavier run schemes" },
   },
   // NCAAB
   {
@@ -84,6 +85,7 @@ const mockGames: Game[] = [
     overUnder: [{ sportsbook: "FanDuel", total: 45.5, over: -110, under: -110 }],
     keyInjuries: [],
     playerProps: [],
+    weather: { tempF: 35, condition: "Cloudy", windMph: 12, windDir: "N", humidity: 70, precipChance: 20, icon: "☁️", impact: "moderate", impactNote: "Cold & windy — may affect kicking game and deep passes" },
   },
   // MLB
   {
@@ -98,6 +100,7 @@ const mockGames: Game[] = [
       { playerName: "Aaron Judge", stat: "HRs", line: 0.5 },
       { playerName: "Gerrit Cole", stat: "Strikeouts", line: 7.5 },
     ],
+    weather: { tempF: 68, condition: "Clear", windMph: 12, windDir: "NE", humidity: 45, precipChance: 5, icon: "☀️", impact: "low", impactNote: "Wind blowing in — may suppress fly balls slightly" },
   },
   // NHL
   {
@@ -147,6 +150,7 @@ const mockGames: Game[] = [
       { playerName: "Erling Haaland", stat: "Shots on Target", line: 2.5 },
       { playerName: "Bukayo Saka", stat: "Assists", line: 0.5 },
     ],
+    weather: { tempF: 58, condition: "Cloudy", windMph: 10, windDir: "E", humidity: 72, precipChance: 30, icon: "☁️", impact: "low", impactNote: "Overcast but dry — minimal impact on play" },
   },
   {
     id: "soc-2", sport: "Soccer", date: "Today", time: "12:30 PM ET", status: "live",
@@ -161,6 +165,7 @@ const mockGames: Game[] = [
     playerProps: [
       { playerName: "Mohamed Salah", stat: "Shots on Target", line: 2.5 },
     ],
+    weather: { tempF: 52, condition: "Rain", windMph: 14, windDir: "W", humidity: 88, precipChance: 80, icon: "🌧️", impact: "moderate", impactNote: "Wet pitch — expect fewer goals, slippery conditions" },
   },
 ];
 
