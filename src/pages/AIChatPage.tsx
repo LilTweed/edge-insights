@@ -122,7 +122,7 @@ export default function AIChatPage({ embedded }: { embedded?: boolean } = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
-  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -134,7 +134,7 @@ export default function AIChatPage({ embedded }: { embedded?: boolean } = {}) {
     }
   }, []);
 
-  if (!isBasicOrAbove && !hasAdvanced) {
+  if (!hasAdvanced) {
     return (
       <div className="container py-10">
         <UpgradeGate requiredTier="advanced" currentTier={tier} feature="AI Chat">

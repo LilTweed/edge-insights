@@ -98,7 +98,7 @@ function TrendIndicator({ hitRate, hitRateLast10 }: { hitRate: number; hitRateLa
 // ─── Page ──────────────────────────────────────────────────────────
 
 const PropExplorerPage = ({ embedded }: { embedded?: boolean }) => {
-  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
   const [sport, setSport] = useState<Sport>("NBA");
   const [search, setSearch] = useState("");
   const [selectedStat, setSelectedStat] = useState<string | null>(null);
