@@ -1,7 +1,7 @@
 import type { Game } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Lock } from "lucide-react";
+import { AlertTriangle, Lock, CloudRain } from "lucide-react";
 
 interface GameCardProps {
   game: Game;
