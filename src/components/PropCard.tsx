@@ -329,6 +329,12 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
   );
 };
 
+/** Check if a prop has a contrarian signal */
+export function hasContrarianSignal(hitRate: number, overPct: number): boolean {
+  const underPct = 100 - overPct;
+  return (overPct >= 60 && hitRate <= 45) || (underPct >= 60 && hitRate >= 55);
+}
+
 /** Contrarian indicator — flags when public betting diverges from hit rate */
 export function ContrarianIndicator({ hitRate, overPct }: { hitRate: number; overPct: number }) {
   const underPct = 100 - overPct;
