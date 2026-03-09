@@ -107,6 +107,7 @@ const PropsPage = () => {
   const [advanced, setAdvanced] = useState<AdvancedFilters>(defaultAdvanced);
   const [viewMode, setViewMode] = useState<ViewMode>("basic");
   const [activeTab, setActiveTab] = useState<PropsTab>("props");
+  const [contrarianOnly, setContrarianOnly] = useState(false);
 
   const sportProps = useMemo(() => propLines.filter((p) => p.sport === sport), [sport]);
   const sportGames = useMemo(() => allGames.filter((g) => g.sport === sport), [sport]);
@@ -141,6 +142,9 @@ const PropsPage = () => {
         });
       }
     }
+    if (contrarianOnly) {
+      list = list.filter((p) => p.publicBets && hasContrarianSignal(p.hitRate, p.publicBets.overPct));
+    }
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -168,7 +172,7 @@ const PropsPage = () => {
       return sortAsc ? diff : -diff;
     });
     return list;
-  }, [sportProps, advanced, search, sortBy, sortAsc, hasAdvanced, favoritedPlayerIds]);
+  }, [sportProps, advanced, search, sortBy, sortAsc, hasAdvanced, favoritedPlayerIds, contrarianOnly]);
 
   const hitRateByStat = useMemo(() => {
     const stats = new Map<string, { total: number; sumHR: number; sumHRL10: number; count: number }>();
