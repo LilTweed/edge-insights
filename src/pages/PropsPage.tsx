@@ -500,6 +500,9 @@ function SimpleCleanPropCard({ prop }: { prop: PropLine }) {
             <p className="text-[9px] text-muted-foreground">{(prop.publicBets.totalBets / 1000).toFixed(1)}k bets</p>
           </div>
         )}
+        {prop.publicBets && (
+          <ContrarianIndicator hitRate={prop.hitRate} overPct={prop.publicBets.overPct} />
+        )}
         <TrendIndicator hitRate={prop.hitRate} hitRateLast10={prop.hitRateLast10} />
         <ConfidenceBadge gamesPlayed={prop.gamesPlayed} />
       </div>
