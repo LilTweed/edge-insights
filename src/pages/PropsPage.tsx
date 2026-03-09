@@ -202,10 +202,10 @@ const PropsPage = () => {
     { key: "overunders", label: "Over/Unders", icon: TrendingUp, count: filteredGames.filter((g) => g.overUnder.length > 0).length },
   ];
 
-  if (!hasAdvanced) {
+  if (!isBasicOrAbove) {
     return (
       <div className="container py-10">
-        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Props Overview">
+        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Props Overview">
           <div />
         </UpgradeGate>
       </div>
