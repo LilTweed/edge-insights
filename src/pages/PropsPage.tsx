@@ -169,7 +169,7 @@ const PropsPage = () => {
       return sortAsc ? diff : -diff;
     });
     return list;
-  }, [sportProps, advanced, search, sortBy, sortAsc, hasAdvanced, favoritedPlayerIds, contrarianOnly]);
+  }, [sportProps, advanced, search, sortBy, sortAsc, hasAdvanced, favoritedPlayerIds]);
 
   const hitRateByStat = useMemo(() => {
     const stats = new Map<string, { total: number; sumHR: number; sumHRL10: number; count: number }>();
