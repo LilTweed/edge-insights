@@ -246,12 +246,12 @@ const GamesPage = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-bold text-foreground mb-0.5">
-                {isBasicOrAbove ? "Upgrade to Premium" : "Upgrade your plan"}
+                {isBasicOrAbove ? "Upgrade to Pro" : "Upgrade your plan"}
               </h3>
               <p className="text-xs text-muted-foreground">
                 {isBasicOrAbove
                   ? "Unlock betting lines, player props, AI tools, and full platform access"
-                  : "Get in-depth stats, injury reports, news, and more with Basic — or go Premium for full access"}
+                  : "Get in-depth stats, injury reports, news, and more with Basic — or go Pro for full access"}
               </p>
             </div>
             <ArrowRight className="h-5 w-5 text-primary" />

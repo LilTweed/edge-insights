@@ -38,7 +38,7 @@ const plans = [
     cta: "Get Basic",
   },
   {
-    name: "Premium",
+    name: "Pro",
     tier: "advanced" as const,
     monthly: 24.99,
     annual: 19.99,
@@ -54,7 +54,7 @@ const plans = [
       "Full historical stats",
       "AI Analysis in Edge tab",
     ],
-    cta: "Go Premium",
+    cta: "Go Pro",
     popular: true,
   },
 ];

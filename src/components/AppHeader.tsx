@@ -30,7 +30,7 @@ const AppHeader = () => {
     { label: "Off", value: null },
     { label: "Free", value: "free" },
     { label: "Basic", value: "basic" },
-    { label: "Prem", value: "advanced" },
+    { label: "Pro", value: "advanced" },
   ];
 
   return (
