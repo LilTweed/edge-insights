@@ -8,8 +8,8 @@ type NavItem = { label: string; path: string; minTier: "free" | "basic" | "advan
 
 const navItems: NavItem[] = [
   { label: "Games", path: "/", minTier: "free" },
-  { label: "Props", path: "/props", minTier: "advanced" },
-  { label: "Research", path: "/research", minTier: "advanced" },
+  { label: "Props", path: "/props", minTier: "basic" },
+  { label: "Research", path: "/research", minTier: "basic" },
   { label: "Edge", path: "/edge", minTier: "advanced", proOnly: true },
 ];
 
