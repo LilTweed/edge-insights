@@ -173,7 +173,7 @@ const mockGames: Game[] = [
 
 const GamesPage = () => {
   const [sport, setSport] = useState<Sport>("NBA");
-  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
   const { favoritedTeamIds } = useFavorites();
 
   // Sort favorited teams to top
@@ -196,8 +196,6 @@ const GamesPage = () => {
         <p className="mt-2 text-sm text-muted-foreground max-w-md">
           {hasAdvanced
             ? "Live scores, betting lines & odds across every sport."
-            : isBasicOrAbove
-            ? "Live scores, stats & news across every sport."
             : "Live games and news across every sport."}
         </p>
       </div>
@@ -251,12 +249,10 @@ const GamesPage = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-bold text-foreground mb-0.5">
-                {isBasicOrAbove ? "Upgrade to Pro" : "Upgrade your plan"}
+                Upgrade to Pro
               </h3>
               <p className="text-xs text-muted-foreground">
-                {isBasicOrAbove
-                  ? "Unlock betting lines, player props, AI tools, and full platform access"
-                  : "Get in-depth stats, injury reports, news, and more with Basic — or go Pro for full access"}
+                Unlock betting lines, player props, AI tools, weather projections, and full platform access
               </p>
             </div>
             <ArrowRight className="h-5 w-5 text-primary" />

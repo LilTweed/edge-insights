@@ -97,7 +97,7 @@ const defaultAdvanced: AdvancedFilters = {
 };
 
 const PropsPage = () => {
-  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
   const { favoritedPlayerIds } = useFavorites();
   const [sport, setSport] = useState<Sport>("NBA");
   const [exportOpen, setExportOpen] = useState(false);
@@ -202,15 +202,7 @@ const PropsPage = () => {
     { key: "overunders", label: "Over/Unders", icon: TrendingUp, count: filteredGames.filter((g) => g.overUnder.length > 0).length },
   ];
 
-  if (!isBasicOrAbove) {
-    return (
-      <div className="container py-10">
-        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Props Overview">
-          <div />
-        </UpgradeGate>
-      </div>
-    );
-  }
+  // Props page is available to all tiers; advanced features gated below
 
   return (
     <div className={`container py-4 md:py-6 md:max-w-5xl ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
