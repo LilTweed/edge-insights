@@ -315,6 +315,19 @@ const PropsPage = () => {
             className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
           />
         </div>
+        {/* Contrarian filter toggle */}
+        <button
+          onClick={() => setContrarianOnly(!contrarianOnly)}
+          className={`mt-2 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+            contrarianOnly
+              ? "border-chart-4 bg-chart-4/10 text-chart-4"
+              : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40"
+          }`}
+        >
+          <AlertTriangle className="h-3.5 w-3.5" />
+          Contrarian Only
+          {contrarianOnly && <X className="h-3 w-3 ml-1" />}
+        </button>
       </div>
 
       {/* Player Props Tab (or always visible for basic) */}
