@@ -12,7 +12,7 @@ interface UpgradeGateProps {
   children: React.ReactNode;
 }
 
-const tierLabels = { basic: "Basic", advanced: "Premium" };
+const tierLabels = { basic: "Basic", advanced: "Pro" };
 const tierPrices = { basic: "$4.99/mo", advanced: "$9.99/mo" };
 
 export default function UpgradeGate({ requiredTier, currentTier, feature, children }: UpgradeGateProps) {

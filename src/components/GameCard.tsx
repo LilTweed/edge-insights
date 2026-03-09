@@ -54,7 +54,7 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
   const isLive = game.status === "live";
   const isFree = tier === "free";
   const isBasic = tier === "basic";
-  const isPremium = tier === "advanced";
+  const isPro = tier === "advanced";
   const news = mockNews[game.id] || [];
 
   return (
@@ -118,7 +118,7 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
       </div>
 
-      {/* Quarter/Period scores — Basic + Premium */}
+      {/* Quarter/Period scores — Basic + Pro */}
       {!isFree && game.quarterScores && game.quarterScores.length > 0 && (
         <div className="mt-2.5 flex gap-1">
           {game.quarterScores.map((qs) => (
@@ -208,8 +208,8 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
       )}
 
-      {/* Player Props — Premium only */}
-      {isPremium && game.playerProps && game.playerProps.length > 0 && (
+      {/* Player Props — Pro only */}
+      {isPro && game.playerProps && game.playerProps.length > 0 && (
         <div className="mt-2.5 border-t border-border/50 pt-2">
           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Player Props</span>
           <div className="flex flex-wrap gap-1.5">
@@ -225,7 +225,7 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
       )}
 
       {/* Player Props locked hint — Free & Basic */}
-      {!isPremium && game.playerProps && game.playerProps.length > 0 && (
+      {!isPro && game.playerProps && game.playerProps.length > 0 && (
         <div className="mt-2.5 flex items-center gap-2 rounded-lg border border-border/50 bg-secondary/30 px-3 py-1.5">
           <Lock className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
           <span className="text-[10px] text-muted-foreground">
@@ -241,8 +241,8 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
         </div>
       )}
 
-      {/* Books count — Premium only */}
-      {isPremium && (
+      {/* Books count — Pro only */}
+      {isPro && (
         <div className="mt-2.5 flex items-center gap-1">
           <span className="text-[10px] text-muted-foreground">{game.moneyline.length} book{game.moneyline.length !== 1 ? "s" : ""}</span>
           <div className="flex gap-0.5">
