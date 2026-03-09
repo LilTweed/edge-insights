@@ -3,7 +3,7 @@ import type { PropLine } from "@/data/mockData";
 import { formatOdds } from "@/data/mockData";
 import { getPlayerProfile } from "@/data/playerProfiles";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield, CloudRain, Users } from "lucide-react";
+import { ChevronDown, ChevronUp, BarChart3, Flame, Snowflake, Minus, Shield, CloudRain, Users, AlertTriangle } from "lucide-react";
 import PropStatsPanel from "./PropStatsPanel";
 import PlayerAvatar from "./PlayerAvatar";
 import FavoriteButton from "./FavoriteButton";
@@ -250,6 +250,7 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
               <span className="text-primary font-semibold">Over {prop.publicBets.overPct}%</span>
               <span className="text-muted-foreground">Under {prop.publicBets.underPct}%</span>
             </div>
+            <ContrarianIndicator hitRate={prop.hitRate} overPct={prop.publicBets.overPct} />
           </div>
         )}
 
