@@ -202,7 +202,15 @@ const PropsPage = () => {
     { key: "overunders", label: "Over/Unders", icon: TrendingUp, count: filteredGames.filter((g) => g.overUnder.length > 0).length },
   ];
 
-  // Props page is available to all tiers; advanced features gated below
+  if (!hasAdvanced) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Props Overview">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className={`container py-4 md:py-6 md:max-w-5xl ${hasAdvanced ? "animate-pro-shimmer" : ""}`}>
