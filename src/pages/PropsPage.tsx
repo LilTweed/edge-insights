@@ -1,6 +1,6 @@
 import { propLines, allGames, type Sport, type PropLine, type Game, formatOdds } from "@/data/mockData";
 import HitRateTransparencyPanel from "@/components/HitRateTransparencyPanel";
-import PropCard from "@/components/PropCard";
+import PropCard, { ContrarianIndicator } from "@/components/PropCard";
 import SportsbookComparisonWidget from "@/components/SportsbookComparisonWidget";
 import SportFilter from "@/components/SportFilter";
 import ExportableDataView from "@/components/ExportableDataView";
