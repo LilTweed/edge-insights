@@ -375,7 +375,7 @@ const PropsPage = () => {
                   ) : (
                     <div className={viewMode === "advanced" ? "grid gap-4 sm:grid-cols-2" : "space-y-3"}>
                       {filtered.map((prop) => (
-                        <PropCard key={prop.id} prop={prop} viewMode={viewMode} />
+                        <PropCard key={prop.id} prop={prop} viewMode={viewMode} isPremium={hasAdvanced} />
                       ))}
                     </div>
                   )}

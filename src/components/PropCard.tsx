@@ -21,6 +21,7 @@ interface PropCardProps {
   showPlayer?: boolean;
   onAddToSlip?: (prop: PropLine, side: "over" | "under") => void;
   viewMode?: "basic" | "advanced";
+  isPremium?: boolean;
 }
 
 /** Convert American odds to implied probability % */
@@ -45,7 +46,7 @@ function getDefRankFallback(propId: string): number {
   return ((h >>> 0) % 30) + 1;
 }
 
-const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" }: PropCardProps) => {
+const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced", isPremium = false }: PropCardProps) => {
   const [gameLogOpen, setGameLogOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { isFavorited: checkFav } = useFavorites();
@@ -161,8 +162,8 @@ const PropCard = ({ prop, showPlayer = true, onAddToSlip, viewMode = "advanced" 
           </div>
         </div>
 
-        {/* Weather Badge (outdoor sports only) */}
-        {prop.weather && (
+        {/* Weather Badge (outdoor sports only — Premium only) */}
+        {isPremium && prop.weather && (
           <div className={`mb-3 rounded-lg border p-2.5 flex items-center gap-2.5 ${
             prop.weather.impact === "high" ? "border-destructive/30 bg-destructive/5" :
             prop.weather.impact === "moderate" ? "border-yellow-500/30 bg-yellow-500/5" :
