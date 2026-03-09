@@ -167,7 +167,6 @@ const mockGames: Game[] = [
     ],
     weather: { tempF: 52, condition: "Rain", windMph: 14, windDir: "W", humidity: 88, precipChance: 80, icon: "🌧️", impact: "moderate", impactNote: "Wet pitch — expect fewer goals, slippery conditions" },
   },
-  },
 ];
 
 // ── Page ────────────────────────────────────────────────────────────
