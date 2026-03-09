@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PageDisclaimer from "@/components/PageDisclaimer";
-import { type Sport, type Game } from "@/data/mockData";
+import { type Sport, type Game, type WeatherProjection } from "@/data/mockData";
 import SportFilter from "@/components/SportFilter";
 import GameCard from "@/components/GameCard";
 import { useSubscription } from "@/hooks/useSubscription";
