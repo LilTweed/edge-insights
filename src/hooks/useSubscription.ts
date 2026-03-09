@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type SubscriptionTier = "free" | "basic" | "advanced";
+export type SubscriptionTier = "free" | "advanced";
 
 interface SubscriptionState {
   tier: SubscriptionTier;
   loading: boolean;
-  isBasicOrAbove: boolean;
   isAdvanced: boolean;
   previewTier: SubscriptionTier | null;
   setPreviewTier: (tier: SubscriptionTier | null) => void;
@@ -24,6 +23,7 @@ export function useSubscription(): SubscriptionState {
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [previewTier, setPreviewTier] = useState<SubscriptionTier | null>(() => {
     const stored = localStorage.getItem("lvrg-preview-tier");
+    if (stored === "basic") return "free"; // migrate old basic preview
     return stored ? (stored as SubscriptionTier) : null;
   });
 
@@ -50,7 +50,7 @@ export function useSubscription(): SubscriptionState {
       .eq("user_id", user.id)
       .single();
 
-    let resolvedTier = (data?.subscription_tier as SubscriptionTier) || "free";
+    let resolvedTier: SubscriptionTier = (data?.subscription_tier === "advanced" ? "advanced" : "free");
     let trialActive = false;
 
     if (data?.trial_ends_at) {
@@ -92,7 +92,6 @@ export function useSubscription(): SubscriptionState {
   return {
     tier: effectiveTier,
     loading,
-    isBasicOrAbove: effectiveTier === "basic" || effectiveTier === "advanced",
     isAdvanced: effectiveTier === "advanced",
     previewTier,
     setPreviewTier,

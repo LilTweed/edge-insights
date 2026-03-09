@@ -4,8 +4,8 @@ import { Gamepad2, BarChart3, Search, Zap, Lock } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 const tabs = [
   { label: "Games", path: "/", icon: Gamepad2, minTier: "free" as const },
-  { label: "Props", path: "/props", icon: BarChart3, minTier: "basic" as const },
-  { label: "Research", path: "/research", icon: Search, minTier: "basic" as const },
+  { label: "Props", path: "/props", icon: BarChart3, minTier: "free" as const },
+  { label: "Research", path: "/research", icon: Search, minTier: "free" as const },
   { label: "Edge", path: "/edge", icon: Zap, minTier: "advanced" as const },
 ];
 
@@ -15,9 +15,8 @@ const BottomTabBar = () => {
 
   const effectiveTier = previewTier ?? tier;
 
-  const hasAccess = (minTier: "free" | "basic" | "advanced") => {
+  const hasAccess = (minTier: "free" | "advanced") => {
     if (minTier === "free") return true;
-    if (minTier === "basic") return effectiveTier === "basic" || effectiveTier === "advanced";
     return effectiveTier === "advanced";
   };
 

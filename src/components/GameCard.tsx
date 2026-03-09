@@ -52,9 +52,8 @@ const GameCard = ({ game, tier = "advanced" }: GameCardProps) => {
   const bestOU = game.overUnder[0];
   const bestSpread = game.spread?.[0];
   const isLive = game.status === "live";
-  const isFree = tier === "free";
-  const isBasic = tier === "basic";
   const isPro = tier === "advanced";
+  const isFree = !isPro;
   const news = mockNews[game.id] || [];
 
   return (

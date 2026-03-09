@@ -144,7 +144,7 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   const [historyPlayer, setHistoryPlayer] = useState<string | null>(null);
   const [trendStat, setTrendStat] = useState<"points" | "rebounds" | "assists">("points");
   const { toggle, isFavorite } = useFavoriteTeams();
-  const { tier, isBasicOrAbove, isAdvanced: hasAdvanced } = useSubscription();
+  const { tier, isAdvanced: hasAdvanced } = useSubscription();
 
   const players = useMemo(() => allPlayers.filter((p) => p.sport === sport), [sport]);
   const teams = useMemo(() => allTeams.filter((t) => t.sport === sport), [sport]);
@@ -253,15 +253,7 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   ];
   const tabs = allTabs.filter((t) => !t.advancedOnly || hasAdvanced);
 
-  if (!isBasicOrAbove) {
-    return (
-      <div className="container py-10">
-        <UpgradeGate requiredTier="basic" currentTier={tier} feature="Research Dashboard">
-          <div />
-        </UpgradeGate>
-      </div>
-    );
-  }
+  // Research page is available to all tiers; advanced tabs gated by hasAdvanced
 
   return (
     <div className={`${embedded ? "" : "container py-6"} ${hasAdvanced && !embedded ? "animate-pro-shimmer" : ""}`}>

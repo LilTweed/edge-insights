@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Sparkles, Zap, Crown } from "lucide-react";
+import { Check, Sparkles, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Link } from "react-router-dom";
@@ -12,30 +12,15 @@ const plans = [
     annual: 0,
     annualSavings: 0,
     icon: Sparkles,
-    description: "Live games and news across every sport",
+    description: "Live games, news, and basic stats",
     features: [
       "Live games & scores",
       "News across every sport",
       "Basic player stats",
+      "Props overview",
+      "Research dashboard",
     ],
     cta: "Current Plan",
-  },
-  {
-    name: "Basic",
-    tier: "basic" as const,
-    monthly: 12.99,
-    annual: 9.99,
-    annualTotal: 119.88,
-    annualSavings: 36,
-    icon: Zap,
-    description: "For the everyday researcher",
-    features: [
-      "Everything in Free",
-      "In-depth live game stats",
-      "Recent news per game",
-      "Access to Props tab",
-    ],
-    cta: "Get Basic",
   },
   {
     name: "Pro",
@@ -47,12 +32,14 @@ const plans = [
     icon: Crown,
     description: "Full access for the serious analyst",
     features: [
-      "Everything in Basic",
-      "Full access — Insights, Edge, Notes",
+      "Everything in Free",
+      "Advanced stats & filters",
+      "Weather projections",
       "Spread, moneyline & over/under lines",
       "Best odds parlay builder",
       "Full historical stats",
       "AI Analysis in Edge tab",
+      "Sportsbook comparison",
     ],
     cta: "Go Pro",
     popular: true,
@@ -93,7 +80,7 @@ export default function PricingPage() {
         </button>
       </div>
 
-      <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
         {plans.map((plan) => {
           const isCurrent = tier === plan.tier;
           const price = isAnnual ? plan.annual : plan.monthly;

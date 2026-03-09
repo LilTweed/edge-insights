@@ -4,12 +4,12 @@ import { Crown, LogIn, LogOut, User, Zap, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription, type SubscriptionTier } from "@/hooks/useSubscription";
 
-type NavItem = { label: string; path: string; minTier: "free" | "basic" | "advanced"; proOnly?: boolean };
+type NavItem = { label: string; path: string; minTier: "free" | "advanced"; proOnly?: boolean };
 
 const navItems: NavItem[] = [
   { label: "Games", path: "/", minTier: "free" },
-  { label: "Props", path: "/props", minTier: "basic" },
-  { label: "Research", path: "/research", minTier: "basic" },
+  { label: "Props", path: "/props", minTier: "free" },
+  { label: "Research", path: "/research", minTier: "free" },
   { label: "Edge", path: "/edge", minTier: "advanced", proOnly: true },
 ];
 
@@ -19,17 +19,15 @@ const AppHeader = () => {
   const { user, signOut } = useAuth();
   const { previewTier, setPreviewTier, tier, isAdvanced } = useSubscription();
 
-  const hasAccess = (minTier: "free" | "basic" | "advanced") => {
+  const hasAccess = (minTier: "free" | "advanced") => {
     const effectiveTier = previewTier ?? tier;
     if (minTier === "free") return true;
-    if (minTier === "basic") return effectiveTier === "basic" || effectiveTier === "advanced";
     return effectiveTier === "advanced";
   };
 
   const tierOptions: { label: string; value: SubscriptionTier | null }[] = [
     { label: "Off", value: null },
     { label: "Free", value: "free" },
-    { label: "Basic", value: "basic" },
     { label: "Pro", value: "advanced" },
   ];
 
@@ -103,8 +101,6 @@ const AppHeader = () => {
               </button>
             ))}
           </div>
-
-          {/* Mobile tier toggle — hidden for clean mobile header */}
 
           {/* Profile / Auth */}
           {user ? (
