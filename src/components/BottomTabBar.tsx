@@ -4,8 +4,8 @@ import { Gamepad2, BarChart3, Search, Zap, Lock } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 const tabs = [
   { label: "Games", path: "/", icon: Gamepad2, minTier: "free" as const },
-  { label: "Props", path: "/props", icon: BarChart3, minTier: "free" as const },
-  { label: "Research", path: "/research", icon: Search, minTier: "free" as const },
+  { label: "Props", path: "/props", icon: BarChart3, minTier: "advanced" as const },
+  { label: "Research", path: "/research", icon: Search, minTier: "advanced" as const },
   { label: "Edge", path: "/edge", icon: Zap, minTier: "advanced" as const },
 ];
 

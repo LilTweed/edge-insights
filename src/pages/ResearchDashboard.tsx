@@ -253,7 +253,15 @@ const ResearchDashboard = ({ embedded }: { embedded?: boolean }) => {
   ];
   const tabs = allTabs.filter((t) => !t.advancedOnly || hasAdvanced);
 
-  // Research page is available to all tiers; advanced tabs gated by hasAdvanced
+  if (!hasAdvanced) {
+    return (
+      <div className="container py-10">
+        <UpgradeGate requiredTier="advanced" currentTier={tier} feature="Research Dashboard">
+          <div />
+        </UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className={`${embedded ? "" : "container py-6"} ${hasAdvanced && !embedded ? "animate-pro-shimmer" : ""}`}>
